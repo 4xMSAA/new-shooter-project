@@ -1,0 +1,25 @@
+{
+  "name": "new-shooter-project",
+  "tree": {
+    "$className": "DataModel",
+
+    "ReplicatedStorage": {
+      "Source": {
+        "$path": "shared"
+      }
+    },
+
+    "ServerScriptService": {
+      "Source": {
+        "$path": "server"
+      }
+    },
+    "StarterPlayer": {
+      "StarterPlayerScripts": {
+        "Source": {
+          "$path": "client"
+        }
+      }
+    }
+  }
+}
