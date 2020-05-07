@@ -58,19 +58,30 @@ function TableUtil.toList(t, callback)
     return result
 end
 
-function TableUtil.toEnumList(t)
-    -- Convert {"EnumName", "Desc"} to
+function TableUtil.toEnumList(name, t)
+    -- Convert {"EnumName", "Desc", ExtraData} to
     -- [EnumName] = {Description = "Desc", Name = "EnumName", Number = index}
-    TableUtil.toList(
+    local enumList =
+        TableUtil.toList(
         t,
-        function(result, key, val)
+        function(result, val, key)
             result[val[1]] = {
                 Name = val[1],
                 Description = val[2],
+                ExtraData = val[3],
                 Number = key
             }
         end
     )
+
+    local errorHandler = {}
+    function errorHandler:__index(key)
+        return error("did not find enum " .. key .. " in Enums." .. name)
+    end
+
+    setmetatable(enumList, errorHandler)
+
+    return enumList
 end
 
 ---Get the size of a table by element count
@@ -86,8 +97,9 @@ end
 
 ---Bubble sort an array based on values
 ---@param array table The array to sort
+---@param key string Optional, if array has objects, index with key for value
 ---@return table Array with sorted values
-function TableUtil.valueBubblesort(array)
+function TableUtil.valueBubblesort(array, key)
     local result = {}
     for _, val in ipairs(array) do
         table.insert(result, val)
@@ -106,7 +118,7 @@ function TableUtil.valueBubblesort(array)
     repeat
         local newn = 1
         for i = 2, count do
-            if result[i - 1] > result[i] then
+            if key and result[i - 1][key] > result[i][key] or result[i - 1] > result[i] then
                 -- Swap the two values and set the index as the new count
                 swap(result, i - 1, i)
                 newn = i
