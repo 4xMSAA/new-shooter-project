@@ -41,6 +41,12 @@ function TableUtil.shuffle(t)
     return t
 end
 
+function TableUtil.overwrite(t0, t1)
+    for key, value in pairs(t1) do
+        t0[key] = value
+    end
+end
+
 ---Convert an array table to a list table (dictionary)
 ---@param t table The array to convert
 ---@param callback function Define special behaviour. Passed arguments: (table) result, (userdata) value, (float) index
@@ -118,7 +124,7 @@ function TableUtil.valueBubblesort(array, key)
     repeat
         local newn = 1
         for i = 2, count do
-            if key and result[i - 1][key] > result[i][key] or result[i - 1] > result[i] then
+            if (key and result[i - 1][key] > result[i][key]) or not key and result[i - 1] > result[i] then
                 -- Swap the two values and set the index as the new count
                 swap(result, i - 1, i)
                 newn = i

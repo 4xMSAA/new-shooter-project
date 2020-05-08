@@ -29,18 +29,16 @@ Gun.__index = Gun
 function Gun.new(weapon, gamemode)
     -- make string to config by search or use config directly
     if typeof(weapon) == "string" then
-        weapon = assert(shared.Assets.Weapons.Configuration:WaitForChild(weapon), "did not find weapon " .. weapon)
+        weapon = assert(shared.Assets.Weapons.Configuration:WaitForChild(weapon, 5), "did not find weapon " .. weapon)
     end
 
     local config = require(weapon)
-    local model = shared.Assets.Weapons.Models:WaitForChild(config.ModelPath)
+    local model = shared.Assets.Weapons.Models:WaitForChild(config.ModelPath, 5):Clone()
 
     local self = {}
-
-    self.Handle = model.PrimaryPart
-
     -- properties
-    self.ViewModel = model:Clone()
+    self.ViewModel = model
+    self.Handle = self.ViewModel.PrimaryPart
     self.Configuration = config
 
     -- states
@@ -80,6 +78,7 @@ function Gun.new(weapon, gamemode)
         Movement = Spring.new()
     }
 
+    self.AssetAnimations = shared.Assets.Weapons.Animations:FindFirstChild(config.AnimationPath)
     -- Additional property data
     self.Animations = {} -- populate this table with our AnimationTrack class
 
@@ -90,14 +89,17 @@ function Gun.new(weapon, gamemode)
 end
 
 function Gun:_init()
-    self.Handle.Anchored = true
-
     for _, part in pairs(self.ViewModel:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
             part.CastShadow = false
+            part.Anchored = false
+            part.Massless = true
         end
     end
+
+    self.Handle.RootPriority = 100
+    self.Handle.Anchored = true
 end
 
 function Gun:setState(statesOrKey, state)
@@ -120,7 +122,10 @@ function Gun:fire()
 
     local posRange = self.Configuration.Recoil.Position.Range
     local posV = self.Configuration.Recoil.Position.V3
-    local x, y, z = springRange(posV.x, posRange.x), springRange(posV.y, posRange.y), springRange(posV.z, posRange.z)
+    local x, y, z =
+        springRange(posV.x, posRange.x),
+        springRange(posV.y, posRange.y),
+        springRange(posV.z, posRange.z)
 
     local rotRange = self.Configuration.Recoil.Rotation.Range
     local rotV = self.Configuration.Recoil.Rotation.V3

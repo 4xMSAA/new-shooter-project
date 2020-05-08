@@ -5,5 +5,11 @@ return {
         ADS_SWAY_MODIFIER = 0.1,
 
         AIM_SPEED = 3
+    },
+    VIEWMODEL = {
+        LEFT_ARM_PIVOT = "LeftHand",
+        RIGHT_ARM_PIVOT = "RightHand",
+
+        DEFAULT_ARMS = "Default"
     }
 }

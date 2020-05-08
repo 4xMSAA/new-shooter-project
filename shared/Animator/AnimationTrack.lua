@@ -12,8 +12,9 @@
 
 local Emitter = require(shared.Common.Emitter)
 
-local AnimationParser = require(shared.Source.Animation.Common.AnimationParser)
+local AnimationParser = require(script.Parent.Common.AnimationParser)
 
+---@class AnimationTrack
 local AnimationTrack = {}
 AnimationTrack.__index = AnimationTrack
 
@@ -26,17 +27,19 @@ AnimationTrack._cache = {}
 ---@param map function A keyframe mapping function for remapping Motor6Ds
 function AnimationTrack.new(host, keyframeSequence, map)
     local self = {
+        Name = keyframeSequence.Name,
+
         Animation = keyframeSequence,
         IsPlaying = false,
         IsBaked = false,
 
         JointMap = map,
 
-        Loop = keyframeSequence.Looped,
+        Loop = keyframeSequence.Loop,
         Priority = keyframeSequence.Priority,
         Speed = 1,
         TimePosition = 0,
-        Length = AnimationParser.getLastKeyframe().Time,
+        Length = AnimationParser.getLastKeyframe(keyframeSequence).Time,
 
         Looped = Emitter.new(),
         Stopped = Emitter.new(),
@@ -47,7 +50,8 @@ function AnimationTrack.new(host, keyframeSequence, map)
     }
 
     setmetatable(self, AnimationTrack)
-    self:bake()
+
+    return self
 end
 
 ---When a marker is reached in the animation, the returned emitter will fire
@@ -63,20 +67,20 @@ end
 ---@param model userdata
 function AnimationTrack:bake(model)
     if not AnimationTrack._cache[self.Animation] then
-        local data = AnimationParser.createTrack(self.Animation, model, self.JointMap)
-        AnimationTrack._cache[self.Animation] = data
-        self.Data = data
+        local keyframes = AnimationParser.createTrack(self.Animation, model, self.JointMap)
+        AnimationTrack._cache[self.Animation] = keyframes
+        self.Keyframes = keyframes
     else
-        self.Data = AnimationTrack._cache[self.Animation]
+        self.Keyframes = AnimationTrack._cache[self.Animation]
     end
 end
 
 --- Tells the host Animator to play the track on the rig
 function AnimationTrack:play()
 
-    -- TODO: tell host animationcontroller that we want to play the animation
+    -- TODO: tell host Animator that we want to play the animation
     self.IsPlaying = true
-    self._Host.addPlayingTrack(self)
+    self._Host:addPlayingTrack(self)
 
 end
 

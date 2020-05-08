@@ -27,7 +27,9 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
     -- find all joints
     local joints = {}
     for i, joint in pairs(model:GetDescendants()) do
-        joints[#joints + 1] = joint
+        if joint:IsA("Motor6D") then
+            table.insert(joints, joint)
+        end
     end
 
     -- map pose to joint
@@ -36,10 +38,14 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
         if pose:IsA("Pose") then
             if map then
                 local joint, pose = map(keyframe, pose)
-                result[joint] = pose
+                if joint then
+                    result[joint] = pose
+                end
             else
                 local joint = AnimationParser.lookupJointByPose(pose, joints)
-                result[joint] = pose
+                if joint then
+                    result[joint] = pose
+                end
             end
         end
     end
@@ -52,6 +58,7 @@ end
 ---@param keyframeSequence userdata
 ---@param model userdata
 ---@param keyframeMap function A function that returns key and value for the keyframe and pose provided
+---@return table
 function AnimationParser.createTrack(keyframeSequence, model, keyframeMap)
     local track = {}
 
@@ -70,9 +77,9 @@ function AnimationParser.createTrack(keyframeSequence, model, keyframeMap)
 end
 
 function AnimationParser.getLastKeyframe(keyframeSequence)
-    local resultKeyframe, x = 0
+    local x, resultKeyframe = 0, nil
     for _, keyframe in pairs(keyframeSequence:GetChildren()) do
-        if keyframe.Time > x then
+        if keyframe.Time >= x then
             x = keyframe.Time
             resultKeyframe = keyframe
         end

@@ -5,6 +5,7 @@ local assetName = script.Name
 local Configuration = {
     Name = "M1 Garand",
     ModelPath = assetName,
+    AnimationPath = assetName,
 
     RPM = 444,
     FireMode = {Enums.FireMode.Single, Enums.FireMode.Safety},
