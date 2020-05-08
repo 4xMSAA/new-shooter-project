@@ -1,5 +1,6 @@
 -- return an AnimationTrack-like object
 -- https://developer.roblox.com/en-us/api-reference/class/AnimationTrack
+-- this cannot be created standalone and requires a host animation controller
 
 -- i need to make it so animation tracks are playable but i'm a bit unsure how to handle it
 -- so everything is on one line
@@ -16,12 +17,14 @@ local AnimationParser = require(shared.Source.Animation.Common.AnimationParser)
 local AnimationTrack = {}
 AnimationTrack.__index = AnimationTrack
 
-AnimationTrack._bakedAnimations = {}
+-- TODO: clear cache over time if not used to prevent memory growing too big
+-- only implement if this actually becomes a performance concern
+AnimationTrack._cache = {}
 
 ---
 ---@param keyframeSequence userdata
 ---@param map function A keyframe mapping function for remapping Motor6Ds
-function AnimationTrack.new(keyframeSequence, map)
+function AnimationTrack.new(host, keyframeSequence, map)
     local self = {
         Animation = keyframeSequence,
         IsPlaying = false,
@@ -38,7 +41,9 @@ function AnimationTrack.new(keyframeSequence, map)
         Looped = Emitter.new(),
         Stopped = Emitter.new(),
         MarkerReached = Emitter.new(),
-        _TrackedMarkers = {}
+        _TrackedMarkers = {},
+
+        _Host = host
     }
 
     setmetatable(self, AnimationTrack)
@@ -57,18 +62,22 @@ end
 ---
 ---@param model userdata
 function AnimationTrack:bake(model)
-    if not AnimationTrack._bakedAnimations[self.Animation] then
+    if not AnimationTrack._cache[self.Animation] then
         local data = AnimationParser.createTrack(self.Animation, model, self.JointMap)
-        AnimationTrack._bakedAnimations[self.Animation] = data
-        self.Track = data
+        AnimationTrack._cache[self.Animation] = data
+        self.Data = data
     else
-        self.Track = AnimationTrack._bakedAnimations[self.Animation]
+        self.Data = AnimationTrack._cache[self.Animation]
     end
 end
 
+--- Tells the host Animator to play the track on the rig
 function AnimationTrack:play()
-    -- TODO biggest fucking todo i have to do right here
-    -- contemplating whether to make a separate module for playing these animation tracks or something else
+
+    -- TODO: tell host animationcontroller that we want to play the animation
+    self.IsPlaying = true
+    self._Host.addPlayingTrack(self)
+
 end
 
 return AnimationTrack
