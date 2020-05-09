@@ -14,9 +14,6 @@ local SmallUtils = require(shared.Common.SmallUtils)
 local lerp = SmallUtils.lerp
 
 local function springRange(v0, range)
-    if v0 == 0 then
-        return 0
-    end
     return SmallUtils.randomRange(v0 - range, v0 + range)
 end
 
