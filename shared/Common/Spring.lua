@@ -2,7 +2,7 @@ local ITERATIONS = 1
 
 local Spring = {}
 
-function Spring.new(self, mass, force, damping, speed)
+function Spring.new(mass, force, damping, speed)
     local spring = {
         Target = Vector3.new(),
         Position = Vector3.new(),

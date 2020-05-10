@@ -1,18 +1,38 @@
 --[[
     description and purpose here
+
+    please don't format document
 --]]
+
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
 local SWAY_AMPLIFY = _G.WEAPON.SWAY_AMPLIFY
 local ADS_SWAY_MODIFIER = _G.WEAPON.ADS_SWAY_MODIFIER
 local AIM_SPEED = _G.WEAPON.AIM_SPEED
+local INERTIA_MODIFIER = _G.WEAPON.INERTIA_MODIFIER
 
+-- micro-optimization for blank CFrames
 local CF000 = CFrame.new()
 
+-- make mount points so we can find things by string
+local mount = require(shared.Common.Mount)
+local PATH = {
+    PARTICLES = mount(shared.Assets.Particles),
+    WEAPON_MODELS = mount(shared.Assets.Weapons.Models),
+    WEAPON_ANIMATIONS = mount(shared.Assets.Weapons.Animations),
+    WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
+}
+
+local Particle = require(shared.Common.Particle)
+local Sound = require(shared.Common.Sound)
 local Spring = require(shared.Common.Spring)
+local Styles = require(shared.Common.Styles)
 local SmallUtils = require(shared.Common.SmallUtils)
 
 local lerp = SmallUtils.lerp
 
+---Uses a value and makes a range based on v0 -+ range
+---@param v0 number
+---@param range number
 local function springRange(v0, range)
     return SmallUtils.randomRange(v0 - range, v0 + range)
 end
@@ -26,33 +46,38 @@ Gun.__index = Gun
 function Gun.new(weapon, gamemode)
     -- make string to config by search or use config directly
     if typeof(weapon) == "string" then
-        weapon = assert(shared.Assets.Weapons.Configuration:WaitForChild(weapon, 5), "did not find weapon " .. weapon)
+        weapon = assert(PATH.WEAPON_CONFIGURATIONS(weapon), "did not find weapon " .. weapon)
     end
 
     local config = require(weapon)
-    local model = shared.Assets.Weapons.Models:WaitForChild(config.ModelPath, 5):Clone()
+    local model = PATH.WEAPON_MODELS(config.ModelPath):Clone()
 
     local self = {}
     -- properties
+    self._assetName = weapon
     self.ViewModel = model
     self.Handle = self.ViewModel.PrimaryPart
     self.Configuration = config
-
-    -- states
-    self.State = {
-        Equipped = false,
-        Aim = false,
-        Obstructed = false,
-        Cycling = false,
-        Walk = false,
-        Movement = 0
-    }
 
     self.ActiveFireMode = config.FireMode[1]
     self.Ammo = {
         Loaded = config.Ammo.Max,
         Max = config.Ammo.Max,
         Reserve = config.Ammo.Reserve
+    }
+
+    self.AssetAnimations = PATH.WEAPON_ANIMATIONS(config.AnimationPath)
+
+    -- states
+    self.State = {
+        Equipped = false,
+        Aim = false,
+        Cycling = false,
+        Walk = false,
+        Crouch = false,
+        Prone = false,
+        Obstructed = false,
+        Movement = 0
     }
 
     -- private states
@@ -68,14 +93,15 @@ function Gun.new(weapon, gamemode)
     self._InterpolateSpeed = {
         Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED
     }
-
     self._Springs = {
-        ModelPositionRecoil = Spring.new(),
-        ModelRotationRecoil = Spring.new(),
-        Movement = Spring.new()
+        ModelPositionRecoil = Spring.new(5, 100, 4),
+        ModelRotationRecoil = Spring.new(5, 100, 4),
+        Movement = Spring.new(),
+        Inertia = Spring.new()
     }
+    self._Particles = {}
+    self._Sounds = {}
 
-    self.AssetAnimations = shared.Assets.Weapons.Animations:FindFirstChild(config.AnimationPath)
     -- Additional property data
     self.Animations = {} -- populate this table with our AnimationTrack class
 
@@ -86,6 +112,15 @@ function Gun.new(weapon, gamemode)
 end
 
 function Gun:_init()
+    local modelMount = mount(self.ViewModel)
+    for name, data in pairs(self.Configuration.Particles) do
+        self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), modelMount(data.Parent))
+    end
+
+    for name, data in pairs(self.Configuration.Sounds) do
+        self._Sounds[name] = Sound.new(data, {IsGlobal = true})
+    end
+
     for _, part in pairs(self.ViewModel:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -97,6 +132,37 @@ function Gun:_init()
 
     self.Handle.RootPriority = 100
     self.Handle.Anchored = true
+end
+
+---
+---@param name string
+function Gun:emitParticle(name)
+    if not self._Particles[name] then
+        warn("no particle called " .. name .. " in " .. self.Configuration.Name)
+        return
+    end
+
+    self._Particles[name]:emit()
+end
+
+---
+---@param name string
+---@param range number
+function Gun:playSound(name, range)
+    if not self._Sounds[name] then
+        warn("no sound called " .. name .. " in " .. self.Configuration.Name)
+        return
+    end
+
+    -- TODO: fix dumb thing about having to refer to Instance itself
+
+    -- if we have a "how many times can sound play at once" then use the
+    -- playMultiple function instead
+    if not range then
+        self._Sounds[name].Instance:Play()
+    else
+        self._Sounds[name]:playMultiple(range)
+    end
 end
 
 function Gun:setState(statesOrKey, state)
@@ -116,23 +182,27 @@ function Gun:fire()
     end
 
     self:setState("Cycling", true)
+    self:emitParticle("Fire")
+    self:playSound("Fire")
 
-    local posRange = self.Configuration.Recoil.Position.Range
-    local posV = self.Configuration.Recoil.Position.V3
+    local recoil = self.Configuration.Recoil
+
+    local posRange = recoil.Position.Range
+    local posV = recoil.Position.V3
     local x, y, z =
         springRange(posV.x, posRange.x),
         springRange(posV.y, posRange.y),
         springRange(posV.z, posRange.z)
 
-    local rotRange = self.Configuration.Recoil.Rotation.Range
-    local rotV = self.Configuration.Recoil.Rotation.V3
+    local rotRange = recoil.Rotation.Range
+    local rotV = recoil.Rotation.V3
     local pitch, yaw, roll =
         springRange(rotV.x, rotRange.x),
         springRange(rotV.y, rotRange.y),
         springRange(rotV.z, rotRange.z)
 
-    if self.Configuration.Recoil.Rotation.AllowSignedY then
-        yaw = math.random() > 0.5 and -yaw or yaw
+    if recoil.Rotation.AllowSignedY then
+        yaw = (math.random() > 0.5 and -yaw) or yaw
     end
 
     self._Springs.ModelPositionRecoil:shove(x, y, z)
@@ -143,6 +213,13 @@ end
 
 function Gun:update(dt, pivot)
     local cfg = self.Configuration
+
+    -- i want to add camera movement sway like when turning and stopping, inertia ig
+    local inertiaX, inertiaY, inertiaZ = (
+        CF000:lerp((self._lastPivot or pivot) * pivot:inverse(), INERTIA_MODIFIER)):ToOrientation()
+
+    self._lastPivot = pivot
+    self._Springs.Inertia:shove(inertiaX, inertiaY, inertiaZ)
 
     -- self._Springs.Walk:shove(
     --             math.sin(elapsedTime()*SWAY_SPEED)*SWAY_AMPLIFY,
@@ -178,15 +255,22 @@ function Gun:update(dt, pivot)
 
     -- decide between aim down sight cf and grip CF
     local gripCF =
-        cfg.Offset.Grip:lerp(CF000, self._InterpolateState.Aim) * CF000:lerp(cfg.Offset.Aim, self._InterpolateState.Aim)
+        cfg.Offset.Grip:lerp(CF000, Styles.quad(self._InterpolateState.Aim)) *
+        CF000:lerp(cfg.Offset.Aim, Styles.quad(self._InterpolateState.Aim))
 
     -- bunch of CFrames
 
     local posRecoil = self._Springs.ModelPositionRecoil.Position
     local rotRecoil = self._Springs.ModelRotationRecoil.Position
+    local inertia =  self._Springs.Inertia.Position
 
     local renderCF =
-        pivot * gripCF * swayCF * CFrame.new(posRecoil) * CFrame.Angles(rotRecoil.x, rotRecoil.y, rotRecoil.z)
+        pivot
+        * gripCF
+        * swayCF
+        * CFrame.new(posRecoil)
+        * CFrame.Angles(rotRecoil.x, rotRecoil.y, rotRecoil.z)
+        * CFrame.Angles(inertia.X, inertia.Y, inertia.Z)
 
     self.ViewModel:SetPrimaryPartCFrame(renderCF)
 

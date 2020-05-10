@@ -8,9 +8,18 @@ local Configuration = {
     AnimationPath = assetName,
     RPM = 444,
     FireMode = {Enums.FireMode.Single, Enums.FireMode.Safety},
+    EquipTime = 0.88,
+    Zoom = 1.45,
     Ammo = {
         Max = 8,
-        Reserve = 120
+        Reserve = 120,
+        Eject = {
+            Particle = ".30-06",
+            speed = 14
+        }
+    },
+    Particles = {
+        Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"}
     },
     Sounds = {
         BoltBack = 3607477790,
@@ -19,7 +28,7 @@ local Configuration = {
         ClipIn = 152206337,
         ClipOut = {SoundId = 988201742, Volume = 0.7},
         ClipFling = {SoundId = 231738531, Volume = 1},
-        Fire = {SoundId = 988201742, volume = 0.7}
+        Fire = {SoundId = 988201742, Volume = 0.7}
     },
     Projectile = {
         Type = "Bullet",
@@ -40,7 +49,7 @@ local Configuration = {
         AimScale = 0.6,
         Rotation = {
             V3 = Vector3.new(0.5, 0, 0),
-            Range = Vector3.new(0.3, .05, 0),
+            Range = Vector3.new(0.3, 0.2, 0),
             AllowSignedY = true
         },
         Position = {

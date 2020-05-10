@@ -1,5 +1,8 @@
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local UserInputService = game:GetService("UserInputService")
+
+UserInputService.MouseIconEnabled = false
 
 -- Initialize environment variables
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
@@ -12,7 +15,7 @@ local ViewModelArms = require(script.Parent.Core.ViewModelArms)
 local Gun = require(script.Parent.Core.Gun)
 
 local test = Gun.new("M1Garand", "Zombies")
-test.ViewModel.Parent = shared.Path.ClientViewmodel
+test.ViewModel.Parent = _G.Path.ClientViewmodel
 
 local arms = ViewModelArms.new(_G.VIEWMODEL.DEFAULT_ARMS)
 arms:attach(test)
@@ -38,14 +41,14 @@ RunService:BindToRenderStep(
     end
 )
 
-coroutine.wrap(
-    function()
-        while wait(1) do
-            test:fire()
-            firing:play()
-        end
-    end
-)()
+-- coroutine.wrap(
+--     function()
+--         while wait(1) do
+--             test:fire()
+--             firing:play()
+--         end
+--     end
+-- )()
 
 while wait(3) do
     test:setState("Aim", not test.State.Aim)
