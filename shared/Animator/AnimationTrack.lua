@@ -66,7 +66,8 @@ end
 ---
 ---@param model userdata
 function AnimationTrack:bake(model)
-    if not AnimationTrack._cache[self.Animation] then
+    if not AnimationTrack._cache[self.Animation] or self._rebake then
+        self._rebake = nil
         local keyframes = AnimationParser.createTrack(self.Animation, model, self.JointMap)
         AnimationTrack._cache[self.Animation] = keyframes
         self.Keyframes = keyframes

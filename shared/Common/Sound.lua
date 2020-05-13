@@ -38,7 +38,7 @@ end
 
 function Sound:_init(props, extraProps)
     if typeof(props) == "number" then
-        props = {SoundId = "rbxassetid://" .. props}
+        props = {SoundId = props}
     end
 
     self.play = self.Instance.Play

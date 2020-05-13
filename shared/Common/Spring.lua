@@ -1,4 +1,6 @@
-local ITERATIONS = 1
+-- credit: @x_o
+
+local ITERATIONS = 8
 
 local Spring = {}
 
@@ -27,7 +29,7 @@ function Spring.new(mass, force, damping, speed)
     end
 
     function spring:update(dt)
-        local scaledDeltaTime = math.min(dt, 1) * self.Speed / ITERATIONS
+        local scaledDeltaTime = math.min(dt, 1/15) * self.Speed / ITERATIONS
 
         for i = 1, ITERATIONS do
             local inertia = self.Target - self.Position

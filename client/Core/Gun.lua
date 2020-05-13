@@ -4,16 +4,23 @@
     please don't format document
 --]]
 
+-- TODO: implement state locking so you can't aim while reloading or other things
+
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
 local SWAY_AMPLIFY = _G.WEAPON.SWAY_AMPLIFY
 local ADS_SWAY_MODIFIER = _G.WEAPON.ADS_SWAY_MODIFIER
 local AIM_SPEED = _G.WEAPON.AIM_SPEED
+local AIM_STYLE = _G.WEAPON.AIM_STYLE
+local MOVEMENT_AMPLIFY = _G.WEAPON.MOVEMENT_AMPLIFY
+local MOVEMENT_SPEED = _G.WEAPON.MOVEMENT_SPEED
+local ADS_MOVEMENT_MODIFIER = _G.WEAPON.ADS_MOVEMENT_MODIFIER
 local INERTIA_MODIFIER = _G.WEAPON.INERTIA_MODIFIER
+local INERTIA_RECOVERY_SPEED = _G.WEAPON.INERTIA_RECOVERY_SPEED
 
 -- micro-optimization for blank CFrames
 local CF000 = CFrame.new()
 
--- make mount points so we can find things by string
+-- make mount points so we can find things by string (separator is /)
 local mount = require(shared.Common.Mount)
 local PATH = {
     PARTICLES = mount(shared.Assets.Particles),
@@ -22,6 +29,7 @@ local PATH = {
     WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
 }
 
+local Animator = require(shared.Source.Animator)
 local Particle = require(shared.Common.Particle)
 local Sound = require(shared.Common.Sound)
 local Spring = require(shared.Common.Spring)
@@ -37,6 +45,7 @@ local function springRange(v0, range)
     return SmallUtils.randomRange(v0 - range, v0 + range)
 end
 
+---does pew pew
 ---@class Gun
 local Gun = {}
 Gun.__index = Gun
@@ -66,8 +75,6 @@ function Gun.new(weapon, gamemode)
         Reserve = config.Ammo.Reserve
     }
 
-    self.AssetAnimations = PATH.WEAPON_ANIMATIONS(config.AnimationPath)
-
     -- states
     self.State = {
         Equipped = false,
@@ -93,11 +100,13 @@ function Gun.new(weapon, gamemode)
     self._InterpolateSpeed = {
         Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED
     }
+    -- default spring values: 5, 50, 4, 4
+    -- mass, force, dampening, speed
     self._Springs = {
-        ModelPositionRecoil = Spring.new(5, 100, 4),
-        ModelRotationRecoil = Spring.new(5, 100, 4),
-        Movement = Spring.new(),
-        Inertia = Spring.new()
+        ModelPositionRecoil = Spring.new(5, 150, 6),
+        ModelRotationRecoil = Spring.new(5, 150, 6),
+        Movement = Spring.new(20),
+        Inertia = Spring.new(5, 50, 4, 4*INERTIA_RECOVERY_SPEED)
     }
     self._Particles = {}
     self._Sounds = {}
@@ -112,15 +121,39 @@ function Gun.new(weapon, gamemode)
 end
 
 function Gun:_init()
+
+    -- load the animations
+    self.Animator = Animator.new(self.ViewModel)
+    self._cameraJoint = Instance.new("Motor6D")
+    self._gripJoint = Instance.new("Motor6D")
+
+    local jointRemap = function(joint, pose)
+        if pose.Name == "Handle" then
+            return self._gripJoint, pose
+        elseif pose.Name == "Camera" then
+            return self._cameraJoint, pose
+        end
+        -- not returning anything defaults behaviour
+    end
+
+    local animations = PATH.WEAPON_ANIMATIONS(self.Configuration.AnimationPath)
+    for _, animation in pairs(animations:GetChildren()) do
+        print(animations:GetFullName(), animation)
+        self.Animations[animation.Name] = self.Animator:loadAnimation(animation, jointRemap)
+    end
+
+    -- mount the model to apply particle effects
     local modelMount = mount(self.ViewModel)
     for name, data in pairs(self.Configuration.Particles) do
         self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), modelMount(data.Parent))
     end
 
+    -- give sounds
     for name, data in pairs(self.Configuration.Sounds) do
         self._Sounds[name] = Sound.new(data, {IsGlobal = true})
     end
 
+    -- in case we forget to prepare the model, do some preparing ourselves
     for _, part in pairs(self.ViewModel:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -130,6 +163,7 @@ function Gun:_init()
         end
     end
 
+    -- joints are weird, so rootpriority helps decide which is the real "pivot"
     self.Handle.RootPriority = 100
     self.Handle.Anchored = true
 end
@@ -176,8 +210,13 @@ function Gun:setState(statesOrKey, state)
     return self.State
 end
 
+function Gun:reload()
+    self.Animations.Reload:play()
+    self.Ammo.Loaded = self.Ammo.Max
+end
+
 function Gun:fire()
-    if self.State.Cycling then
+    if self.State.Cycling or self.Ammo.Loaded <= 0 then
         return
     end
 
@@ -185,15 +224,16 @@ function Gun:fire()
     self:emitParticle("Fire")
     self:playSound("Fire")
 
-    local recoil = self.Configuration.Recoil
+    -- self.Ammo.Loaded = self.Ammo.Loaded - 1
 
+    -- viewmodel recoil
+    local recoil = self.Configuration.Recoil
     local posRange = recoil.Position.Range
     local posV = recoil.Position.V3
     local x, y, z =
         springRange(posV.x, posRange.x),
         springRange(posV.y, posRange.y),
         springRange(posV.z, posRange.z)
-
     local rotRange = recoil.Rotation.Range
     local rotV = recoil.Rotation.V3
     local pitch, yaw, roll =
@@ -205,27 +245,32 @@ function Gun:fire()
         yaw = (math.random() > 0.5 and -yaw) or yaw
     end
 
+    -- apply spring updates
     self._Springs.ModelPositionRecoil:shove(x, y, z)
     self._Springs.ModelRotationRecoil:shove(pitch, yaw, roll)
+
+    self.Animations.Fire:play()
 
     self:setState("Cycling", false)
 end
 
+---
+---@param dt number Delta time since last frame
+---@param pivot userdata CFrame  at which the gun should be located at
 function Gun:update(dt, pivot)
     local cfg = self.Configuration
 
-    -- i want to add camera movement sway like when turning and stopping, inertia ig
     local inertiaX, inertiaY, inertiaZ = (
         CF000:lerp((self._lastPivot or pivot) * pivot:inverse(), INERTIA_MODIFIER)):ToOrientation()
 
     self._lastPivot = pivot
     self._Springs.Inertia:shove(inertiaX, inertiaY, inertiaZ)
 
-    -- self._Springs.Walk:shove(
-    --             math.sin(elapsedTime()*SWAY_SPEED)*SWAY_AMPLIFY,
-    --             math.sin(elapsedTime()*SWAY_SPEED*2)*SWAY_AMPLIFY,
-    --             0
-    --         )
+    self._Springs.Movement:shove(
+        math.sin(elapsedTime()*MOVEMENT_SPEED)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+        math.sin(elapsedTime()*MOVEMENT_SPEED*2)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+        0
+    )
 
     -- update InterpolateStates and Springs
     for state, value in pairs(self.State) do
@@ -242,21 +287,27 @@ function Gun:update(dt, pivot)
         end
     end
     for _, spring in pairs(self._Springs) do
-        spring:update(dt)
+        spring:update(math.min(1, dt))
     end
 
     local swayCF =
         CFrame.new(
         math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
         math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
-            (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
+            lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
         0
     )
 
     -- decide between aim down sight cf and grip CF
     local gripCF =
-        cfg.Offset.Grip:lerp(CF000, Styles.quad(self._InterpolateState.Aim)) *
-        CF000:lerp(cfg.Offset.Aim, Styles.quad(self._InterpolateState.Aim))
+        cfg.Offset.Grip:lerp(CF000, Styles[AIM_STYLE](self._InterpolateState.Aim)) *
+        CF000:lerp(cfg.Offset.Aim, Styles[AIM_STYLE](self._InterpolateState.Aim))
+
+    local movementCF =
+        CF000:lerp(
+            CFrame.new(self._Springs.Movement.Position),
+            lerp(1, ADS_MOVEMENT_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim))
+        )
 
     -- bunch of CFrames
 
@@ -267,10 +318,12 @@ function Gun:update(dt, pivot)
     local renderCF =
         pivot
         * gripCF
+        * self._gripJoint.Transform
         * swayCF
+        * movementCF
         * CFrame.new(posRecoil)
         * CFrame.Angles(rotRecoil.x, rotRecoil.y, rotRecoil.z)
-        * CFrame.Angles(inertia.X, inertia.Y, inertia.Z)
+        * CFrame.Angles(-inertia.X, inertia.Y, 0)
 
     self.ViewModel:SetPrimaryPartCFrame(renderCF)
 

@@ -1,12 +1,17 @@
 return {
     WEAPON = {
-        SWAY_AMPLIFY = 0.075,
+        SWAY_AMPLIFY = 0.025,
         SWAY_SPEED = 0.8,
-        ADS_SWAY_MODIFIER = 0.1,
+        ADS_SWAY_MODIFIER = 0.2,
+
+        MOVEMENT_AMPLIFY = 0.05,
+        MOVEMENT_SPEED = 8,
+        ADS_MOVEMENT_MODIFIER = 0.2,
 
         AIM_SPEED = 3,
+        AIM_STYLE = "sine",
 
-        INERTIA_MODIFIER = 0.8,
+        INERTIA_MODIFIER = 0.6,
         INERTIA_RECOVERY_SPEED = 1.5
     },
     VIEWMODEL = {

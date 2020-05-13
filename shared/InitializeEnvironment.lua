@@ -22,7 +22,6 @@ shared.Assets = shared.Storage:WaitForChild("Assets")
 
 -- load final configuration values to _G
 for key, data in pairs(require(shared.Source:WaitForChild("Configuration"))) do
-    print(key, data)
     _G[key] = data
 end
 

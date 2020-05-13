@@ -1,6 +1,19 @@
 local TableUtil = require(shared.Common.TableUtil)
 
 local AnimationParser = {}
+AnimationParser.CustomPoseProperties = {
+    xSIXxCustomDir = function(object)
+        print("found custom direction")
+        return "EasingDirection", object.Value
+    end,
+    xSIXxCustomStyle = function(object)
+        print("found custom style")
+        return "EasingStyle", object.Value
+    end,
+    xSIXxNull = function(object)
+        return "Ignore", true
+    end
+}
 
 ---
 ---@param pose userdata
@@ -12,7 +25,7 @@ function AnimationParser.lookupJointByPose(pose, joints)
 
     for _, joint in pairs(joints) do
         if joint.Part1.Name == pose.Name then
-            return joint
+            return joint, pose
         end
     end
 end
@@ -36,15 +49,32 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
     local poses = keyframe:GetDescendants()
     for _, pose in pairs(poses) do
         if pose:IsA("Pose") then
-            if map then
-                local joint, pose = map(keyframe, pose)
-                if joint then
-                    result[joint] = pose
+            local customProps = {}
+            for _, object in pairs(pose:GetChildren()) do
+                if AnimationParser.CustomPoseProperties[object.Name] then
+                    local prop, value = AnimationParser.CustomPoseProperties[object.Name](object)
+                    customProps[prop] = value
                 end
-            else
-                local joint = AnimationParser.lookupJointByPose(pose, joints)
+            end
+            if not customProps.Ignore then
+                -- makes zero sense but it works
+                local joint, mappedPose = (map and map(keyframe, pose)) or AnimationParser.lookupJointByPose(pose, joints)
+                pose = mappedPose or pose
+
                 if joint then
-                    result[joint] = pose
+                    -- roblox does not support OutIn or Quad, Quart, Quint and other
+                    -- styles so the pose must be wrapped behind a table
+                    local direction = customProps.EasingDirection or pose.EasingDirection.Name
+                    local style = customProps.EasingStyle or pose.EasingStyle.Name
+
+                    result[joint] = {
+                        Instance = pose,
+                        Name = pose.Name,
+                        Weight = pose.Weight,
+                        CFrame = pose.CFrame,
+                        EasingDirection = direction,
+                        EasingStyle = style
+                    }
                 end
             end
         end

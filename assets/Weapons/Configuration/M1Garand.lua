@@ -49,7 +49,7 @@ local Configuration = {
         AimScale = 0.6,
         Rotation = {
             V3 = Vector3.new(0.5, 0, 0),
-            Range = Vector3.new(0.3, 0.2, 0),
+            Range = Vector3.new(0.3, 0.15, 0),
             AllowSignedY = true
         },
         Position = {

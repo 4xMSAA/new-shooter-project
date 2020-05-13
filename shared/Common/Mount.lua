@@ -1,4 +1,9 @@
--- Mount instance paths to string with a separator
+--[[
+    Mount instance paths to string with a separator
+
+    TODO: cache stupid mount paths that already have the same location
+--]]
+
 local SmallUtils = require(shared.Common.SmallUtils)
 local Mount = {}
 
@@ -21,7 +26,7 @@ Mount.__call = function(self, path, sep)
         end
     end
 
-    print("final:", head)
+    -- print("final:", head)
 
     return head
 end
