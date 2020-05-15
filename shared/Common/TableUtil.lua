@@ -64,28 +64,38 @@ function TableUtil.toList(t, callback)
     return result
 end
 
+---Makes an Enumerable type which you can index by ID if called
 function TableUtil.toEnumList(name, t)
     -- Convert {"EnumName", "Desc", ExtraData} to
-    -- [EnumName] = {Description = "Desc", Name = "EnumName", Number = index}
+    -- [EnumName] = {Description = "Desc", Name = "EnumName", ID = index}
+    local idMap = {}
     local enumList =
         TableUtil.toList(
         t,
         function(result, val, key)
+            idMap[key] = result[val[1]]
             result[val[1]] = {
                 Name = val[1],
                 Description = val[2],
                 ExtraData = val[3],
-                Number = key
+                ID = key
             }
         end
     )
 
-    local errorHandler = {}
-    function errorHandler:__index(key)
-        return error("did not find enum " .. key .. " in Enums." .. name)
+    local enumWrapper = {}
+    function enumWrapper:__index(key)
+        return error("did not find enum " .. key .. " in Enums." .. name, 2)
     end
 
-    setmetatable(enumList, errorHandler)
+    function enumWrapper:__call(key)
+        if type(key) ~= "number" then
+            error("index must be integer", 2)
+        end
+        return idMap[key] or error("no entry with index " .. key, 2)
+    end
+
+    setmetatable(enumList, enumWrapper)
 
     return enumList
 end

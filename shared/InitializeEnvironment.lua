@@ -31,16 +31,32 @@ for _, enumModule in pairs(shared.Source:WaitForChild("Enums"):GetChildren()) do
     shared.Enums[enumModule.Name] = require(enumModule)
 end
 
+-- define global paths we weant quick access to
 _G.Workspace =
     (RunService:IsServer() and _G.create("Folder", {Name = "GameFolder", Parent = workspace})) or
-    workspace:WaitForChild("GameFolder", 5) or
+    workspace:WaitForChild("GameFolder", _G.LOADING.TIMEOUT) or
     error("GameFolder does not exist on client")
 
+-- less commonly used accesses
 _G.Path = {}
+
+-- both client and server
+_G.Path.Remotes =
+    (RunService:IsServer() and _G.create("Folder", {Name = "Remotes", Parent = shared.Storage})) or
+    shared.Storage:WaitForChild("Remotes", _G.LOADING.TIMEOUT) or
+    error("Remotes does not exist on client")
+
+
 if RunService:IsServer() then
+    -- create by server
+    _G.create("RemoteEvent", {Name = "Signal", Parent = _G.Path.Remotes})
+    _G.create("RemoteFunction", {Name = "Callback", Parent = _G.Path.Remotes})
 else
+    -- client specific paths
     _G.Path.Sounds = _G.create("Folder", {Name = "Sounds", Parent = _G.Workspace})
     _G.Path.ClientViewmodel = _G.create("Folder", {Name = "ViewModel", Parent = workspace.CurrentCamera})
 end
+
+
 
 return true

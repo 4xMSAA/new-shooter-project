@@ -21,7 +21,8 @@ function Listener.new(emitter, func)
     return self
 end
 
-
+---Roblox-style signals
+---@class Emitter
 local Emitter = {}
 function Emitter.new()
     local self = {}
