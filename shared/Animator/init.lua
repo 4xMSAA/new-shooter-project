@@ -34,6 +34,8 @@ function Animator.new(rig)
     local self = {}
     self._playingTracks = {}
     self._hostedTracks = {}
+    self._emittedMarkers = {}
+    self._timeMap = {}
     self.Rig = rig
 
     setmetatable(self, Animator)
@@ -91,10 +93,10 @@ end
 ---@param track AnimationTrack
 function Animator:_initTrack(track)
     -- call this when Animatortrack is wanted to be played
-    if not track._timeMap then
+    if not self[track]._timeMap then
         -- get initial frames to go to and such, then leave the rest to step
         local timeMap = self:_bakeTimeMap(track.Keyframes)
-        track._timeMap = timeMap
+        self[track]._timeMap = timeMap
     end
 end
 
@@ -104,13 +106,27 @@ function Animator:_step(dt)
     for track, _ in pairs(self._playingTracks) do
         track.TimePosition = math.min(track.Length, track.TimePosition + dt)
 
+        -- check for any markers to signal
+        for i, keyframe in ipairs(track.Keyframes) do
+            if #keyframe.Markers > 0 and track.TimePosition >= keyframe.Time then
+                if not self._emittedMarkers[track][keyframe] then
+                    self._emittedMarkers[track][keyframe] = true
+                    for _, marker in pairs(keyframe.Markers) do
+                        track.MarkerReached:emit(marker.Name, marker.Value)
+                    end
+                end
+            end
+        end
+
         self:seek(track, track.TimePosition)
         if track.Loop and track.TimePosition == track.Length then
             track.TimePosition = 0
             track.Looped:emit()
+            self._emittedMarkers[track] = {}
         elseif track.TimePosition == track.Length then
             track.TimePosition = 0
             track.IsPlaying = false
+            self._emittedMarkers[track] = {}
             self._playingTracks[track] = nil
         end
     end
@@ -131,13 +147,12 @@ function Animator:seek(track, time)
         local easingStyle = Styles[targetPose.EasingStyle:lower()]
         local easing = EasingDirectionMap[targetPose.EasingDirection](easingStyle)
 
-
         -- create intermediate time scales between frames
         local intermediateTime =
             math.min(
-                1,
-                (track.TimePosition - track._timeMap[pose]) / (track._timeMap[targetPose] - track._timeMap[pose])
-            )
+            1,
+            (track.TimePosition - self[track]._timeMap[pose]) / (self[track]._timeMap[targetPose] - self[track]._timeMap[pose])
+        )
         print(track.TimePosition, intermediateTime, targetPose.Name, targetPose.EasingStyle, targetPose.EasingDirection)
 
         -- interpolate currentpose to targetpose
@@ -174,7 +189,7 @@ end
 
 function Animator:_rebakeAll()
     for track, _ in pairs(self._hostedTracks) do
-        track._timeMap = nil
+        self[track]._timeMap = nil
         track._rebake = true
         track:bake(self.Rig)
     end

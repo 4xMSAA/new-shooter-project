@@ -44,7 +44,7 @@ function AnimationTrack.new(host, keyframeSequence, map)
         Looped = Emitter.new(),
         Stopped = Emitter.new(),
         MarkerReached = Emitter.new(),
-        _TrackedMarkers = {},
+        _trackedMarkers = {},
 
         _Host = host
     }
@@ -60,7 +60,9 @@ function AnimationTrack:getMarkerEmitter(name)
     if not self.IsBaked then
         return error("animation not baked, cannot get marker data")
     end
-    -- TODO implement fetching markers from self.Track
+    -- TODO: check if marker exists
+    self._trackedMarkers[name] = Emitter.new()
+    return self._trackedMarkers[name]
 end
 
 ---
