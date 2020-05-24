@@ -5,11 +5,13 @@ local Styles = {
     return function(s, ...) return 1 - f(1-s, ...) end
   end,
   chain = function(f1, f2) -- concatenates two functions
-    return function(s, ...) return (s < .5 and f1(2*s, ...) or 1 + f2(2*s-1, ...)) * .5 end
+    return function(s, ...) return (s < 0.5 and f1(2*s, ...) or 1 + f2(2*s-1, ...)) * 0.5 end
   end,
+
 
   -- useful tweening functions
   linear = function(s) return s end,
+  constant = function(s) return s >= 1 and 1 or 0 end,
   quad   = function(s) return s*s end,
   cubic  = function(s) return s*s*s end,
   quart  = function(s) return s*s*s*s end,
@@ -25,7 +27,7 @@ local Styles = {
 
   bounce = function(s) -- magic numbers ahead
     local a,b = 7.5625, 1/2.75
-    return math.min(a*s^2, a*(s-1.5*b)^2 + .75, a*(s-2.25*b)^2 + .9375, a*(s-2.625*b)^2 + .984375)
+    return math.min(a*s^2, a*(s-1.5*b)^2 + 0.75, a*(s-2.25*b)^2 + 0.9375, a*(s-2.625*b)^2 + 0.984375)
   end,
 
   elastic = function(s, amp, period)

@@ -18,7 +18,7 @@ local ViewModelArms = require(script.Parent.Core.ViewModelArms)
 
 local Gun = require(script.Parent.Core.Gun)
 
-local test = Gun.new("M1Garand", "Zombies")
+local test = Gun.new("M4A1", "Zombies")
 test.ViewModel.Parent = _G.Path.ClientViewmodel
 
 local arms = ViewModelArms.new(_G.VIEWMODEL.DEFAULT_ARMS)

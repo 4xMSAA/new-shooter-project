@@ -64,6 +64,7 @@ function TableUtil.toList(t, callback)
     return result
 end
 
+-- TODO: move this out of tableutil
 ---Makes an Enumerable type which you can index by ID if called
 function TableUtil.toEnumList(name, t)
     -- Convert {"EnumName", "Desc", ExtraData} to

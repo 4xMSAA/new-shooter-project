@@ -3,17 +3,17 @@ local Enums = shared.Enums
 local assetName = script.Name
 
 local Configuration = {
-    Name = "M1 Garand",
+    Name = "M4A1",
     ModelPath = assetName,
     AnimationPath = assetName,
     ActionType = Enums.GunActionType.ClosedBolt,
-    RPM = 444,
-    FireMode = {Enums.FireMode.Single, Enums.FireMode.Safety},
+    RPM = 800,
+    FireMode = {Enums.FireMode.Automatic, Enums.FireMode.Safety},
     EquipTime = 0.88,
-    Zoom = 1.45,
+    Zoom = 1.25,
     Ammo = {
-        Max = 8,
-        Reserve = 120,
+        Max = 30,
+        Reserve = 180,
         Eject = {
             Particle = "Gun/Casing/.30-06",
             Speed = 14
@@ -59,9 +59,9 @@ local Configuration = {
         }
     },
     Offset = {
-        Grip = CFrame.new(.6, -1, -0.8),
-        Sprint = CFrame.Angles(0, 0.5, 0),
-        Aim = CFrame.new(0, -0.46, -0.6)
+        Grip = CFrame.new(.6, -0.9, -0.8),
+        Sprint = CFrame.Angles(0, 0.55, 0),
+        Aim = CFrame.new(0, -0.616, -0.4)
     },
     InterpolateSpeed = {
         Aim = 1
@@ -70,7 +70,7 @@ local Configuration = {
 
 Configuration.Gamemode = {}
 Configuration.Gamemode.Zombies = {
-    FireMode = {Enums.FireMode.Single},
+    FireMode = {Enums.FireMode.Automatic},
     Damage = {
         Multipliers = {
             Head = 3,
@@ -81,10 +81,5 @@ Configuration.Gamemode.Zombies = {
         Min = 20
     }
 }
-
-Configuration.On = {}
-Configuration.On.Empty = function(self)
-    self:playSound("ClipFling")
-end
 
 return Configuration

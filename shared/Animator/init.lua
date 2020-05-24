@@ -19,7 +19,7 @@ local function seekBackwards(keyframes, index, motor6d, time)
             if result and result.Weight <= 0 then
                 result = nil
             end
-        end -- print(index, hopIndex, result)
+        end
     until result or hopIndex <= 1
 
     return result
@@ -39,6 +39,7 @@ function Animator.new(rig)
     setmetatable(self, Animator)
 
     self.Rig.DescendantAdded:connect(
+        -- careful, might bite in the ass
         function(obj)
             if obj:IsA("Motor6D") then
                 print(obj)
@@ -115,7 +116,6 @@ function Animator:_step(dt)
     end
 
     -- TODO: handle keyframe markers and the events
-    -- TODO: handle animations stopping
     -- TODO: make animations blend from one animation to another (if neccessary)
     -- TODO: handle priority system
 end
@@ -126,33 +126,19 @@ function Animator:seek(track, time)
 
     for motor6d, pose in pairs(currentPoses) do
         local targetPose = nextPoses[motor6d]
+
         -- determine easing style from pose
         local easingStyle = Styles[targetPose.EasingStyle:lower()]
         local easing = EasingDirectionMap[targetPose.EasingDirection](easingStyle)
-        -- print(pose.EasingStyle,  pose.EasingDirection)
+
 
         -- create intermediate time scales between frames
         local intermediateTime =
             math.min(
-            1,
-            (track.TimePosition - track._timeMap[pose]) / (track._timeMap[targetPose] - track._timeMap[pose])
-        )
-
-        -- print(
-        --     "intermediate:",
-        --     intermediateTime,
-        --     "\toffset:",
-        --     track.TimePosition - track._timeMap[pose],
-        --     "\ttime at:",
-        --     track.TimePosition,
-        --     "\tpose time:",
-        --     track._timeMap[pose],
-        --     "\tpose target time:",
-        --     track._timeMap[targetPose],
-        --     "\tpose from to target:",
-        --     pose.Instance,
-        --     targetPose.Instance
-        -- )
+                1,
+                (track.TimePosition - track._timeMap[pose]) / (track._timeMap[targetPose] - track._timeMap[pose])
+            )
+        print(track.TimePosition, intermediateTime, targetPose.Name, targetPose.EasingStyle, targetPose.EasingDirection)
 
         -- interpolate currentpose to targetpose
         if targetPose then
@@ -161,6 +147,9 @@ function Animator:seek(track, time)
     end
 end
 
+---Loads an animation to the host Animator
+---@param keyframeSequence userdata A KeyframeSequence to parse
+---@param mapper function A function that remaps Poses to other joints
 function Animator:loadAnimation(keyframeSequence, mapper)
     local animTrack = AnimationTrack.new(self, keyframeSequence, mapper)
     animTrack:bake(self.Rig)

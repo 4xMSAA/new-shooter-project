@@ -1,13 +1,15 @@
 local TableUtil = require(shared.Common.TableUtil)
 
+
+-- TODO: branch off of moon animation suite due to how badly exporting
+-- is handled, there's already a bunch of code to make that tool work
+-- with some exceptios and stuff
 local AnimationParser = {}
 AnimationParser.CustomPoseProperties = {
     xSIXxCustomDir = function(object)
-        print("found custom direction")
         return "EasingDirection", object.Value
     end,
     xSIXxCustomStyle = function(object)
-        print("found custom style")
         return "EasingStyle", object.Value
     end,
     xSIXxNull = function(object)
@@ -94,12 +96,14 @@ function AnimationParser.createTrack(keyframeSequence, model, keyframeMap)
 
     -- make all keyframes, but they're unsorted
     for _, keyframe in pairs(keyframeSequence:GetChildren()) do
-        track[#track + 1] = {
-            Time = keyframe.Time,
-            Instance = keyframe,
-            Poses = AnimationParser.keyframeToJoints(keyframe, model, keyframeMap),
-            Markers = keyframe:GetMarkers()
-        }
+        if not keyframe:FindFirstChild("xSIXxNull") then
+            track[#track + 1] = {
+                Time = keyframe.Time,
+                Instance = keyframe,
+                Poses = AnimationParser.keyframeToJoints(keyframe, model, keyframeMap),
+                Markers = keyframe:GetMarkers()
+            }
+        end
     end
 
     -- sort them by Time property

@@ -166,6 +166,8 @@ function Gun:_init()
     -- joints are weird, so rootpriority helps decide which is the real "pivot"
     self.Handle.RootPriority = 100
     self.Handle.Anchored = true
+
+    return self
 end
 
 ---
@@ -177,6 +179,7 @@ function Gun:emitParticle(name)
     end
 
     self._Particles[name]:emit()
+    return self
 end
 
 ---
@@ -185,7 +188,7 @@ end
 function Gun:playSound(name, range)
     if not self._Sounds[name] then
         warn("no sound called " .. name .. " in " .. self.Configuration.Name)
-        return
+        return self
     end
 
     -- TODO: fix dumb thing about having to refer to Instance itself
@@ -197,17 +200,18 @@ function Gun:playSound(name, range)
     else
         self._Sounds[name]:playMultiple(range)
     end
+    return self
 end
 
 function Gun:setState(statesOrKey, state)
     if typeof(statesOrKey) == "string" then
         self.State[statesOrKey] = state
-        return self.State
+        return self
     end
     for key, value in pairs(statesOrKey) do
         self.State[key] = value
     end
-    return self.State
+    return self
 end
 
 function Gun:reload()
@@ -220,9 +224,7 @@ function Gun:fire()
         return
     end
 
-    self:setState("Cycling", true)
-    self:emitParticle("Fire")
-    self:playSound("Fire")
+    self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire")
 
     -- self.Ammo.Loaded = self.Ammo.Loaded - 1
 
