@@ -27,25 +27,23 @@ AnimationTrack._cache = {}
 ---@param map function A keyframe mapping function for remapping Motor6Ds
 function AnimationTrack.new(host, keyframeSequence, map)
     local self = {
+        -- properties
         Name = keyframeSequence.Name,
-
         Animation = keyframeSequence,
         IsPlaying = false,
         IsBaked = false,
-
         JointMap = map,
-
         Loop = keyframeSequence.Loop,
         Priority = keyframeSequence.Priority,
         Speed = 1,
         TimePosition = 0,
         Length = AnimationParser.getLastKeyframe(keyframeSequence).Time,
-
+        -- events
         Looped = Emitter.new(),
         Stopped = Emitter.new(),
         MarkerReached = Emitter.new(),
+        -- internal
         _trackedMarkers = {},
-
         _Host = host
     }
 
@@ -61,16 +59,29 @@ function AnimationTrack:getMarkerEmitter(name)
         return error("animation not baked, cannot get marker data")
     end
     -- TODO: check if marker exists
-    self._trackedMarkers[name] = Emitter.new()
-    return self._trackedMarkers[name]
+
+    if not (self._trackedMarkers[name]) then
+        local markerEmitter = Emitter.new()
+        local listenEmitter =
+            self.MarkerReached:listen(
+            function(marker, ...)
+                if marker.Name == name then
+                    markerEmitter:emit(...)
+                end
+            end
+        )
+        self._trackedMarkers[name] = {markerEmitter, listenEmitter}
+    end
+
+    return self._trackedMarkers[name][1]
 end
 
----
----@param model userdata
-function AnimationTrack:bake(model)
+---Bakes a joint map based on the rig provided by Animator for playback
+---@param rig userdata
+function AnimationTrack:bake(rig)
     if not AnimationTrack._cache[self.Animation] or self._rebake then
         self._rebake = nil
-        local keyframes = AnimationParser.createTrack(self.Animation, model, self.JointMap)
+        local keyframes = AnimationParser.createTrack(self.Animation, rig, self.JointMap)
         AnimationTrack._cache[self.Animation] = keyframes
         self.Keyframes = keyframes
     else
@@ -80,11 +91,8 @@ end
 
 --- Tells the host Animator to play the track on the rig
 function AnimationTrack:play()
-
-    -- TODO: tell host Animator that we want to play the animation
     self.IsPlaying = true
     self._Host:addPlayingTrack(self)
-
 end
 
 return AnimationTrack

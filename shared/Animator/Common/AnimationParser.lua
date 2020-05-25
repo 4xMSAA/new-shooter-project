@@ -3,7 +3,7 @@ local TableUtil = require(shared.Common.TableUtil)
 
 -- TODO: branch off of moon animation suite due to how badly exporting
 -- is handled, there's already a bunch of code to make that tool work
--- with some exceptios and stuff
+-- with some exceptions and stuff
 local AnimationParser = {}
 AnimationParser.CustomPoseProperties = {
     xSIXxCustomDir = function(object)
@@ -68,6 +68,8 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
                     -- styles so the pose must be wrapped behind a table
                     local direction = customProps.EasingDirection or pose.EasingDirection.Name
                     local style = customProps.EasingStyle or pose.EasingStyle.Name
+
+                    print(keyframe.Time, pose.Name, style, direction)
 
                     result[joint] = {
                         Instance = pose,
