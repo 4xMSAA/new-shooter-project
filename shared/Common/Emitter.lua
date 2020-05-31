@@ -3,10 +3,8 @@
     "Cannot convert mixed or non-array tables: keys must be strings"
     when working with BindableEvents as signals (looking at stravant's CreateSignal utility)
 --]]
-
-
 local Listener = {}
-function Listener.new(emitter, func)
+function Listener.new(emitter, func, eventName, once)
     local self = {}
     self.run = func
     self.emitter = emitter
@@ -17,6 +15,20 @@ function Listener.new(emitter, func)
 
     self.disconnect = self.close
     self.Disconnect = self.close
+
+    -- listen for a specific scenario
+    if eventName then
+        self.run = function(...)
+            local args = {...}
+            if args[1] ~= eventName then return end
+
+            func(unpack(args))
+
+            -- only listen once
+            if not once then return end
+            self:close()
+        end
+    end
 
     return self
 end
@@ -42,8 +54,30 @@ function Emitter.new()
         return conn
     end
 
+    function self:on(eventName, listener)
+        if type(listener) ~= "function" then
+            error("expected function for argument #1, got " .. type(listener), 2)
+        end
+
+        local conn = Listener.new(self, listener, eventName)
+        self.listeners[conn] = true
+
+        return self, conn
+    end
+
+    function self:once(eventName, listener)
+        if type(listener) ~= "function" then
+            error("expected function for argument #1, got " .. type(listener), 2)
+        end
+
+        local conn = Listener.new(self, listener, eventName, true)
+        self.listeners[conn] = true
+
+        return self, conn
+    end
+
     function self:closeAll()
-        for listener,_ in pairs(self.listeners) do
+        for listener, _ in pairs(self.listeners) do
             listener:close()
         end
     end
@@ -55,7 +89,7 @@ function Emitter.new()
 
     function self:emit(...)
         waitHack:Fire()
-        for listener,_ in pairs(self.listeners) do
+        for listener, _ in pairs(self.listeners) do
             listener.run(...)
         end
     end

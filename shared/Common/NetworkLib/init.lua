@@ -11,7 +11,8 @@ local remotes = _G.Path.Remotes
 local isClient = RunService:IsClient()
 local isServer = RunService:IsServer()
 
-
+---
+---@class NetworkLib
 local NetworkLib = {}
 NetworkLib._activeListeners = {}
 
@@ -116,3 +117,5 @@ function NetworkLib:sendTo(player, enum, ...)
     end
     remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum, NetworkLib:_autoSerialize(...))
 end
+
+return NetworkLib

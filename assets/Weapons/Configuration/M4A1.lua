@@ -23,13 +23,11 @@ local Configuration = {
         Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"}
     },
     Sounds = {
-        BoltBack = 3607477790,
-        BoltForward = 3719417506,
-        InsertClip = 456179899,
-        ClipIn = 152206337,
-        ClipOut = {SoundId = 988201742, Volume = 0.7},
-        ClipFling = {SoundId = 231738531, Volume = 1},
-        Fire = {SoundId = 988201742, Volume = 0.7}
+        BoltForward = 5104015522,
+        MagIn = 5104152875,
+        MagOut = {SoundId = 268445237, Volume = 0.7},
+        Fire = {SoundId = 988203005, Volume = 0.4},
+        DistantFire = 4788389522
     },
     Projectile = {
         Type = "Bullet",
@@ -49,8 +47,8 @@ local Configuration = {
     Recoil = {
         AimScale = 0.6,
         Rotation = {
-            V3 = Vector3.new(0.5, 0, 0),
-            Range = Vector3.new(0.3, 0.15, 0),
+            V3 = Vector3.new(0.4, 0, 0),
+            Range = Vector3.new(0.1, 0.3, 0),
             AllowSignedY = true
         },
         Position = {
@@ -61,7 +59,7 @@ local Configuration = {
     Offset = {
         Grip = CFrame.new(.6, -0.9, -0.8),
         Sprint = CFrame.Angles(0, 0.55, 0),
-        Aim = CFrame.new(0, -0.616, -0.4)
+        Aim = CFrame.new(0, -0.61, -0.4)
     },
     InterpolateSpeed = {
         Aim = 1

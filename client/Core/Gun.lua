@@ -4,8 +4,6 @@
     please don't format document
 --]]
 
--- TODO: implement state locking so you can't aim while reloading or other things
-
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
 local SWAY_AMPLIFY = _G.WEAPON.SWAY_AMPLIFY
 local ADS_SWAY_MODIFIER = _G.WEAPON.ADS_SWAY_MODIFIER
@@ -34,6 +32,7 @@ local Particle = require(shared.Common.Particle)
 local Sound = require(shared.Common.Sound)
 local Spring = require(shared.Common.Spring)
 local Styles = require(shared.Common.Styles)
+local Emitter = require(shared.Common.Emitter)
 local SmallUtils = require(shared.Common.SmallUtils)
 
 local lerp = SmallUtils.lerp
@@ -46,14 +45,17 @@ local function springRange(v0, range)
 end
 
 ---does pew pew
+---
 ---@class Gun
 local Gun = {}
 Gun.__index = Gun
 
 ---Creates a new Gun class
 ---@param weapon any A string or ModuleScript instance of a gun configuration
+---@param gamemode string configuration to use specific to a gamemode (zombies, PvP)
 function Gun.new(weapon, gamemode)
     -- make string to config by search or use config directly
+    -- TODO: load gamemode configurations if specified
     if typeof(weapon) == "string" then
         weapon = assert(PATH.WEAPON_CONFIGURATIONS(weapon), "did not find weapon " .. weapon)
     end
@@ -62,6 +64,7 @@ function Gun.new(weapon, gamemode)
     local model = PATH.WEAPON_MODELS(config.ModelPath):Clone()
 
     local self = {}
+
     -- properties
     self._assetName = weapon
     self.ViewModel = model
@@ -77,6 +80,7 @@ function Gun.new(weapon, gamemode)
 
     -- states
     self.State = {
+        InitialEquip = true,
         Equipped = false,
         Aim = false,
         Cycling = false,
@@ -97,6 +101,9 @@ function Gun.new(weapon, gamemode)
         Prone = 0,
         Obstructed = 0
     }
+    -- prioritized state overrides that don't affect the inputted state
+    self._StateOverride = {}
+
     self._InterpolateSpeed = {
         Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED
     }
@@ -108,11 +115,17 @@ function Gun.new(weapon, gamemode)
         Movement = Spring.new(20),
         Inertia = Spring.new(5, 50, 4, 4*INERTIA_RECOVERY_SPEED)
     }
+    self._Emitter = {
+        Equip = Emitter.new(),
+        Unequip = Emitter.new()
+    }
     self._Particles = {}
     self._Sounds = {}
+    self._Lock = {}
+    self._Connnections = {}
 
-    -- Additional property data
-    self.Animations = {} -- populate this table with our AnimationTrack class
+    -- additional property data
+    self.Animations = {}
 
     setmetatable(self, Gun)
     self:_init()
@@ -120,6 +133,9 @@ function Gun.new(weapon, gamemode)
     return self
 end
 
+---
+---@private
+---@return Gun Returns itself. Useful for chaining
 function Gun:_init()
 
     -- load the animations
@@ -153,6 +169,13 @@ function Gun:_init()
         self._Sounds[name] = Sound.new(data, {IsGlobal = true})
     end
 
+    -- hook sounds to animations
+    self._Connnections.Reload = self.Animations.Reload.MarkerReached:connect(function(markerName, ...)
+        if self._Sounds[markerName] then
+            self:playSound(markerName)
+        end
+    end)
+
     -- in case we forget to prepare the model, do some preparing ourselves
     for _, part in pairs(self.ViewModel:GetDescendants()) do
         if part:IsA("BasePart") then
@@ -174,7 +197,7 @@ end
 ---@param name string
 function Gun:emitParticle(name)
     if not self._Particles[name] then
-        warn("no particle called " .. name .. " in " .. self.Configuration.Name)
+        warn("no particle named " .. name .. " in " .. self.Configuration.Name)
         return
     end
 
@@ -187,11 +210,11 @@ end
 ---@param range number
 function Gun:playSound(name, range)
     if not self._Sounds[name] then
-        warn("no sound called " .. name .. " in " .. self.Configuration.Name)
+        warn("no sound named " .. name .. " in " .. self.Configuration.Name)
         return self
     end
 
-    -- TODO: fix dumb thing about having to refer to Instance itself
+    -- TODO: fix dumb sound thing about having to refer to Instance itself
 
     -- if we have a "how many times can sound play at once" then use the
     -- playMultiple function instead
@@ -214,19 +237,49 @@ function Gun:setState(statesOrKey, state)
     return self
 end
 
-function Gun:reload()
-    self.Animations.Reload:play()
-    self.Ammo.Loaded = self.Ammo.Max
+---
+function Gun:equip()
+    self.State.Equipped = true
+    self.Animations.Idle:play()
 end
 
+---
+---@return Emitter An emitter to listen to for "done" event
+function Gun:unequip()
+    self.State.Equipped = false
+    return self._Emitter.Unequip
+end
+
+---
+function Gun:reload()
+    if self._Lock.Reload then return end
+
+    self._Lock.Reload = true
+    self.Animations.Reload:play()
+
+    self.Animations.Reload.MarkerReached:once("Reload", function()
+        -- TODO: actual ammo counting and subtraction
+        self.Ammo.Loaded = self.Ammo.Max
+    end)
+
+    self.Animations.Reload.Stopped:once(nil, function()
+        self._Lock.Reload = false
+    end)
+end
+
+---
+---@return userdata CFrame where the gun's pivot point is positioned at
 function Gun:fire()
-    if self.State.Cycling or self.Ammo.Loaded <= 0 then
-        return
-    end
+    if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() then return end
+    if self.State.Cycling or self.Ammo.Loaded <= 0 then return end
+    if self._Lock.Reload then return end
+
+
+    self._Lock.Fire = elapsedTime()
 
     self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire")
 
-    -- self.Ammo.Loaded = self.Ammo.Loaded - 1
+    self.Ammo.Loaded = self.Ammo.Loaded - 1
 
     -- viewmodel recoil
     local recoil = self.Configuration.Recoil
@@ -256,21 +309,35 @@ function Gun:fire()
     self:setState("Cycling", false)
 end
 
+---Returns the Camera's expected CFrame from an animation
+function Gun:getExpectedCameraCFrame()
+    return self._cameraJoint.Transform
+end
+
 ---
 ---@param dt number Delta time since last frame
 ---@param pivot userdata CFrame  at which the gun should be located at
 function Gun:update(dt, pivot)
     local cfg = self.Configuration
 
+    -- update spring forces
     local inertiaX, inertiaY, inertiaZ = (
         CF000:lerp((self._lastPivot or pivot) * pivot:inverse(), INERTIA_MODIFIER)):ToOrientation()
 
-    self._lastPivot = pivot
-    self._Springs.Inertia:shove(inertiaX, inertiaY, inertiaZ)
+        self._lastPivot = pivot
+        self._Springs.Inertia:shove(inertiaX, inertiaY, inertiaZ)
 
-    self._Springs.Movement:shove(
-        math.sin(elapsedTime()*MOVEMENT_SPEED)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
-        math.sin(elapsedTime()*MOVEMENT_SPEED*2)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+        self._Springs.Movement:shove(
+            math.sin(elapsedTime()*MOVEMENT_SPEED)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+            math.sin(elapsedTime()*MOVEMENT_SPEED*2)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+            0
+        )
+
+        local swayCF =
+        CFrame.new(
+        math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
+        math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
+            lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
         0
     )
 
@@ -280,7 +347,7 @@ function Gun:update(dt, pivot)
             -- clamp value between 0 and 1 with max and min selectors
             self._InterpolateState[state] =
                 math.min(
-                1,
+                    1,
                 math.max(
                     0,
                     self._InterpolateState[state] + (value and dt or -dt) * (self._InterpolateSpeed[state] or 1)
@@ -292,13 +359,12 @@ function Gun:update(dt, pivot)
         spring:update(math.min(1, dt))
     end
 
-    local swayCF =
-        CFrame.new(
-        math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
-        math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
-            lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
-        0
-    )
+    -- update special events
+    if self._InterpolateState.Equipped == 0 then
+        self._Emitter.Unequip:emit("done")
+    elseif self._InterpolateState.Equipped == 1 then
+        self._Emitter.Equip:emit("done")
+    end
 
     -- decide between aim down sight cf and grip CF
     local gripCF =
@@ -312,13 +378,14 @@ function Gun:update(dt, pivot)
         )
 
     -- bunch of CFrames
-
     local posRecoil = self._Springs.ModelPositionRecoil.Position
     local rotRecoil = self._Springs.ModelRotationRecoil.Position
     local inertia =  self._Springs.Inertia.Position
 
+    -- position the weapon
     local renderCF =
         pivot
+        * CFrame.new(inertia)
         * gripCF
         * self._gripJoint.Transform
         * swayCF

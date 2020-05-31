@@ -12,7 +12,7 @@ return {
         MOVEMENT_SPEED = 8,
         ADS_MOVEMENT_MODIFIER = 0.2,
 
-        AIM_SPEED = 3,
+        AIM_SPEED = 4,
         AIM_STYLE = "sine",
 
         INERTIA_MODIFIER = 0.6,
@@ -24,4 +24,8 @@ return {
 
         DEFAULT_ARMS = "Default"
     },
+
+    CAMERA = {
+        LIMIT_YAW = 87
+    }
 }
