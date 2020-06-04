@@ -97,7 +97,7 @@ function Emitter.new()
     self.connect = self.listen
     self.Connect = self.listen
 
-    self.Wait = self.Wait
+    self.Wait = self.wait
 
     self.fire = self.emit
     self.Fire = self.emit

@@ -48,7 +48,6 @@ function Animator.new(rig)
         -- careful, might bite in the ass
         function(obj)
             if obj:IsA("Motor6D") then
-                print(obj)
                 self:_rebakeAll()
             end
         end
@@ -134,6 +133,7 @@ function Animator:_step(dt)
         elseif track.TimePosition == track.Length then
             track.TimePosition = 0
             track.IsPlaying = false
+            track.Stopped:emit()
             self._emittedMarkers[track] = nil
             self._playingTracks[track] = nil
         end

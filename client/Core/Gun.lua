@@ -6,14 +6,26 @@
 
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
 local SWAY_AMPLIFY = _G.WEAPON.SWAY_AMPLIFY
+
 local ADS_SWAY_MODIFIER = _G.WEAPON.ADS_SWAY_MODIFIER
+
 local AIM_SPEED = _G.WEAPON.AIM_SPEED
 local AIM_STYLE = _G.WEAPON.AIM_STYLE
+
 local MOVEMENT_AMPLIFY = _G.WEAPON.MOVEMENT_AMPLIFY
 local MOVEMENT_SPEED = _G.WEAPON.MOVEMENT_SPEED
+local MOVEMENT_RECOVERY_SPEED = _G.WEAPON.MOVEMENT_RECOVERY_SPEED
 local ADS_MOVEMENT_MODIFIER = _G.WEAPON.ADS_MOVEMENT_MODIFIER
+
 local INERTIA_MODIFIER = _G.WEAPON.INERTIA_MODIFIER
 local INERTIA_RECOVERY_SPEED = _G.WEAPON.INERTIA_RECOVERY_SPEED
+
+local RECOIL_POSITION_DAMPENING = _G.WEAPON.RECOIL_POSITION_DAMPENING
+local RECOIL_POSITION_SPEED = _G.WEAPON.RECOIL_POSITION_SPEED
+
+local RECOIL_ANGULAR_DAMPENING = _G.WEAPON.RECOIL_ANGULAR_DAMPENING
+local RECOIL_ANGULAR_SPEED = _G.WEAPON.RECOIL_ANGULAR_SPEED
+
 
 -- micro-optimization for blank CFrames
 local CF000 = CFrame.new()
@@ -72,11 +84,6 @@ function Gun.new(weapon, gamemode)
     self.Configuration = config
 
     self.ActiveFireMode = config.FireMode[1]
-    self.Ammo = {
-        Loaded = config.Ammo.Max,
-        Max = config.Ammo.Max,
-        Reserve = config.Ammo.Reserve
-    }
 
     -- states
     self.State = {
@@ -88,7 +95,11 @@ function Gun.new(weapon, gamemode)
         Crouch = false,
         Prone = false,
         Obstructed = false,
-        Movement = 0
+        Movement = 0,
+
+        Loaded = config.Ammo.Max,
+        Max = config.Ammo.Max,
+        Reserve = config.Ammo.Reserve
     }
 
     -- private states
@@ -110,9 +121,9 @@ function Gun.new(weapon, gamemode)
     -- default spring values: 5, 50, 4, 4
     -- mass, force, dampening, speed
     self._Springs = {
-        ModelPositionRecoil = Spring.new(5, 150, 6),
-        ModelRotationRecoil = Spring.new(5, 150, 6),
-        Movement = Spring.new(20),
+        ModelPositionRecoil = Spring.new(5, 150, 4*RECOIL_POSITION_DAMPENING, 4*RECOIL_POSITION_SPEED),
+        ModelRotationRecoil = Spring.new(5, 150, 4*RECOIL_ANGULAR_DAMPENING, 4*RECOIL_ANGULAR_SPEED),
+        Movement = Spring.new(20, 50, 4, 4*MOVEMENT_RECOVERY_SPEED),
         Inertia = Spring.new(5, 50, 4, 4*INERTIA_RECOVERY_SPEED)
     }
     self._Emitter = {
@@ -154,7 +165,6 @@ function Gun:_init()
 
     local animations = PATH.WEAPON_ANIMATIONS(self.Configuration.AnimationPath)
     for _, animation in pairs(animations:GetChildren()) do
-        print(animations:GetFullName(), animation)
         self.Animations[animation.Name] = self.Animator:loadAnimation(animation, jointRemap)
     end
 
@@ -239,14 +249,14 @@ end
 
 ---
 function Gun:equip()
-    self.State.Equipped = true
+    self:setState("Equipped", true)
     self.Animations.Idle:play()
 end
 
 ---
 ---@return Emitter An emitter to listen to for "done" event
 function Gun:unequip()
-    self.State.Equipped = false
+    self:setState("Equipped", false)
     return self._Emitter.Unequip
 end
 
@@ -259,7 +269,7 @@ function Gun:reload()
 
     self.Animations.Reload.MarkerReached:once("Reload", function()
         -- TODO: actual ammo counting and subtraction
-        self.Ammo.Loaded = self.Ammo.Max
+        self:setState("Loaded", self.State.Max)
     end)
 
     self.Animations.Reload.Stopped:once(nil, function()
@@ -271,7 +281,7 @@ end
 ---@return userdata CFrame where the gun's pivot point is positioned at
 function Gun:fire()
     if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() then return end
-    if self.State.Cycling or self.Ammo.Loaded <= 0 then return end
+    if self.State.Cycling or self.State.Loaded <= 0 then return end
     if self._Lock.Reload then return end
 
 
@@ -279,7 +289,7 @@ function Gun:fire()
 
     self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire")
 
-    self.Ammo.Loaded = self.Ammo.Loaded - 1
+    self:setState("Loaded", self.State.Loaded - 1)
 
     -- viewmodel recoil
     local recoil = self.Configuration.Recoil
@@ -385,8 +395,8 @@ function Gun:update(dt, pivot)
     -- position the weapon
     local renderCF =
         pivot
-        * CFrame.new(inertia)
         * gripCF
+        * CFrame.new(inertia.Y/3, inertia.X/3, 0)
         * self._gripJoint.Transform
         * swayCF
         * movementCF

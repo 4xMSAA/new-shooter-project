@@ -30,7 +30,7 @@ function Camera.new(instance)
         },
         Instance = instance,
         CFrame = CFrame.new(),
-        AttachedTo = nil,
+        AttachTo = nil,
         Offsets = {},
         OnUpdating = Emitter.new(),
         OnUpdated = Emitter.new(),
@@ -50,11 +50,11 @@ end
 ---Update the camera view
 ---@param dt number Delta time how long it took since last RenderStepped frame
 function Camera:updateView(dt)
-    self.OnUpdating:fire(dt)
+    self.OnUpdating:emit(dt)
     self.Instance.CameraType = "Scriptable"
 
     -- Update the CFrame of camera
-    self.CFrame = self.AttachedTo and self:getAttachedCFrame() * self:getUserLook() or self.CFrame
+    self.CFrame = self.AttachTo and self:getAttachedCFrame() * self:getUserLook() or self.CFrame
 
     local finalCFrame = self.CFrame
     for _, cfOffsetIndex in pairs(self._internal.SortedOffsets) do
@@ -71,7 +71,7 @@ function Camera:updateView(dt)
 
     self.Instance.FieldOfView = self.FieldOfView / self.Zoom
 
-    self.OnUpdated:fire(self.LastFrameDelta)
+    self.OnUpdated:emit(self.LastFrameDelta)
 end
 
 ---a TODO method
@@ -105,6 +105,7 @@ end
 ---@param cf userdata CFrame the offset should reflect
 ---@param affectBaseCFrame boolean
 function Camera:addOffset(weight, cf, affectBaseCFrame)
+    assert(typeof(weight) == "number", "weight must be a numeric value")
     self.Offsets[weight] = {CFrame = cf, include = affectBaseCFrame}
 
     -- Refresh the Offsets array
@@ -116,6 +117,7 @@ end
 ---@param cf userdata CFrame the offset should reflect
 ---@param affectBaseCFrame boolean Whether it should move the real CFrame too
 function Camera:updateOffset(weight, cf, affectBaseCFrame)
+    assert(typeof(weight) == "number", "weight must be a numeric value")
     assert(self.Offsets[weight], "offset with weight " .. weight .. " does not exist")
 
     local data = self.Offsets[weight]
@@ -162,16 +164,16 @@ function Camera:rawMoveLook(deltaX, deltaY)
     self.User.LookYaw = math.max(-self.User.LimitYaw, math.min(self.User.LimitYaw, self.User.LookYaw + dY))
 end
 
----Get the CFrame of the camera's AttachedTo object
+---Get the CFrame of the camera's AttachTo object
 ---@param attachObject userdata If provided, will use the attachObject as the pivot point instead
 function Camera:getAttachedCFrame(attachObject)
-    local object = attachObject or self.AttachedTo
+    local object = attachObject or self.AttachTo
     if (object and object:IsDescendantOf(game)) then
         if (object:IsA("BasePart")) then
             return CFrame.new(object.Position)
         elseif (object:IsA("Humanoid") and object.Parent and object.Parent:FindFirstChild("HumanoidRootPart")) then
             return CFrame.new(object.Parent:FindFirstChild("HumanoidRootPart").Position) *
-                CFrame.new(0, object.HipHeight, 0) *
+                CFrame.new(0, object.HipHeight - object.Parent:FindFirstChild("Head").Size.Y/2, 0) *
                 CFrame.new(object.CameraOffset)
         end
     end

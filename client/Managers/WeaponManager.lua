@@ -6,13 +6,22 @@ local Enums = shared.Enums
 local Gun = require(_G.Client.Core.Gun)
 local ViewModelArms = require(_G.Client.Core.ViewModelArms)
 
+
 ---Manages all weapons in a single container
 ---@class WeaponManager
 local WeaponManager = {}
 WeaponManager.__index = WeaponManager
 
 function WeaponManager.new(config)
+    local camera = config.Camera
+
+    if camera then
+        camera:addOffset(Enums.CameraOffset.Animation.ID, CFrame.new())
+        camera:addOffset(Enums.CameraOffset.Recoil.ID, CFrame.new())
+    end
+
     local self = {}
+    self.Camera = camera
     self.ActiveWeapons = {}
 
     self.Connections = {}
@@ -57,6 +66,7 @@ function WeaponManager:equipViewport(weapon, networked)
     local function equip()
         -- equip new weapon
         self.Connections.Viewport = weapon
+        self.ViewModelArms:attach(weapon)
         weapon:equip()
         weapon.ViewModel.Parent = _G.Path.ClientViewmodel
 
@@ -91,6 +101,7 @@ function WeaponManager:step(dt, camera, velocity)
     -- handle viewport weapon
     self.Connections.Viewport:setState("Movement", velocity)
     self.Connections.Viewport.Animator:_step(dt)
+    camera:updateOffset(Enums.CameraOffset.Animation.ID, self.Connections.Viewport:getExpectedCameraCFrame())
     self.Connections.Viewport:update(dt, camera.CFrame)
 
     -- handle third person weapons

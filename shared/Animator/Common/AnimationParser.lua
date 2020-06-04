@@ -69,7 +69,7 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
                     local direction = customProps.EasingDirection or pose.EasingDirection.Name
                     local style = customProps.EasingStyle or pose.EasingStyle.Name
 
-                    print(keyframe.Time, pose.Name, style, direction)
+                    -- print(keyframe.Time, pose.Name, style, direction)
 
                     result[joint] = {
                         Instance = pose,
