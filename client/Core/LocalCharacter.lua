@@ -76,4 +76,12 @@ function LocalCharacter:listenPlayer(player)
     end
 end
 
+-- it's 2020 and roblox still does not provide a reliable way to get velocity,
+-- because GetPropertyChangedSignal is too busy being brokenn
+function LocalCharacter:step(dt)
+    if self:get() and self:get().PrimaryPart then
+        self.Velocity = self:get().PrimaryPart.Velocity.magnitude
+    end
+end
+
 return LocalCharacter

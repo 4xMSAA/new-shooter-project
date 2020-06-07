@@ -1,10 +1,22 @@
 local Players = game:GetService("Players")
 
+local CAMERA_RECOIL_ANGULAR_DAMPENING = _G.CAMERA.RECOIL_ANGULAR_DAMPENING
+local CAMERA_RECOIL_ANGULAR_SPEED = _G.CAMERA.RECOIL_ANGULAR_SPEED
+
 local NetworkLib = require(shared.Common.NetworkLib)
 local Enums = shared.Enums
 
+local Spring = require(shared.Common.Spring)
 local Gun = require(_G.Client.Core.Gun)
 local ViewModelArms = require(_G.Client.Core.ViewModelArms)
+local SmallUtils = require(shared.Common.SmallUtils)
+
+---Uses a value and makes a range based on v0 -+ range
+---@param v0 number
+---@param range number
+local function springRange(v0, range)
+    return SmallUtils.randomRange(v0 - range, v0 + range)
+end
 
 
 ---Manages all weapons in a single container
@@ -17,7 +29,7 @@ function WeaponManager.new(config)
 
     if camera then
         camera:addOffset(Enums.CameraOffset.Animation.ID, CFrame.new())
-        camera:addOffset(Enums.CameraOffset.Recoil.ID, CFrame.new())
+        camera:addOffset(Enums.CameraOffset.Recoil.ID, CFrame.new(), true)
     end
 
     local self = {}
@@ -30,6 +42,7 @@ function WeaponManager.new(config)
     self.Connections.LocalCharacter = nil
 
     self.ViewModelArms = ViewModelArms.new(config and config.ViewModelArmsAsset or _G.VIEWMODEL.DEFAULT_ARMS)
+    self.CameraRecoilSpring = Spring.new(4, 50, 4*CAMERA_RECOIL_ANGULAR_DAMPENING, 4*CAMERA_RECOIL_ANGULAR_SPEED)
 
     setmetatable(self, WeaponManager)
 
@@ -85,8 +98,26 @@ function WeaponManager:equipViewport(weapon, networked)
     end
 end
 
-function WeaponManager:fire(weapon)
-    weapon:fire()
+function WeaponManager:fire(weapon, state)
+    if not weapon.Configuration.Charge and state then
+        if weapon:fire() then
+            if weapon == self.Connections.Viewport then
+
+                local recoil = weapon.Configuration.CameraRecoil
+                local rotRange = recoil.Range
+                local rotV = recoil.V3
+                local pitch, yaw, roll =
+                    springRange(rotV.x, rotRange.x),
+                    springRange(rotV.y, rotRange.y),
+                    springRange(rotV.z, rotRange.z)
+
+                yaw = (math.random() > 0.5 and -yaw) or yaw
+
+                self.CameraRecoilSpring:shove(pitch, yaw, roll)
+            end
+        end
+    end
+
 end
 
 function WeaponManager:reload(weapon)
@@ -99,6 +130,11 @@ end
 
 function WeaponManager:step(dt, camera, velocity)
     -- handle viewport weapon
+    self.CameraRecoilSpring:update(math.min(1, dt))
+    local recoil = self.CameraRecoilSpring.Position
+    camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
+    camera:rawMoveLook(recoil.Y, recoil.X)
+
     self.Connections.Viewport:setState("Movement", velocity)
     self.Connections.Viewport.Animator:_step(dt)
     camera:updateOffset(Enums.CameraOffset.Animation.ID, self.Connections.Viewport:getExpectedCameraCFrame())

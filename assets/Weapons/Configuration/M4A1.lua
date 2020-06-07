@@ -56,6 +56,12 @@ local Configuration = {
             Range = Vector3.new(0, 0, 0.1)
         }
     },
+    CameraRecoil = {
+        V3 = Vector3.new(0.4, 0, 0),
+        Range = Vector3.new(0.1, 0.1, 0),
+        ForceModifier = 1,
+        SPeedModifier = 1
+    },
     Offset = {
         Grip = CFrame.new(.6, -0.9, -0.8),
         Sprint = CFrame.Angles(0, 0.55, 0),

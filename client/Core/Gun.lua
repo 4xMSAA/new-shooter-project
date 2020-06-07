@@ -128,7 +128,8 @@ function Gun.new(weapon, gamemode)
     }
     self._Emitter = {
         Equip = Emitter.new(),
-        Unequip = Emitter.new()
+        Unequip = Emitter.new(),
+        Fired = Emitter.new(),
     }
     self._Particles = {}
     self._Sounds = {}
@@ -284,6 +285,8 @@ function Gun:fire()
     if self.State.Cycling or self.State.Loaded <= 0 then return end
     if self._Lock.Reload then return end
 
+    self._Emitter.Fired:emit("success")
+
 
     self._Lock.Fire = elapsedTime()
 
@@ -317,6 +320,8 @@ function Gun:fire()
     self.Animations.Fire:play()
 
     self:setState("Cycling", false)
+
+    return true
 end
 
 ---Returns the Camera's expected CFrame from an animation
@@ -345,8 +350,8 @@ function Gun:update(dt, pivot)
 
         local swayCF =
         CFrame.new(
-        math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
-        math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
+            math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
+            math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
             lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
         0
     )

@@ -37,6 +37,7 @@ RunService:BindToRenderStep(
         if pause then
             return
         end
+        LocalCharacter:step(dt)
         WeaponManager:step(dt, Camera, LocalCharacter.Velocity)
     end
 )
@@ -56,7 +57,9 @@ local function inputHandler(name, state, object)
     if name == "Aim" then
         WeaponManager:setState(test, "Aim", state == Enum.UserInputState.Begin and true or false)
     elseif name == "Fire" and state == Enum.UserInputState.Begin then
-        WeaponManager:fire(test)
+        WeaponManager:fire(test, true)
+    elseif name == "Fire" and state == Enum.UserInputState.Begin then
+        WeaponManager:fire(test, false)
     elseif name == "Reload" and state == Enum.UserInputState.Begin then
         WeaponManager:reload(test)
     elseif name == "Pause" and state == Enum.UserInputState.Begin then

@@ -17,7 +17,7 @@ return {
         AIM_SPEED = 4,
         AIM_STYLE = "sine",
 
-        INERTIA_MODIFIER = 0.3,
+        INERTIA_MODIFIER = 0.6,
         INERTIA_RECOVERY_SPEED = 1.5,
 
         RECOIL_POSITION_DAMPENING = 1.2,
@@ -36,6 +36,15 @@ return {
     },
 
     CAMERA = {
-        LIMIT_YAW = 87
+        LIMIT_YAW = 87,
+        RECOIL_ANGULAR_DAMPENING = 2,
+        RECOIL_ANGULAR_SPEED = 1.5,
+    },
+
+    PROJECTILE = {
+        GRAVITIY_MODIFIER = 1,
+
+        ITERATION_PRECISION = 1/20,
+        MAX_ITERATIONS_PER_FRAME = 5
     }
 }
