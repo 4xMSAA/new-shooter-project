@@ -6,7 +6,7 @@ local Emitter = require(shared.Common.Emitter)
 local TableUtil = require(shared.Common.TableUtil)
 
 ---Calculates an array with [weight] based on a {weight = data} list
--- It is important not to use the same weight
+---It is important not to use the same weight
 ---@param list table The list of weights
 local function calculateSortedOffsetsArray(list)
     local array = {}
@@ -143,12 +143,11 @@ end
 ---@param deltaY number Move camera by mouse Y delta
 function Camera:moveLook(deltaX, deltaY)
     -- something magical about this that i don't remember, but it makes sensitivity behave similar to roblox's
-    local FrameModifier = math.min(1 / 45, self.LastFrameDelta) * 20
-    local dX, dY = math.rad(-deltaX) / self.Zoom * FrameModifier, math.rad(-deltaY) / self.Zoom * FrameModifier
+    local frameModifier = math.min(1 / 45, self.LastFrameDelta) * 20
+    local dX, dY = math.rad(-deltaX) / self.Zoom * frameModifier, math.rad(-deltaY) / self.Zoom * frameModifier
 
-    -- Limit the pitch to only be 360 degrees
+    -- Limit the pitch to only be 360 degrees and yaw to the configured limit
     self.User.LookPitch = (self.User.LookPitch + dX) % (math.pi * 2)
-    -- Limit the yaw
     self.User.LookYaw = math.max(-self.User.LimitYaw, math.min(self.User.LimitYaw, self.User.LookYaw + dY))
 end
 

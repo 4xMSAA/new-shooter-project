@@ -37,8 +37,13 @@ RunService:BindToRenderStep(
         if pause then
             return
         end
+        debug.profilebegin("game-character")
         LocalCharacter:step(dt)
+        debug.profileend("game-character")
+
+        debug.profilebegin("game-weaponmanager")
         WeaponManager:step(dt, Camera, LocalCharacter.Velocity)
+        debug.profilebegin("game-weaponmanager")
     end
 )
 
@@ -46,9 +51,11 @@ RunService:BindToRenderStep(
     "CameraUpdate",
     100,
     function(dt)
+        debug.profilebegin("game-camera")
         UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter
         Camera.AttachTo = LocalCharacter:get() and LocalCharacter:get():FindFirstChild("Humanoid") or nil
         Camera:updateView(dt)
+        debug.profileend("game-camera")
     end
 )
 

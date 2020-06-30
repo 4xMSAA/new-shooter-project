@@ -279,7 +279,7 @@ function Gun:reload()
 end
 
 ---
----@return userdata CFrame where the gun's pivot point is positioned at
+---@return boolean Did the gun fire or not?
 function Gun:fire()
     if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() then return end
     if self.State.Cycling or self.State.Loaded <= 0 then return end

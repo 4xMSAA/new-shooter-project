@@ -21,10 +21,9 @@ function Particle.new(effect, parent)
     local self = {
         Parent = parent,
         Instances = assert(effect, "effect cannot be nil (got " .. tostring(effect) .. ")"):Clone():GetChildren(),
-        Configuration = require(assert(
-            effect:WaitForChild("Configuration"),
-            "no configuration for particle " .. effect:GetFullName()
-        ))
+        Configuration = require(
+            assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
+        )
     }
 
     setmetatable(self, Particle)
@@ -50,6 +49,11 @@ function Particle:_init()
         end
         instance.Parent = self._attachment
     end
+end
+
+-- TODO: Control for ParticleManager
+function Particle:update()
+    -- TODO: Make particles respect their SettingsController
 end
 
 function Particle:emit()

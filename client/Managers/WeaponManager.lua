@@ -74,7 +74,7 @@ end
 ---@param weapon Gun Weapon object to equip
 function WeaponManager:equipViewport(weapon, networked)
     local object = self.ActiveWeapons[weapon.UUID]
-    assert(object.Owner == Players.LocalPlayer, "cannot equip a weapon that does not belong to local player")
+    assert(object.Owner == Players.LocalPlayer, "cannot equip a viewport weapon that does not belong to local player")
 
     local function equip()
         -- equip new weapon
