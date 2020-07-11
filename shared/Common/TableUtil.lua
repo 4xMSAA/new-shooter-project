@@ -74,13 +74,13 @@ function TableUtil.toEnumList(name, t)
         TableUtil.toList(
         t,
         function(result, val, key)
-            idMap[key] = result[val[1]]
             result[val[1]] = {
                 Name = val[1],
                 Description = val[2],
                 ExtraData = val[3],
                 ID = key
             }
+            idMap[key] = result[val[1]]
         end
     )
 

@@ -355,6 +355,7 @@ function Gun:update(dt, pivot)
             lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
         0
     )
+    local inertia = self._Springs.Inertia.Position
 
     -- update InterpolateStates and Springs
     for state, value in pairs(self.State) do
@@ -392,10 +393,9 @@ function Gun:update(dt, pivot)
             lerp(1, ADS_MOVEMENT_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim))
         )
 
-    -- bunch of CFrames
-    local posRecoil = self._Springs.ModelPositionRecoil.Position
-    local rotRecoil = self._Springs.ModelRotationRecoil.Position
-    local inertia =  self._Springs.Inertia.Position
+    -- bunch of recoil CFrames
+    local posRecoil = self._Springs.ModelPositionRecoil.Position * (lerp(1,  cfg.Recoil.AimScale, self._InterpolateState.Aim))
+    local rotRecoil = self._Springs.ModelRotationRecoil.Position * (lerp(1,  cfg.Recoil.AimScale, self._InterpolateState.Aim))
 
     -- position the weapon
     local renderCF =

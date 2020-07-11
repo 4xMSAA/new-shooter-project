@@ -2,7 +2,6 @@
     Ease the burden of writing different method names and signal handling
 
 --]]
-
 local RunService = game:GetService("RunService")
 
 local Enums = shared.Enums
@@ -31,13 +30,14 @@ function NetworkLib:_autoSerialize(...)
     for key, value in pairs({...}) do
         if typeof(value) == "table" and value["serialize"] then
             value = value:serialize()
+        elseif typeof(value) == "table" then
+            warn("no serialize function on object: " .. value .. "\n" ..debug.traceback())
         end
         result[key] = value
     end
 
     return unpack(result)
 end
-
 
 function NetworkLib:_listenHandler(ev, callback, listenFor)
     local signal
@@ -101,7 +101,9 @@ function NetworkLib:listenFor(enum, callback)
     end
 end
 
----
+---On client, sends to server
+---On server, sends to all clients
+---@param enum PacketType
 function NetworkLib:send(enum, ...)
     if isClient then
         remotes.Signal:FireServer(enum.ID, NetworkLib:_autoSerialize(...))
@@ -111,6 +113,8 @@ function NetworkLib:send(enum, ...)
 end
 
 ---
+---@param player userdata
+---@param enum PacketType
 function NetworkLib:sendTo(player, enum, ...)
     if isClient then
         error("cannot send to player on client", 2)

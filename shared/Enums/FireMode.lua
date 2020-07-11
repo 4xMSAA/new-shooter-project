@@ -1,5 +1,6 @@
 local TableUtil = require(shared.Common.TableUtil)
 
+---@class FireMode
 local enums = {
     {"Safety", "Clicks will not trigger the receiver"},
     {"Single", "Fires the weapon 1 bullet per click"},

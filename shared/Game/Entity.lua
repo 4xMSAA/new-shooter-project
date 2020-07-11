@@ -1,0 +1,1 @@
+-- things like interactables, spawns, props, enemies, bla bla which have custom properties

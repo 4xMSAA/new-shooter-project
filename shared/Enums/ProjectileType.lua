@@ -1,5 +1,6 @@
 local TableUtil = require(shared.Common.TableUtil)
 
+---@class ProjectileType
 local Enums = {
     {"Bullet", ""},
     {"Launcher", ""},

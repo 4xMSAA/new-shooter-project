@@ -45,22 +45,22 @@ local Configuration = {
         }
     },
     Recoil = {
-        AimScale = 0.6,
+        AimScale = 0.8,
         Rotation = {
             V3 = Vector3.new(0.4, 0, 0),
             Range = Vector3.new(0.1, 0.3, 0),
             AllowSignedY = true
         },
         Position = {
-            V3 = Vector3.new(0, 0, 0.8),
-            Range = Vector3.new(0, 0, 0.1)
+            V3 = Vector3.new(0, 0, 1.2),
+            Range = Vector3.new(0, 0, 0.3)
         }
     },
     CameraRecoil = {
-        V3 = Vector3.new(0.4, 0, 0),
-        Range = Vector3.new(0.1, 0.1, 0),
+        V3 = Vector3.new(0.6, 0, 0),
+        Range = Vector3.new(0.1, 0.3, 0),
         ForceModifier = 1,
-        SPeedModifier = 1
+        SpeedModifier = 1
     },
     Offset = {
         Grip = CFrame.new(.6, -0.9, -0.8),

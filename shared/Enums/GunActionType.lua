@@ -1,5 +1,6 @@
 local TableUtil = require(shared.Common.TableUtil)
 
+---@class GunActionType
 local enums = {
     {"ClosedBolt", "Automatic weapon cycling for next round with closed bolt chambering (default)"},
     {"ClosedBoltSpecialFeed", "Closed bolt, but useful for weapons such as M1 Garand - TODO: find better term"},
