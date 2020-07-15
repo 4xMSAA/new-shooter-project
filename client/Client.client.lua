@@ -15,6 +15,7 @@ local Enums = shared.Enums
 local NetworkLib = require(shared.Common.NetworkLib)
 
 local LocalCharacter = require(_G.Client.Core.LocalCharacter)
+local Movement = require(_G.Client.Game.Movement)
 
 local Camera = require(_G.Client.Core.Camera).new(workspace.CurrentCamera)
 local WeaponManager = require(_G.Client.Managers.WeaponManager).new({Camera = Camera})
@@ -26,7 +27,7 @@ UserInputService.MouseIconEnabled = false
 
 -- TODO: actual input binding
 -- TODO: move gun test code somewhere else or make a manager/handler module for guns
-local function spawn()
+local function spawn(character)
     spawned = true
     local test = WeaponManager:create("M4A1", "a")
 
@@ -35,6 +36,8 @@ local function spawn()
 
     LocalCharacter:listenPlayer(Players.LocalPlayer)
     LocalCharacter:setTransparency(1)
+
+    LocalCharacter.Controller = Movement.new(character)
 
     -- temporary input binding
     local function inputHandler(name, state, object)
@@ -63,14 +66,20 @@ local function spawn()
     ContextActionService:BindAction("debugPause", inputHandler, true, Enum.KeyCode.P)
 
     UserInputService.InputChanged:connect(inputChangedHandler)
+
+    RunService.Stepped:connect(
+        function(dt)
+            LocalCharacter.Controller:update(dt, Camera.CFrame.LookVector)
+        end
+    )
 end
 
 -- network binds
 NetworkLib:listenFor(
     Enums.PacketType.PlayerSpawn,
-    function(id)
+    function(id, char)
         if id == Players.LocalPlayer.UserId then
-            spawn()
+            spawn(char)
         end
     end
 )

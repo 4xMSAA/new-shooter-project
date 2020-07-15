@@ -9,6 +9,12 @@ function _G.create(class, properties)
     return inst
 end
 
+local function createSharedFolder(name, parent)
+    return ((RunService:IsServer() and _G.create("Folder", {Name = name, Parent = parent})) or
+        parent:WaitForChild(name, _G.LOADING.TIMEOUT) or
+        error(name .. " does not exist on client"))
+end
+
 if RunService:IsServer() then
     _G.Storage = game:GetService("ServerStorage")
     _G.Source = game:GetService("ServerScriptService"):WaitForChild("Source")
@@ -32,20 +38,20 @@ for _, enumModule in pairs(shared.Source:WaitForChild("Enums"):GetChildren()) do
 end
 
 -- define global paths we weant quick access to
-_G.Workspace =
-    (RunService:IsServer() and _G.create("Folder", {Name = "GameFolder", Parent = workspace})) or
-    workspace:WaitForChild("GameFolder", _G.LOADING.TIMEOUT) or
-    error("GameFolder does not exist on client")
+_G.Workspace = createSharedFolder("GameFolder", workspace)
 
 -- less commonly used accesses
 _G.Path = {}
 
 -- both client and server
-_G.Path.Remotes =
-    (RunService:IsServer() and _G.create("Folder", {Name = "Remotes", Parent = shared.Storage})) or
-    shared.Storage:WaitForChild("Remotes", _G.LOADING.TIMEOUT) or
-    error("Remotes does not exist on client")
+_G.Path.Remotes = createSharedFolder("Remotes", shared.Storage)
 
+_G.Path.Entities = createSharedFolder("Entities", _G.Workspace)
+_G.Path.Players = createSharedFolder("Players", _G.Workspace)
+
+_G.Path.Hitboxes = createSharedFolder("Hitboxes", _G.Workspace)
+_G.Path.RayIgnore = createSharedFolder("RayIgnore", _G.Workspace)
+_G.Path.Collisions = createSharedFolder("Collisions", _G.Workspace)
 
 if RunService:IsServer() then
     -- create by server
@@ -56,7 +62,5 @@ else
     _G.Path.Sounds = _G.create("Folder", {Name = "Sounds", Parent = _G.Workspace})
     _G.Path.ClientViewmodel = _G.create("Folder", {Name = "ViewModel", Parent = workspace.CurrentCamera})
 end
-
-
 
 return true

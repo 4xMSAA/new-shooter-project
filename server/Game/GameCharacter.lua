@@ -25,13 +25,15 @@ end
 function GameCharacter:loadCharacter(cf, parent)
     local char = StarterPlayer:WaitForChild("StarterCharacter"):Clone()
     char:SetPrimaryPartCFrame(cf or CFrame.new(0, 50, 0))
-    char.Parent = parent or workspace
+    char.Name = self.Client.Name
+    char.Parent = parent or _G.Path.Players
     self.Client.PlayerInstance.Character = char
+    return char
 end
 
 function GameCharacter:spawn(cf)
-    NetworkLib:send(Enums.PacketType.PlayerSpawn, self.Client.ID)
-    self:loadCharacter(cf)
+    local char = self:loadCharacter(cf)
+    NetworkLib:send(Enums.PacketType.PlayerSpawn, self.Client.ID, char)
 end
 
 function GameCharacter:updateCharacterPosition()

@@ -46,5 +46,10 @@ return {
 
         ITERATION_PRECISION = 1/20,
         MAX_ITERATIONS_PER_FRAME = 5
+    },
+
+    MOVEMENT = {
+        FRICTION = 0.15,
+        ACCELERATION_SPEED = 1/.4
     }
 }

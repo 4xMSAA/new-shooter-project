@@ -5,6 +5,7 @@ local Enums = shared.Enums
 
 local Players = game:GetService("Players")
 
+local Emitter = require(shared.Common.Emitter)
 local Client = require(script.Client)
 
 local JOIN_PROCEDURES_FOLDER = script.JoinProcedures
@@ -38,7 +39,10 @@ function ClientManager.new(joinProcedures, leaveProcedures)
     local self = {
         Clients = {},
         LeaveProcedures = {},
-        JoinProcedures = {}
+        JoinProcedures = {},
+
+        ClientAdded = Emitter.new(),
+        ClientRemoving = Emitter.new(),
     }
 
     if not joinProcedures then
@@ -70,13 +74,15 @@ function ClientManager:init()
     self._PlayerAdded =
         Players.PlayerAdded:connect(
         function(player)
-            self:addClientByPlayer(player)
+            local client = self:addClientByPlayer(player)
+            self.ClientAdded:emit(client)
         end
     )
     self._PlayerRemoving =
         Players.PlayerRemoving:connect(
         function(player)
-            self:removeClientByPlayer(player)
+            local client = self:removeClientByPlayer(player)
+            self.ClientRemoving:emit(client)
         end
     )
 
@@ -131,6 +137,7 @@ function ClientManager:removeClient(client)
             table.remove(self.Clients, index)
         end
     end
+    return client
 end
 
 ---
@@ -139,6 +146,7 @@ function ClientManager:removeClientByPlayer(player)
     local client = self:getClientByPlayer(player)
     -- run them through modules in LeaveProcedures
     self:removeClient(client)
+    return client
 end
 
 --- Removes all clients but keeps connections and the object

@@ -343,8 +343,8 @@ function Gun:update(dt, pivot)
         self._Springs.Inertia:shove(inertiaX, inertiaY, inertiaZ)
 
         self._Springs.Movement:shove(
-            math.sin(elapsedTime()*MOVEMENT_SPEED)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
-            math.sin(elapsedTime()*MOVEMENT_SPEED*2)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement),
+            math.sin(elapsedTime()*MOVEMENT_SPEED)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement/12)*(dt*60),
+            math.sin(elapsedTime()*MOVEMENT_SPEED*2)*MOVEMENT_AMPLIFY*math.min(1, self.State.Movement/12)*(dt*60),
             0
         )
 

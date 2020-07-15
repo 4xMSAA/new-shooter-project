@@ -6,6 +6,7 @@ local Emitter = require(shared.Common.Emitter)
 
 local LocalCharacter = {
     Player = nil,
+    Controller = nil,
     Velocity = 0,
     CharacterTransparency = 1,
     CameraUpdated = Emitter.new(),
@@ -79,8 +80,12 @@ end
 -- it's 2020 and roblox still does not provide a reliable way to get velocity,
 -- because GetPropertyChangedSignal is too busy being brokenn
 function LocalCharacter:step(dt)
-    if self:get() and self:get().PrimaryPart then
-        self.Velocity = self:get().PrimaryPart.Velocity.magnitude
+    if not self.Controller then
+        if self:get() and self:get().PrimaryPart then
+            self.Velocity = self:get().PrimaryPart.Velocity.magnitude
+        end
+    else
+        self.Velocity = self.Controller.Velocity.magnitude
     end
 end
 

@@ -16,17 +16,22 @@ local GameCharacter = require(_G.Server.Game.GameCharacter)
 -- start server code
 ClientManager:init()
 
-repeat
-    wait()
-until #ClientManager.Clients > 0
+-- repeat
+--     wait()
+-- until #ClientManager.Clients > 0
 
-for _, client in pairs(ClientManager.Clients) do
-    -- associate a GameCharacter with each client
-    client.GameCharacter = GameCharacter.new(client)
-    client.GameCharacter:spawn()
-end
+-- for _, client in pairs(ClientManager.Clients) do
+--     -- associate a GameCharacter with each client
+--     client.GameCharacter = GameCharacter.new(client)
+--     client.GameCharacter:spawn()
+-- end
 
--- TODO: implement player loading
+ClientManager.ClientAdded:listen(
+    function(client)
+        client.GameCharacter = GameCharacter.new(client)
+        client.GameCharacter:spawn()
+    end
+)
 
 -- TODO: make a gun manager for keeping track of weapons both server and client
 -- TODO: objects have :serialize method

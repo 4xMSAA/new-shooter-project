@@ -143,7 +143,7 @@ end
 ---@param deltaY number Move camera by mouse Y delta
 function Camera:moveLook(deltaX, deltaY)
     -- something magical about this that i don't remember, but it makes sensitivity behave similar to roblox's
-    local frameModifier = math.min(1 / 45, self.LastFrameDelta) * 20
+    local frameModifier = math.max(1 / 60, math.min(1 / 45, self.LastFrameDelta)) * 20
     local dX, dY = math.rad(-deltaX) / self.Zoom * frameModifier, math.rad(-deltaY) / self.Zoom * frameModifier
 
     -- Limit the pitch to only be 360 degrees and yaw to the configured limit
@@ -151,7 +151,8 @@ function Camera:moveLook(deltaX, deltaY)
     self.User.LookYaw = math.max(-self.User.LimitYaw, math.min(self.User.LimitYaw, self.User.LookYaw + dY))
 end
 
----Translates delta X and Y into the User's look direction and updates without doing input manipulation for smoother movement
+---Translates delta X and Y into the User's look direction and updates without
+---doing input manipulation for preciser movement
 ---@param deltaX number Move camera by X
 ---@param deltaY number Move camera by Y
 function Camera:rawMoveLook(deltaX, deltaY)
@@ -164,7 +165,8 @@ function Camera:rawMoveLook(deltaX, deltaY)
 end
 
 ---Get the CFrame of the camera's AttachTo object
----@param attachObject userdata If provided, will use the attachObject as the pivot point instead
+---@param attachObject userdata If provided, will use the attachObject
+---                             as the pivot point instead
 function Camera:getAttachedCFrame(attachObject)
     local object = attachObject or self.AttachTo
     if (object and object:IsDescendantOf(game)) then
@@ -172,7 +174,7 @@ function Camera:getAttachedCFrame(attachObject)
             return CFrame.new(object.Position)
         elseif (object:IsA("Humanoid") and object.Parent and object.Parent:FindFirstChild("HumanoidRootPart")) then
             return CFrame.new(object.Parent:FindFirstChild("HumanoidRootPart").Position) *
-                CFrame.new(0, object.HipHeight - object.Parent:FindFirstChild("Head").Size.Y/2, 0) *
+                CFrame.new(0, object.HipHeight - object.Parent:FindFirstChild("Head").Size.Y / 2, 0) *
                 CFrame.new(object.CameraOffset)
         end
     end
