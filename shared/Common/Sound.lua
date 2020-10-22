@@ -81,10 +81,22 @@ function Sound:_getPlayableInstance(max)
     if #self._instances < max then
         local sound = self.Instance:Clone()
         sound:stop()
+        sound.Parent = self.Instance.Parent
+        sound.Name = sound.Name .. "_" .. tostring(#self._instances + 1)
+        table.insert(self._instances, sound)
+        return sound
     end
 
-    warn("exceeding maximum range (" .. max .. ") for sound " .. self.Instance.SoundId)
-    return self.Instance
+    -- warn("exceeding maximum range (" .. max .. ") for sound " .. self.Instance.SoundId)
+
+    local biggestTimePos, inst = 0
+    for _, sound in ipairs(self._instances) do
+        if sound.TimePosition > biggestTimePos then
+            biggestTimePos = sound.TimePosition
+            inst = sound
+        end
+    end
+    return inst
 end
 
 ---

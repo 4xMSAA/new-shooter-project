@@ -304,7 +304,7 @@ function Gun:fire()
 
     self._Lock.Fire = elapsedTime()
 
-    self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 5)
+    self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 7)
 
     self:setState("Loaded", self.State.Loaded - 1)
 
