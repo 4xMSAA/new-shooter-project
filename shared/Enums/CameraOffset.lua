@@ -1,4 +1,4 @@
-local TableUtil = require(shared.Common.TableUtil)
+local TableUtils = require(shared.Common.TableUtils)
 
 ---@class CameraOffset
 local Enums = {
@@ -6,4 +6,4 @@ local Enums = {
     {"Recoil", "Affected by weapon recoil"}
 }
 
-return TableUtil.toEnumList(script.Parent.Name, Enums)
+return TableUtils.toEnumList(script.Parent.Name, Enums)

@@ -21,7 +21,7 @@ function Projectile.new(projectileType, props, start, direction)
     assert(projectileTypes[projectileType])
     local self = {}
 
-    self.Type = projectileType
+    self.Type = projectileTypes[projectileType]
 
     self.Origin = start
     self.Position = start

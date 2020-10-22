@@ -1,4 +1,4 @@
-local TableUtil = require(shared.Common.TableUtil)
+local TableUtils = require(shared.Common.TableUtils)
 
 ---@class ProjectileHitResponse
 local Enums = {
@@ -6,4 +6,4 @@ local Enums = {
     {"Continue", "Projectile can continue simulating"}
 }
 
-return TableUtil.toEnumList(script.Parent.Name, Enums)
+return TableUtils.toEnumList(script.Parent.Name, Enums)

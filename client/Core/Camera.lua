@@ -3,7 +3,7 @@
     Has a dynamic weight system
 ]]
 local Emitter = require(shared.Common.Emitter)
-local TableUtil = require(shared.Common.TableUtil)
+local TableUtils = require(shared.Common.TableUtils)
 
 ---Calculates an array with [weight] based on a {weight = data} list
 ---It is important not to use the same weight
@@ -14,7 +14,7 @@ local function calculateSortedOffsetsArray(list)
         table.insert(array, weight)
     end
 
-    return TableUtil.valueBubblesort(array)
+    return TableUtils.valueBubblesort(array)
 end
 
 local Camera = {}

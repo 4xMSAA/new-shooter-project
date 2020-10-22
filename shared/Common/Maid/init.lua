@@ -52,6 +52,7 @@ function Maid.info(showASCII)
         debug.traceback()
     )
 end
+
 if not RunService:IsStudio() then
     Maid.info(true)
 end

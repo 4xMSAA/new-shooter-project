@@ -52,6 +52,8 @@ local function spawn(character)
             WeaponManager:reload(test)
         elseif name == "debugPause" and state == Enum.UserInputState.Begin then
             debugPause = not debugPause
+        elseif name == "debugLog" and state == Enum.UserInputState.Begin then
+            Maid.info()
         end
     end
 
@@ -65,6 +67,7 @@ local function spawn(character)
     ContextActionService:BindAction("Fire", inputHandler, true, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction("Reload", inputHandler, true, Enum.KeyCode.R)
     ContextActionService:BindAction("debugPause", inputHandler, true, Enum.KeyCode.P)
+    ContextActionService:BindAction("debugLog", inputHandler, true, Enum.KeyCode.O)
 
     UserInputService.InputChanged:connect(inputChangedHandler)
 

@@ -1,11 +1,11 @@
-local TableUtil = {}
+local TableUtils = {}
 local random = Random.new()
 
 ---Get a random value from a table
 ---@param t table The table to pick an input from
 ---@param filter function The filtering function to go with
 ---@return any The value from an array
-function TableUtil.random(t, filter)
+function TableUtils.random(t, filter)
     if not type(filter) == "function" then
         error("expected function, got " .. type(filter))
     end
@@ -18,7 +18,7 @@ function TableUtil.random(t, filter)
                 return entry, val
             end
             trackedEntries[entry] = true
-            if TableUtil.getSize(trackedEntries) == #t then
+            if TableUtils.getSize(trackedEntries) == #t then
                 warn("table entries exceeded, no result")
                 return nil
             end
@@ -31,7 +31,7 @@ end
 ---Shuffle an array with Fisher–Yates shuffling
 ---@param t table The array to shuffle
 ---@return table Same array, but shuffled
-function TableUtil.shuffle(t)
+function TableUtils.shuffle(t)
     for i = 1, #t - 1 do
         local r = random:NextInteger(i, #t)
         local prevValue = t[r]
@@ -41,7 +41,7 @@ function TableUtil.shuffle(t)
     return t
 end
 
-function TableUtil.overwrite(t0, t1)
+function TableUtils.overwrite(t0, t1)
     for key, value in pairs(t1) do
         t0[key] = value
     end
@@ -51,7 +51,7 @@ end
 ---@param t table The array to convert
 ---@param callback function Define special behaviour. Passed arguments: (table) result, (userdata) value, (float) index
 ---@return table List styled as {value = index}
-function TableUtil.toList(t, callback)
+function TableUtils.toList(t, callback)
     local result = {}
     for i, v in pairs(t) do
         if callback then
@@ -64,14 +64,14 @@ function TableUtil.toList(t, callback)
     return result
 end
 
--- TODO: move this out of tableutil
+-- TODO: move this out of TableUtils
 ---Makes an Enumerable type which you can index by ID if called
-function TableUtil.toEnumList(name, t)
+function TableUtils.toEnumList(name, t)
     -- Convert {"EnumName", "Desc", ExtraData} to
     -- [EnumName] = {Description = "Desc", Name = "EnumName", ID = index}
     local idMap = {}
     local enumList =
-        TableUtil.toList(
+        TableUtils.toList(
         t,
         function(result, val, key)
             result[val[1]] = {
@@ -104,7 +104,7 @@ end
 ---Get the size of a table by element count
 ---@param t table The table to iterate over
 ---@return table Size of the table (by element count)
-function TableUtil.getSize(t)
+function TableUtils.getSize(t)
     local count = 0
     for _, _ in pairs(t) do
         count = count + 1
@@ -116,7 +116,7 @@ end
 ---@param array table The array to sort
 ---@param key string Optional, if array has objects, index with key for value
 ---@return table Array with sorted values
-function TableUtil.valueBubblesort(array, key)
+function TableUtils.valueBubblesort(array, key)
     local result = {}
     for _, val in ipairs(array) do
         table.insert(result, val)
@@ -147,4 +147,4 @@ function TableUtil.valueBubblesort(array, key)
     return result
 end
 
-return TableUtil
+return TableUtils

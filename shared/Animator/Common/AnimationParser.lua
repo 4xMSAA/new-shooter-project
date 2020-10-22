@@ -1,4 +1,4 @@
-local TableUtil = require(shared.Common.TableUtil)
+local TableUtils = require(shared.Common.TableUtils)
 
 
 -- TODO: branch off of moon animation suite due to how badly exporting
@@ -109,7 +109,7 @@ function AnimationParser.createTrack(keyframeSequence, model, keyframeMap)
     end
 
     -- sort them by Time property
-    return TableUtil.valueBubblesort(track, "Time")
+    return TableUtils.valueBubblesort(track, "Time")
 end
 
 function AnimationParser.getLastKeyframe(keyframeSequence)

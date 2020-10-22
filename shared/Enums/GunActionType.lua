@@ -1,4 +1,4 @@
-local TableUtil = require(shared.Common.TableUtil)
+local TableUtils = require(shared.Common.TableUtils)
 
 ---@class GunActionType
 local enums = {
@@ -10,4 +10,4 @@ local enums = {
     {"BoltAction", "Weapon must cycle the bolt each fire"}
 }
 
-return TableUtil.toEnumList(script.Name, enums)
+return TableUtils.toEnumList(script.Name, enums)
