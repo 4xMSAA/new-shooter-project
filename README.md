@@ -18,7 +18,7 @@ A gun rig is set up with the following tree structure:
 |-- Parts                  All design parts here (not neccessary, but preferred)
 |-+ Rig                    Required parts and location of arms
   |-+ LeftArm              R15 arm with 0.75 width and depth
-  | |-+ LeftHannd
+  | |-+ LeftHand
   | |-+ LeftLowerArm
   |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
   | |-+ LeftUpperArm
@@ -50,8 +50,10 @@ See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 A lot of this follows <https://roblox.github.io/lua-style-guide/>.  
 Here's a quick rundown:
 
-Variables, functions are **camelCase**
-Methods in classes are defined with a colon ``:`` and are **camelCase**
+Variables, functions are **camelCase**  
+Properties in objects are **PascalCase**  
+Internal properties in objects are **_camelCase**  
+Methods in classes are defined with a colon ``:`` and are **camelCase**  
 
 ```lua
 function Class:method()
@@ -62,4 +64,5 @@ end
 ## External Tools
 
 * Trello Todo - <https://trello.com/b/vLcRXfah/new-shooter-project-todo>
-* Moon Animation Suite (new)
+* Moon Animation Suite
+* Blender

@@ -19,8 +19,11 @@ Sound._customProps = {
 ---@param extraProps table
 function Sound.new(props, extraProps)
     local self = {
-        Instance = Instance.new("Sound")
+        Instance = Instance.new("Sound"),
+        _instances = {}
     }
+
+    table.insert(self._instances, self.Instance)
 
     -- set a metatable that first refers to the Sound table and then lastly to the Instance itself
     setmetatable(
@@ -41,23 +44,53 @@ function Sound:_init(props, extraProps)
         props = {SoundId = props}
     end
 
-    self.play = self.Instance.Play
-    self.stop = self.Instance.Stop
-
     for prop, value in pairs(props) do
         if prop == "SoundId" then
-            value = "rbxassetid://" .. value
+            value = "rbxassetid://" .. tostring(value):match("%d+")
         end
         self.Instance[prop] = value
+        for _, instance in pairs(self._instances) do
+            instance[prop] = value
+        end
     end
     for prop, value in pairs(extraProps) do
         self[prop] = Sound._customProps[prop](self, value)
     end
 end
 
-function Sound:playMultiple()
-    -- TODO big todo, make it so play creates more sounds if needed
-    -- because we don't want things to suddenly stop such as firing sounds
+-- wrappers cause roblox instances are behaving stupidly or my metamethod is wrong
+function Sound:play()
+    self.Instance:play()
+end
+function Sound:stop()
+    self.Instance:stop()
+end
+function Sound:pause()
+    self.Instance:pause()
+end
+
+---
+---@param max number The maximum amount to allow sound instances
+---@return userdata Roblox Sound instance which is not playing
+function Sound:_getPlayableInstance(max)
+    for _, sound in ipairs(self._instances) do
+        if not sound.IsPlaying then
+            return sound
+        end
+    end
+    if #self._instances < max then
+        local sound = self.Instance:Clone()
+        sound:stop()
+    end
+
+    warn("exceeding maximum range (" .. max .. ") for sound " .. self.Instance.SoundId)
+    return self.Instance
+end
+
+---
+function Sound:playMultiple(max)
+    self:_getPlayableInstance(max):Play()
+
 end
 
 return Sound

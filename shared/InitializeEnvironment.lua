@@ -59,6 +59,7 @@ if RunService:IsServer() then
     _G.create("RemoteFunction", {Name = "Callback", Parent = _G.Path.Remotes})
 else
     -- client specific paths
+    _G.Path.FX = _G.create("Folder", {Name = "FX", Parent = _G.Workspace})
     _G.Path.Sounds = _G.create("Folder", {Name = "Sounds", Parent = _G.Workspace})
     _G.Path.ClientViewmodel = _G.create("Folder", {Name = "ViewModel", Parent = workspace.CurrentCamera})
 end

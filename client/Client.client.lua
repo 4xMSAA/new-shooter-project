@@ -13,6 +13,7 @@ require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 local Enums = shared.Enums
 
 local NetworkLib = require(shared.Common.NetworkLib)
+local Maid = require(shared.Common.Maid)
 
 local LocalCharacter = require(_G.Client.Core.LocalCharacter)
 local Movement = require(_G.Client.Game.Movement)

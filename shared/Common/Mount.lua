@@ -8,7 +8,7 @@ local SmallUtils = require(shared.Common.SmallUtils)
 local Mount = {}
 
 Mount.__call = function(self, path, sep)
-    assert(path, "path is nil")
+    assert(path, "path argument (1) is nil")
     sep = sep or "/"
 
     local splitPath = SmallUtils.split(path, sep)

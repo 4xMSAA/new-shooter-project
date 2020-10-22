@@ -13,14 +13,11 @@ local Configuration = {
     Zoom = 1.25,
     Ammo = {
         Max = 30,
-        Reserve = 180,
-        Eject = {
-            Particle = "Gun/Casing/.30-06",
-            Speed = 14
-        }
+        Reserve = 180
     },
     Particles = {
-        Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"}
+        Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
+        -- Eject = {Path = "Gun/Casing/5.56x9mm", Speed = 14}
     },
     Sounds = {
         BoltForward = 5104015522,
@@ -33,16 +30,7 @@ local Configuration = {
         Type = "Bullet",
         Velocity = 853,
         Piercing = 1,
-        Amount = 1,
-        Damage = {
-            Multipliers = {
-                Head = 1,
-                Body = 0.8,
-                Limbs = 0.5
-            },
-            Max = 90,
-            Min = 20
-        }
+        Amount = 1
     },
     Recoil = {
         AimScale = 0.8,
@@ -73,16 +61,31 @@ local Configuration = {
 }
 
 Configuration.Gamemode = {}
+Configuration.Gamemode.PvP = {
+    Projectile = {
+        Damage = {
+            Multipliers = {
+                Head = 1,
+                Body = 0.8,
+                Limbs = 0.5
+            },
+            Max = 90,
+            Min = 20
+        }
+    }
+}
 Configuration.Gamemode.Zombies = {
     FireMode = {Enums.FireMode.Automatic},
-    Damage = {
-        Multipliers = {
-            Head = 3,
-            Body = 1.5,
-            Limbs = 1
-        },
-        Max = 200,
-        Min = 20
+    Projectile = {
+        Damage = {
+            Multipliers = {
+                Head = 3,
+                Body = 1.5,
+                Limbs = 1
+            },
+            Max = 200,
+            Min = 20
+        }
     }
 }
 

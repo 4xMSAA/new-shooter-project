@@ -58,7 +58,7 @@ function SmallUtils.split(str, sep, ignoreNewLine)
     return split
 end
 
-function SmallUtils.randomRange(min, max)
+function SmallUtils.randomFloatRange(min, max)
     if max < min then
         error("value min (" .. min .. ") cannot exceed max (" .. max ")", 2)
     end

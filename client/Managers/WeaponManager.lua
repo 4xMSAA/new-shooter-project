@@ -7,17 +7,18 @@ local NetworkLib = require(shared.Common.NetworkLib)
 local Enums = shared.Enums
 
 local Spring = require(shared.Common.Spring)
-local Gun = require(_G.Client.Core.Gun)
-local ViewModelArms = require(_G.Client.Core.ViewModelArms)
+local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
+
+local Gun = require(_G.Client.Game.Gun)
+local ViewModelArms = require(_G.Client.Game.ViewModelArms)
 
 ---Uses a value and makes a range based on v0 -+ range
 ---@param v0 number
 ---@param range number
 local function springRange(v0, range)
-    return SmallUtils.randomRange(v0 - range, v0 + range)
+    return SmallUtils.randomFloatRange(v0 - range, v0 + range)
 end
-
 
 ---Manages all weapons in a single container
 ---@class WeaponManager
@@ -74,7 +75,7 @@ end
 ---@param weapon Gun Weapon object to equip
 function WeaponManager:equipViewport(weapon, networked)
     local object = self.ActiveWeapons[weapon.UUID]
-    assert(object.Owner == Players.LocalPlayer, "cannot equip a viewport weapon that does not belong to local player")
+    assert(object.Owner == Players.LocalPlayer, "cannot equip a weapon as viewport that does not belong to local player")
 
     local function equip()
         -- equip new weapon

@@ -1,3 +1,7 @@
+local Enums = shared.Enums
+
+local Maid = shared.Common.Maid
+
 local ITERATION_PRECISION = _G.PROJECTILE.ITERATION_PRECISION
 local MAX_ITERATIIONS_PER_FRAME = _G.PROJECTILE.MAX_ITERATIIONS_PER_FRAME
 
@@ -27,6 +31,7 @@ function Projectile.new(projectileType, props, start, direction)
     self.props = props
 
     setmetatable(self, Projectile)
+    Maid.watch(self)
     return self
 end
 
@@ -39,6 +44,7 @@ function Projectile:step(frameDelta)
     local iterations = math.floor(frameDelta / ITERATION_PRECISION)
     local dt = frameDelta - iterations * ITERATION_PRECISION
 
+    -- a for loop still runs even if the target is equal to the starting number
     for iteration = 0, iterations do
         if iteration > MAX_ITERATIIONS_PER_FRAME then
             break
@@ -51,8 +57,13 @@ function Projectile:step(frameDelta)
         -- https://developer.roblox.com/en-us/api-reference/function/WorldRoot/Raycast
         local keepSimulating, rayResult = self.Type.simulate(self, iterationDelta)
 
+        if rayResult then
+            if not self:hit(rayResult) then
+                break
+            end
+        end
         if not keepSimulating then
-            self:hit(rayResult)
+            break
         end
     end
 end

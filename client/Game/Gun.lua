@@ -2,6 +2,7 @@
     description and purpose here
 
     please don't format document
+    if line 7 isn't blank it's probably formatted
 --]]
 
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
@@ -47,13 +48,15 @@ local Styles = require(shared.Common.Styles)
 local Emitter = require(shared.Common.Emitter)
 local SmallUtils = require(shared.Common.SmallUtils)
 
+local Maid = require(shared.Common.Maid)
+
 local lerp = SmallUtils.lerp
 
 ---Uses a value and makes a range based on v0 -+ range
 ---@param v0 number
 ---@param range number
 local function springRange(v0, range)
-    return SmallUtils.randomRange(v0 - range, v0 + range)
+    return SmallUtils.randomFloatRange(v0 - range, v0 + range)
 end
 
 ---does pew pew
@@ -78,7 +81,7 @@ function Gun.new(weapon, gamemode)
     local self = {}
 
     -- properties
-    self._assetName = weapon
+    self._assetName = weapon.Name
     self.ViewModel = model
     self.Handle = self.ViewModel.PrimaryPart
     self.Configuration = config
@@ -99,7 +102,8 @@ function Gun.new(weapon, gamemode)
 
         Loaded = config.Ammo.Max,
         Max = config.Ammo.Max,
-        Reserve = config.Ammo.Reserve
+        Reserve = config.Ammo.Reserve,
+        Chambered = false
     }
 
     -- private states
@@ -126,7 +130,7 @@ function Gun.new(weapon, gamemode)
         Movement = Spring.new(20, 50, 4, 4*MOVEMENT_RECOVERY_SPEED),
         Inertia = Spring.new(5, 50, 4, 4*INERTIA_RECOVERY_SPEED)
     }
-    self._Emitter = {
+    self.Events = {
         Equip = Emitter.new(),
         Unequip = Emitter.new(),
         Fired = Emitter.new(),
@@ -140,9 +144,10 @@ function Gun.new(weapon, gamemode)
     self.Animations = {}
 
     setmetatable(self, Gun)
-    self:_init()
 
-    return self
+    Maid.watch(self)
+
+    return self:_init()
 end
 
 ---
@@ -155,7 +160,8 @@ function Gun:_init()
     self._cameraJoint = Instance.new("Motor6D")
     self._gripJoint = Instance.new("Motor6D")
 
-    local jointRemap = function(joint, pose)
+    -- remap some vital joint names to our alternatives
+    local jointRemap = function(_, pose)
         if pose.Name == "Handle" then
             return self._gripJoint, pose
         elseif pose.Name == "Camera" then
@@ -172,6 +178,7 @@ function Gun:_init()
     -- mount the model to apply particle effects
     local modelMount = mount(self.ViewModel)
     for name, data in pairs(self.Configuration.Particles) do
+        assert(data.Path, "path to particle does not exist for " .. tostring(name) .. " in " .. tostring(self._assetName))
         self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), modelMount(data.Parent))
     end
 
@@ -225,12 +232,10 @@ function Gun:playSound(name, range)
         return self
     end
 
-    -- TODO: fix dumb sound thing about having to refer to Instance itself
-
     -- if we have a "how many times can sound play at once" then use the
     -- playMultiple function instead
     if not range then
-        self._Sounds[name].Instance:Play()
+        self._Sounds[name]:play()
     else
         self._Sounds[name]:playMultiple(range)
     end
@@ -258,7 +263,7 @@ end
 ---@return Emitter An emitter to listen to for "done" event
 function Gun:unequip()
     self:setState("Equipped", false)
-    return self._Emitter.Unequip
+    return self.Events.Unequip
 end
 
 ---
@@ -278,19 +283,28 @@ function Gun:reload()
     end)
 end
 
----
+--- Fires the gun
+--- Listen to a detailed process via obj.Events.Fired
 ---@return boolean Did the gun fire or not?
 function Gun:fire()
-    if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() then return end
-    if self.State.Cycling or self.State.Loaded <= 0 then return end
-    if self._Lock.Reload then return end
+    if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() or self.State.Cycling then
+        self.Events.Fired:emit("CYCLING")
+        return false
+    end
+    if  self.State.Loaded <= 0 then
+        self.Events.Fired:emit("EMPTY")
+        return false
+    end
+    if self._Lock.Reload then
+        self.Events.Fired:emit("RELOADING")
+        return false
+    end
 
-    self._Emitter.Fired:emit("success")
-
+    self.Events.Fired:emit("FIRE")
 
     self._Lock.Fire = elapsedTime()
 
-    self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire")
+    self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 5)
 
     self:setState("Loaded", self.State.Loaded - 1)
 
@@ -348,13 +362,13 @@ function Gun:update(dt, pivot)
             0
         )
 
-        local swayCF =
+    local swayCF =
         CFrame.new(
             math.sin(elapsedTime() * SWAY_SPEED) * SWAY_AMPLIFY * (lerp(1, ADS_SWAY_MODIFIER, self._InterpolateState.Aim)),
             math.sin(elapsedTime() * SWAY_SPEED * 2) * SWAY_AMPLIFY *
-            lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
-        0
-    )
+                lerp(1, ADS_SWAY_MODIFIER, Styles[AIM_STYLE](self._InterpolateState.Aim)),
+            0
+        )
     local inertia = self._Springs.Inertia.Position
 
     -- update InterpolateStates and Springs
@@ -377,9 +391,9 @@ function Gun:update(dt, pivot)
 
     -- update special events
     if self._InterpolateState.Equipped == 0 then
-        self._Emitter.Unequip:emit("done")
+        self.Events.Unequip:emit("done")
     elseif self._InterpolateState.Equipped == 1 then
-        self._Emitter.Equip:emit("done")
+        self.Events.Equip:emit("done")
     end
 
     -- decide between aim down sight cf and grip CF

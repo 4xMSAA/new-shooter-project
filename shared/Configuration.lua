@@ -6,7 +6,7 @@ return {
     WEAPON = {
         SWAY_AMPLIFY = 0.025,
         SWAY_SPEED = 0.8,
-        ADS_SWAY_MODIFIER = 0.2,
+        ADS_SWAY_MODIFIER = 0.06,
 
         MOVEMENT_AMPLIFY = 0.05,
         MOVEMENT_SPEED = 8,
@@ -50,6 +50,6 @@ return {
 
     MOVEMENT = {
         FRICTION = 0.15,
-        ACCELERATION_SPEED = 1/.4
+        ACCELERATION_SPEED = 1/0.4
     }
 }
