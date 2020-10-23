@@ -1,5 +1,3 @@
-local Enums = shared.Enums
-
 local Maid = require(shared.Common.Maid)
 
 local ITERATION_PRECISION = _G.PROJECTILE.ITERATION_PRECISION
