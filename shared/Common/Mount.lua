@@ -4,6 +4,7 @@
     TODO: cache stupid mount paths that already have the same location
 --]]
 
+local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
 local Mount = {}
 
@@ -15,18 +16,16 @@ Mount.__call = function(self, path, sep)
 
     local head = self.Location
     for _, fileName in ipairs(splitPath) do
-        -- print(path, ":", fileName)
         if typeof(head) == "table" then
             head = head[fileName] or error("path does not exist:", fileName, "from", path)
         elseif typeof(head) == "Instance" then
-            -- print("traversing from", head:GetFullName())
             head =
                 head:FindFirstChild(fileName) or
                 error("path does not exist: " .. fileName .. " from " .. head:GetFullName())
         end
     end
 
-    -- print("final:", head)
+    Maid.watch(self)
 
     return head
 end

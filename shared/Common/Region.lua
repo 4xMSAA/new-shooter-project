@@ -1,4 +1,4 @@
-local Polymorph = require(shared.Utilities.Polymorph)
+local Maid = require(shared.Common.Maid)
 
 ---@class Region
 local Region = {}
@@ -9,7 +9,9 @@ function Region.new(pos, size)
     local self = {}
     self.Position = pos or Vector3.new()
     self.Size = size or Vector3.new()
-    Polymorph.from(self, Region)
+    setmetatable(self, Region)
+
+    Maid.watch(self)
 
     return self
 end

@@ -1,6 +1,14 @@
 local TableUtils = {}
 local random = Random.new()
 
+function TableUtils.count(t)
+    local count = 0
+    for _,_ in pairs(t) do
+        count = count + 1
+    end
+    return count
+end
+
 ---Get a random value from a table
 ---@param t table The table to pick an input from
 ---@param filter function The filtering function to go with

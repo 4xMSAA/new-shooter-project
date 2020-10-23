@@ -1,6 +1,8 @@
 -- credit: @x_o
 
-local ITERATIONS = 8
+local Maid = require(shared.Common.Maid)
+
+local ITERATIONS = 5
 
 local Spring = {}
 
@@ -43,6 +45,8 @@ function Spring.new(mass, force, damping, speed)
 
         return self.Position
     end
+
+    Maid.watch(spring)
 
     return spring
 end

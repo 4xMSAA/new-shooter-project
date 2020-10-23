@@ -1,3 +1,5 @@
+local Maid = require(shared.Common.Maid)
+
 ---Serverside Weapon class for server-enforcement
 ---@class ServerWeapon
 local ServerWeapon = {}
@@ -8,5 +10,6 @@ function ServerWeapon.new(weaponModule)
 
 
     setmetatable(self, ServerWeapon)
+    Maid.watch(self)
     return self
 end

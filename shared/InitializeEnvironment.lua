@@ -24,6 +24,7 @@ end
 shared.Storage = game:GetService("ReplicatedStorage")
 shared.Source = shared.Storage:WaitForChild("Source")
 shared.Common = shared.Source:WaitForChild("Common")
+shared.Game = shared.Source:WaitForChild("Game")
 shared.Assets = shared.Storage:WaitForChild("Assets")
 
 -- load final configuration values to _G
@@ -51,6 +52,7 @@ _G.Path.Players = createSharedFolder("Players", _G.Workspace)
 
 _G.Path.Hitboxes = createSharedFolder("Hitboxes", _G.Workspace)
 _G.Path.RayIgnore = createSharedFolder("RayIgnore", _G.Workspace)
+_G.Path.Effects = createSharedFolder("Effects", _G.Path.RayIgnore)
 _G.Path.Collisions = createSharedFolder("Collisions", _G.Workspace)
 
 if RunService:IsServer() then

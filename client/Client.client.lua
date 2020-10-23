@@ -19,7 +19,14 @@ local LocalCharacter = require(_G.Client.Core.LocalCharacter)
 local Movement = require(_G.Client.Game.Movement)
 
 local Camera = require(_G.Client.Core.Camera).new(workspace.CurrentCamera)
-local WeaponManager = require(_G.Client.Managers.WeaponManager).new({Camera = Camera})
+local ProjectileManager = require(_G.Client.Managers.ProjectileManager).new()
+local WeaponManager =
+    require(_G.Client.Managers.WeaponManager).new(
+    {
+        Camera = Camera,
+        ProjectileManager = ProjectileManager
+    }
+)
 
 local debugPause = false
 local spawned = false
@@ -120,3 +127,9 @@ RunService:BindToRenderStep(
         debug.profileend("game-camera")
     end
 )
+
+RunService.Heartbeat:connect(function(dt)
+    debug.profilebegin("game-projectilemanager")
+    ProjectileManager:step(dt)
+    debug.profilebegin("game-projectilemanager")
+end)

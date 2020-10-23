@@ -10,6 +10,7 @@
 -- so i have to keep in memory the next pose it knows
 -- and create it's own intermediate interpolation value
 
+local Maid = require(shared.Common.Maid)
 local Emitter = require(shared.Common.Emitter)
 
 local AnimationParser = require(script.Parent.Common.AnimationParser)
@@ -48,7 +49,7 @@ function AnimationTrack.new(host, keyframeSequence, map)
     }
 
     setmetatable(self, AnimationTrack)
-
+    Maid.watch(self)
     return self
 end
 

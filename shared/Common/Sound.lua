@@ -1,3 +1,5 @@
+local Maid = require(shared.Common.Maid)
+
 ---A wrapper around the Roblox Sound instance for extra features
 ---@class Sound
 local Sound = {}
@@ -35,6 +37,8 @@ function Sound.new(props, extraProps)
         }
     )
     self:_init(props, extraProps)
+
+    Maid.watch(self)
 
     return self
 end
@@ -102,7 +106,6 @@ end
 ---
 function Sound:playMultiple(max)
     self:_getPlayableInstance(max):Play()
-
 end
 
 return Sound

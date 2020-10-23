@@ -8,12 +8,23 @@ local ProjectileManager = {}
 ProjectileManager.__index = ProjectileManager
 
 function ProjectileManager.new()
-    local self = {}
-
+    local self = {
+        Projectiles = {}
+    }
 
     setmetatable(self, ProjectileManager)
     Maid.watch(self)
     return self
+end
+
+---
+---@param config userdata
+---@param direction userdata
+function ProjectileManager:makeProperties(config, direction)
+    return {
+        -- velocity units are provided in metres per second
+        Velocity = config.Velocity / 60
+    }
 end
 
 ---
@@ -29,7 +40,28 @@ function ProjectileManager:create(gun, start, direction, networked)
     assert(cfg.Projectile, "gun " .. cfg.Name .. " does not have Projectile configuration")
 
     for index = 1, cfg.Projectile.Amount do
-        Projectile.new()
+        local proj =
+            Projectile.new(cfg.Projectile.Type, self:makeProperties(cfg.Projectile, direction), start, direction)
+        self.Projectiles[proj] = true
     end
-
 end
+
+
+function ProjectileManager:discard(projectile)
+    projectile:destroy()
+    self.Projectiles[projectile] = nil
+end
+
+---
+---@param dt number Delta time since last update
+function ProjectileManager:step(dt)
+    for proj, _ in pairs(self.Projectiles) do
+        local keepSimulating = proj:step(dt)
+        proj:render()
+        if not keepSimulating then
+            self:discard(proj)
+        end
+    end
+end
+
+return ProjectileManager

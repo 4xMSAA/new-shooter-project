@@ -92,12 +92,12 @@ end
 
 ---Returns the base CFrame, unaffected by camera Offsets
 function Camera:getCFrame()
-    return Camera.CFrame
+    return self.CFrame
 end
 
 ---Returns the absolute CFrame, along with Offsets on it
 function Camera:getAbsoluteCFrame()
-    return Camera.Instance.CFrame
+    return self.Instance.CFrame
 end
 
 ---Add an offset CFrame that won't affect the base CFrame

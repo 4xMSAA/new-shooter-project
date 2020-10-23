@@ -1,5 +1,7 @@
 local RunService = game:GetService("RunService")
 
+local TableUtils = require(shared.Common.TableUtils)
+
 local ASCII = require(script.ASCII)
 
 local totalTracked = 0
@@ -14,6 +16,7 @@ function Maid.watch(...)
         if not Maid._tracked[object] then
             Maid.attachMetadata(object)
             Maid._tracked[object] = true
+            totalTracked = totalTracked + 1
         else
             warn(
                 "already watching address " .. object .. " from: \n" ..
@@ -25,12 +28,15 @@ end
 
 ---Creates metadata about how to clear the object
 function Maid.attachMetadata(object)
-    object._MaidMetadata = {}
+    object._maidMetadata = {}
 
     --  attach top-level Object properties that apply to self
     for property, value in pairs(Object) do
+        if rawget(object, property) then
+            object._maidMetadata[property] = value
+        end
         if typeof(value) == "function" then
-            object[property] = value
+            rawset(object, property, value)
         end
     end
 end
@@ -46,10 +52,10 @@ function Maid.info(showASCII)
     print(
         "---- MAID INFO ----\n" ..
         (showASCII and ASCII or "\n")..
-        "Watching " .. #Maid._tracked .. " active objects. " ..
+        "Watching " .. TableUtils.count(Maid._tracked) .. " active objects. " ..
         "Total of " .. totalTracked .. " watched objects.\n" ..
-        "Called from: \n" ..
-        debug.traceback()
+        "Called from: \n|- " ..
+        debug.traceback():gsub("\n$",""):gsub("\n", "\n|- ")
     )
 end
 

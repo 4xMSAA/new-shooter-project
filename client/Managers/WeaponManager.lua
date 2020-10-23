@@ -26,6 +26,9 @@ local WeaponManager = {}
 WeaponManager.__index = WeaponManager
 
 function WeaponManager.new(config)
+    assert(config.Camera, "WeaponManager requires a camera, provide it in the config table")
+    assert(config.ProjectileManager, "WeaponManager requires ProjectileManager, provide it in the config table")
+
     local camera = config.Camera
 
     if camera then
@@ -35,6 +38,7 @@ function WeaponManager.new(config)
 
     local self = {}
     self.Camera = camera
+    self.ProjectileManager = config.ProjectileManager
     self.ActiveWeapons = {}
 
     self.Connections = {}
@@ -46,6 +50,7 @@ function WeaponManager.new(config)
     self.CameraRecoilSpring = Spring.new(4, 50, 4*CAMERA_RECOIL_ANGULAR_DAMPENING, 4*CAMERA_RECOIL_ANGULAR_SPEED)
 
     setmetatable(self, WeaponManager)
+    Maid.watch(self)
 
     return self
 end
@@ -116,6 +121,8 @@ function WeaponManager:fire(weapon, state)
 
                 self.CameraRecoilSpring:shove(pitch, yaw, roll)
             end
+            local camCF = self.Camera:getCFrame()
+            self.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
         end
     end
 

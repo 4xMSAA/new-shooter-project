@@ -2,6 +2,14 @@ local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 
 local Enums = shared.Enums
 
+local params = RaycastParams.new()
+params.FilterDescendantsInstances = {
+    workspace.GameFolder.RayIgnore,
+    workspace.GameFolder.Collisions,
+    workspace.GameFolder.Players,
+    workspace.CurrentCamera
+}
+
 ---@class Bullet
 local Bullet = {}
 
@@ -9,23 +17,18 @@ function Bullet:init()
     self._renderObject = shared.Assets.FX.Bullet.Tracer:Clone()
 end
 
-function Bullet:destroy()
-    self._renderObject:Destroy()
-end
+function Bullet:simulate(dt)
+    self.Velocity = self.Velocity - Vector3.new(0, (workspace.Gravity * dt * GRAVITY_MODIFIER) / 60, 0)
 
-function Bullet:step(dt)
-    self.Velocity = self.Velocity - Vector3.new(0, workspace.Gravity*dt*GRAVITY_MODIFIER, 0)
-
-    local params = RaycastParams.new()
     local result = workspace:Raycast(self.Position, self.Velocity, params)
 
     -- continue going
-    if not result.Instance then
+    if not result then
+        self.Position = self.Position + self.Velocity
         return true
     end
 
     return false, result
-
 end
 
 function Bullet:hit(rayResult)
@@ -37,5 +40,8 @@ function Bullet:hit(rayResult)
 end
 
 function Bullet:render()
+    self._renderObject.Parent = _G.Path.Effects
     self._renderObject.CFrame = CFrame.new(self.Position)
 end
+
+return Bullet

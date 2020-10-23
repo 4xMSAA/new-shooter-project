@@ -3,6 +3,8 @@
     "Cannot convert mixed or non-array tables: keys must be strings"
     when working with BindableEvents as signals (looking at stravant's CreateSignal utility)
 --]]
+local Maid = require(shared.Common.Maid)
+
 local Listener = {}
 function Listener.new(emitter, func, eventName, once)
     local self = {}
@@ -102,6 +104,8 @@ function Emitter.new()
     self.fire = self.emit
     self.Fire = self.emit
     self.Emit = self.emit
+
+    Maid.watch(self)
 
     return self
 end

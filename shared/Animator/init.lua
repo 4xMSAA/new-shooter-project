@@ -4,6 +4,7 @@
     this is more memory-oriented so maybe it will bloat the script something
 --]]
 local Styles = require(shared.Common.Styles)
+local Maid = require(shared.Common.Maid)
 
 local EasingDirectionMap = require(script.Common.EasingDirectionMap)
 local AnimationTrack = require(script.AnimationTrack)
@@ -42,7 +43,6 @@ function Animator.new(rig)
     self._timeMap = {}
     self.Rig = rig
 
-    setmetatable(self, Animator)
 
     self.Rig.DescendantAdded:connect(
         -- careful, might bite in the ass
@@ -53,6 +53,8 @@ function Animator.new(rig)
         end
     )
 
+    setmetatable(self, Animator)
+    Maid.watch(self)
     return self
 end
 
