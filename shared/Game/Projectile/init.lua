@@ -61,7 +61,6 @@ function Projectile:step(frameDelta)
 
         if rayResult then
             if not self:hit(self, rayResult) then
-                print("hit", rayResult)
                 return false, rayResult
             end
         end
