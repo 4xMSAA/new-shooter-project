@@ -1,3 +1,5 @@
+local VELOCITY_MODIFIER = _G.PROJECTILE.VELOCITY_MODIFIER
+
 local Maid = require(shared.Common.Maid)
 
 local Projectile = require(shared.Game.Projectile)
@@ -23,7 +25,7 @@ end
 function ProjectileManager:makeProperties(config, direction)
     return {
         -- velocity units are provided in metres per second
-        Velocity = config.Velocity / 60
+        Velocity = config.Velocity / 60 * VELOCITY_MODIFIER
     }
 end
 
@@ -58,7 +60,7 @@ function ProjectileManager:step(dt)
     for proj, _ in pairs(self.Projectiles) do
         local keepSimulating = proj:step(dt)
         proj:render()
-        if not keepSimulating then
+        if not keepSimulating or proj.Lifetime > 5 then
             self:discard(proj)
         end
     end

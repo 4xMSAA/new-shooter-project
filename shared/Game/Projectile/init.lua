@@ -22,6 +22,7 @@ function Projectile.new(projectileType, props, start, direction)
     local self = {}
 
     self.Type = projectileTypes[projectileType]
+    self.Lifetime = 0
 
     self.Origin = start
     self.Position = start
@@ -45,6 +46,9 @@ function Projectile:step(frameDelta)
     -- do a precise simulation
     local iterations = math.floor(frameDelta / ITERATION_PRECISION)
     local dt = frameDelta - iterations * ITERATION_PRECISION
+
+    -- add to projectile lifetime each frame
+    self.Lifetime = self.Lifetime + frameDelta
 
     -- a for loop still runs even if the target is equal to the starting number
     for iteration = 0, iterations do
