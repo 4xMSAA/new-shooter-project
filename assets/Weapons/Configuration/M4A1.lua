@@ -23,7 +23,8 @@ local Configuration = {
         BoltForward = 5104015522,
         MagIn = 5104152875,
         MagOut = {SoundId = 268445237, Volume = 0.7},
-        Fire = {SoundId = 988203005, Volume = 0.4},
+        -- Fire = {SoundId = 988203005, Volume = 0.4},
+        Fire = {SoundId = 300537398, Volume = 0.4},
         DistantFire = 4788389522
     },
     Projectile = {
