@@ -82,9 +82,9 @@ function Movement:update(dt, lookV)
         local moveDir = self.Humanoid.MoveDirection
         self.MoveAcceleration =
             Vector3.new(
-            reachTargetValue(self.MoveAcceleration.X, self.Speed * moveDir.X, MOVEMENT_ACCELERATION_SPEED),
+            reachTargetValue(self.MoveAcceleration.X, self.Speed * moveDir.X, dt*MOVEMENT_ACCELERATION_SPEED),
             0,
-            reachTargetValue(self.MoveAcceleration.Z, self.Speed * moveDir.Z, MOVEMENT_ACCELERATION_SPEED)
+            reachTargetValue(self.MoveAcceleration.Z, self.Speed * moveDir.Z, dt*MOVEMENT_ACCELERATION_SPEED)
         )
     end
 
