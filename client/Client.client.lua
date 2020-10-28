@@ -129,6 +129,9 @@ RunService:BindToRenderStep(
 )
 
 RunService.Heartbeat:connect(function(dt)
+    if debugPause then
+        return
+    end
     debug.profilebegin("game-projectilemanager")
     ProjectileManager:step(dt)
     debug.profilebegin("game-projectilemanager")

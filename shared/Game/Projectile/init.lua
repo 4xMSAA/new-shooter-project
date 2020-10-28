@@ -13,7 +13,6 @@ end
 ---A projectile with different properties
 ---@class Projectile
 local Projectile = {}
-Projectile.__index = Projectile
 
 function Projectile.new(projectileType, props, start, direction)
     assert(projectileTypes[projectileType])

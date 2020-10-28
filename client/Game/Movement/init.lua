@@ -8,7 +8,9 @@ rayParams.FilterType = Enum.RaycastFilterType.Blacklist
 rayParams.FilterDescendantsInstances = {
     _G.Path.Ignore,
     _G.Path.Players,
-    _G.Path.ClientViewmodel
+    _G.Path.ClientViewmodel,
+    workspace.GameFolder.RayIgnore,
+    workspace.CurrentCamera
 }
 rayParams.IgnoreWater = true
 

@@ -1,5 +1,5 @@
 local Debris = game:GetService("Debris")
-
+local Maid = require(shared.Common.Maid)
 ---
 ---@class Particle
 local Particle = {}
@@ -28,6 +28,7 @@ function Particle.new(effect, parent)
 
     setmetatable(self, Particle)
     self:_init()
+    Maid.watch(self)
 
     return self
 end
@@ -36,18 +37,16 @@ function Particle:_init()
     self._attachment = Instance.new("Attachment")
     self._attachment.Parent = self.Parent
 
-    -- get rid of configuration
     for index, instance in pairs(self.Instances) do
+        -- get rid of configuration
         if instance:IsA("Script") or instance:IsA("ModuleScript") then
             table.remove(self.Instances, index)
+        else
+            if instance:IsA("Light") or instance:IsA("ParticleEmitter") then
+                instance.Enabled = false
+            end
+            instance.Parent = self._attachment
         end
-    end
-    -- removing indexes screws up iteration, so we have to do this
-    for index, instance in pairs(self.Instances) do
-        if instance:IsA("Light") or instance:IsA("ParticleEmitter") then
-            instance.Enabled = false
-        end
-        instance.Parent = self._attachment
     end
 end
 
