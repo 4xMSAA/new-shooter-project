@@ -24,7 +24,8 @@ local WeaponManager =
     require(_G.Client.Managers.WeaponManager).new(
     {
         Camera = Camera,
-        ProjectileManager = ProjectileManager
+        ProjectileManager = ProjectileManager,
+        GameMode = "Zombies"
     }
 )
 
@@ -34,7 +35,6 @@ local spawned = false
 UserInputService.MouseIconEnabled = false
 
 -- TODO: actual input binding
--- TODO: move gun test code somewhere else or make a manager/handler module for guns
 local function spawn(character)
     spawned = true
     local test = WeaponManager:create("M4A1", "a")

@@ -40,13 +40,16 @@ local PATH = {
     WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
 }
 
+local Enums = shared.Enums
+
 local Animator = require(shared.Source.Animator)
-local Particle = require(shared.Common.Particle)
+local Particle = require(shared.Common.Particle) -- TODO: change particle to particlemanager
 local Sound = require(shared.Common.Sound)
 local Spring = require(shared.Common.Spring)
 local Styles = require(shared.Common.Styles)
 local Emitter = require(shared.Common.Emitter)
 local SmallUtils = require(shared.Common.SmallUtils)
+local TableUtils = require(shared.Common.TableUtils)
 
 local Maid = require(shared.Common.Maid)
 
@@ -67,16 +70,22 @@ Gun.__index = Gun
 
 ---Creates a new Gun class
 ---@param weapon any A string or ModuleScript instance of a gun configuration
----@param gamemode string configuration to use specific to a gamemode (zombies, PvP)
+---@param gamemode string use configuration specific to a gamemode
 function Gun.new(weapon, gamemode)
+    assert(type(gamemode) == "string", "gamemode must be specified on creation for object by name of " .. weapon)
+
     -- make string to config by search or use config directly
-    -- TODO: load gamemode configurations if specified
     if typeof(weapon) == "string" then
         weapon = assert(PATH.WEAPON_CONFIGURATIONS(weapon), "did not find weapon " .. weapon)
     end
 
-    local config = require(weapon)
+    local config = require(weapon:Clone()) -- don't alter the original module
     local model = PATH.WEAPON_MODELS(config.ModelPath):Clone()
+
+    -- overwrite config values with gamemode specific ones
+    assert(config.Gamemode[gamemode], "gamemode " .. gamemode .. " is not a valid configuration for this weapon")
+    TableUtils.recursiveOverwrite(config.Gamemode[gamemode], config)
+
 
     local self = {}
 
@@ -85,7 +94,6 @@ function Gun.new(weapon, gamemode)
     self.ViewModel = model
     self.Handle = self.ViewModel.PrimaryPart
     self.Configuration = config
-
     self.ActiveFireMode = config.FireMode[1]
 
     -- states
@@ -287,6 +295,11 @@ end
 --- Listen to a detailed process via obj.Events.Fired
 ---@return boolean Did the gun fire or not?
 function Gun:fire()
+    if self.ActiveFireMode == Enums.FireMode.Safety then
+        self.Events.Fired:emit("SAFETY")
+        return false
+    end
+
     if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() or self.State.Cycling then
         self.Events.Fired:emit("CYCLING")
         return false

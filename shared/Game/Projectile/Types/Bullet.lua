@@ -1,5 +1,19 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 
+local MATERIAL_TO_HIT_FX = {
+    ["Default"] = shared.Assets.FX.Hit.Bullet.Normal,
+    [Enum.Material.CorrodedMetal] = shared.Assets.FX.Hit.Bullet.Metal,
+    [Enum.Material.DiamondPlate] = shared.Assets.FX.Hit.Bullet.Metal,
+    [Enum.Material.Metal] = shared.Assets.FX.Hit.Bullet.Metal,
+    [Enum.Material.Foil] = shared.Assets.FX.Hit.Bullet.Metal,
+    [Enum.Material.ForceField] = shared.Assets.FX.Hit.Bullet.Metal,
+    [Enum.Material.Grass] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.Mud] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.Ground] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.Fabric] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt,
+}
+
 local Enums = shared.Enums
 
 local params = RaycastParams.new()
@@ -14,17 +28,17 @@ params.FilterDescendantsInstances = {
 local Bullet = {}
 
 function Bullet:init()
-    self._renderObject = shared.Assets.FX.Bullet.Tracer:Clone()
+    self._renderObject = shared.Assets.FX.ProjectileTracer.Bullet:Clone()
 end
 
 function Bullet:simulate(dt)
-    self.Velocity = self.Velocity - Vector3.new(0, (workspace.Gravity * dt * GRAVITY_MODIFIER) / 60, 0)
+    self.Velocity = self.Velocity - Vector3.new(0, (workspace.Gravity * GRAVITY_MODIFIER), 0)
 
     local result = workspace:Raycast(self.Position, self.Velocity, params)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity
+        self.Position = self.Position + self.Velocity*((1/60)/dt)
         return true
     end
 
@@ -40,8 +54,8 @@ function Bullet:hit(rayResult)
 end
 
 function Bullet:render()
-    self._renderObject.Parent = _G.Path.Effects
     self._renderObject.CFrame = CFrame.new(self.Position)
+    self._renderObject.Parent = _G.Path.Effects
 end
 
 return Bullet

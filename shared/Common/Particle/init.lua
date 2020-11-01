@@ -1,21 +1,12 @@
-local Debris = game:GetService("Debris")
 local Maid = require(shared.Common.Maid)
+local Behaviours = require(script.Behaviours)
+
 ---
 ---@class Particle
 local Particle = {}
 Particle.__index = Particle
 
-Particle._behaviours = {
-    ParticleEmitter = function(inst, config)
-        inst:Emit(config[inst.Name].Amount)
-    end,
-    PointLight = function(inst, config)
-        local light = inst:Clone()
-        light.Enabled = true
-        light.Parent = inst.Parent
-        Debris:AddItem(light, config[inst.Name].Lifetime)
-    end
-}
+Particle._behaviours = Behaviours
 
 function Particle.new(effect, parent)
     local self = {

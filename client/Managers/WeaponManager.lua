@@ -20,6 +20,37 @@ local function springRange(v0, range)
     return SmallUtils.randomFloatRange(v0 - range, v0 + range)
 end
 
+local function fireViewportWeapon(manager, weapon)
+    local recoil = weapon.Configuration.CameraRecoil
+    local rotRange = recoil.Range
+    local rotV = recoil.V3
+    local pitch, yaw, roll =
+        springRange(rotV.x, rotRange.x),
+        springRange(rotV.y, rotRange.y),
+        springRange(rotV.z, rotRange.z)
+
+    yaw = (math.random() > 0.5 and -yaw) or yaw
+
+    manager.CameraRecoilSpring:shove(pitch, yaw, roll)
+
+    local camCF = manager.Camera:getCFrame()
+    manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
+end
+
+local function equip(manager, weapon, networked)
+    -- equip new weapon
+    manager.Connections.Viewport = weapon
+    manager.ViewModelArms:attach(weapon)
+    weapon:equip()
+    weapon.ViewModel.Parent = _G.Path.ClientViewmodel
+
+    -- prevent loopback
+    if networked then
+        return
+    end
+    NetworkLib:send(Enums.PacketType.WeaponEquip, weapon.UUID)
+end
+
 ---Manages all weapons in a single container
 ---@class WeaponManager
 local WeaponManager = {}
@@ -28,6 +59,7 @@ WeaponManager.__index = WeaponManager
 function WeaponManager.new(config)
     assert(config.Camera, "WeaponManager requires a camera, provide it in the config table")
     assert(config.ProjectileManager, "WeaponManager requires ProjectileManager, provide it in the config table")
+    assert(config.GameMode, "WeaponManager requires a gamemode to be specified, provide it in the config table")
 
     local camera = config.Camera
 
@@ -39,7 +71,9 @@ function WeaponManager.new(config)
     local self = {}
     self.Camera = camera
     self.ProjectileManager = config.ProjectileManager
+    self.GameMode = config.GameMode
     self.ActiveWeapons = {}
+    self.AutoFire = {}
 
     self.Connections = {}
     self.Connections.Characters = {}
@@ -47,7 +81,7 @@ function WeaponManager.new(config)
     self.Connections.LocalCharacter = nil
 
     self.ViewModelArms = ViewModelArms.new(config and config.ViewModelArmsAsset or _G.VIEWMODEL.DEFAULT_ARMS)
-    self.CameraRecoilSpring = Spring.new(4, 50, 4*CAMERA_RECOIL_ANGULAR_DAMPENING, 4*CAMERA_RECOIL_ANGULAR_SPEED)
+    self.CameraRecoilSpring = Spring.new(4, 50, 4 * CAMERA_RECOIL_ANGULAR_DAMPENING, 4 * CAMERA_RECOIL_ANGULAR_SPEED)
 
     setmetatable(self, WeaponManager)
     Maid.watch(self)
@@ -59,7 +93,7 @@ end
 ---@param name string Weapon name to create
 ---@param uuid string UUID given by server
 function WeaponManager:create(name, uuid)
-    local gun = Gun.new(name)
+    local gun = Gun.new(name, self.GameMode)
     gun.UUID = uuid
 
     return gun
@@ -80,52 +114,38 @@ end
 ---@param weapon Gun Weapon object to equip
 function WeaponManager:equipViewport(weapon, networked)
     local object = self.ActiveWeapons[weapon.UUID]
-    assert(object.Owner == Players.LocalPlayer, "cannot equip a weapon as viewport that does not belong to local player")
-
-    local function equip()
-        -- equip new weapon
-        self.Connections.Viewport = weapon
-        self.ViewModelArms:attach(weapon)
-        weapon:equip()
-        weapon.ViewModel.Parent = _G.Path.ClientViewmodel
-
-        -- prevent loopback
-        if networked then
-            return
-        end
-        NetworkLib:send(Enums.PacketType.WeaponEquip, weapon.UUID)
-    end
+    assert(
+        object.Owner == Players.LocalPlayer,
+        "cannot equip a weapon as viewport that does not belong to local player"
+    )
 
     if self.Connections.Viewport then
         local yield = self.Connections.Viewport:unequip()
-        yield:once("done", equip)
+        yield:once(
+            "done",
+            function()
+                equip(self, weapon, networked)
+            end
+        )
     else
-        equip()
+        equip(self, weapon, networked)
     end
 end
 
 function WeaponManager:fire(weapon, state)
+    if weapon.ActiveFireMode == Enums.FireMode.Automatic and state then
+        self.AutoFire[weapon] = true
+    else
+        self.AutoFire[weapon] = nil
+    end
+
     if not weapon.Configuration.Charge and state then
         if weapon:fire() then
             if weapon == self.Connections.Viewport then
-
-                local recoil = weapon.Configuration.CameraRecoil
-                local rotRange = recoil.Range
-                local rotV = recoil.V3
-                local pitch, yaw, roll =
-                    springRange(rotV.x, rotRange.x),
-                    springRange(rotV.y, rotRange.y),
-                    springRange(rotV.z, rotRange.z)
-
-                yaw = (math.random() > 0.5 and -yaw) or yaw
-
-                self.CameraRecoilSpring:shove(pitch, yaw, roll)
+                fireViewportWeapon(self, weapon)
             end
-            local camCF = self.Camera:getCFrame()
-            self.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
         end
     end
-
 end
 
 function WeaponManager:reload(weapon)
@@ -141,14 +161,25 @@ function WeaponManager:step(dt, camera, velocity)
     self.CameraRecoilSpring:update(math.min(1, dt))
     local recoil = self.CameraRecoilSpring.Position
     camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
-    camera:rawMoveLook(recoil.Y*dt*60, recoil.X*dt*60)
+    camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
 
     self.Connections.Viewport:setState("Movement", velocity)
     self.Connections.Viewport.Animator:_step(dt)
     camera:updateOffset(Enums.CameraOffset.Animation.ID, self.Connections.Viewport:getExpectedCameraCFrame())
     self.Connections.Viewport:update(dt, camera.CFrame)
 
-    -- handle third person weapons
+    -- TODO: handle third person weapons
+
+    -- handle automatic fire
+    for weapon, _ in pairs(self.AutoFire) do
+        -- local steps = 60/self.Configuration.RPM / dt
+        if weapon:fire() then
+            if weapon == self.Connections.Viewport then
+                fireViewportWeapon(self, weapon)
+            end
+        end
+        -- end
+    end
 end
 
 -- network plug-in

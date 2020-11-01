@@ -1,6 +1,19 @@
 local TableUtils = {}
 local random = Random.new()
 
+local function recursion(t, wT)
+    for key, object in pairs(t) do
+        if type(object) == "table" then
+            if not wT[key] then
+                wT[key] = {}
+            end
+            recursion(object, wT[key])
+        else
+            wT[key] = object
+        end
+    end
+end
+
 function TableUtils.count(t)
     local count = 0
     for _,_ in pairs(t) do
@@ -53,6 +66,11 @@ function TableUtils.overwrite(t0, t1)
     for key, value in pairs(t1) do
         t0[key] = value
     end
+end
+
+---Ignores tables and only writes values
+function TableUtils.recursiveOverwrite(t0, t1)
+    recursion(t0, t1)
 end
 
 ---Convert an array table to a list table (dictionary)
