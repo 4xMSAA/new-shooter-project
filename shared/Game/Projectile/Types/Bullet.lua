@@ -32,13 +32,13 @@ function Bullet:init()
 end
 
 function Bullet:simulate(dt)
-    self.Velocity = self.Velocity - Vector3.new(0, (workspace.Gravity * GRAVITY_MODIFIER), 0)
+    self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity) * GRAVITY_MODIFIER), 0)
 
     local result = workspace:Raycast(self.Position, self.Velocity, params)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity*((1/60)/dt)
+        self.Position = self.Position + self.Velocity*dt
         return true
     end
 

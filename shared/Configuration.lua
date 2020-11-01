@@ -42,7 +42,7 @@ return {
     },
 
     PROJECTILE = {
-        GRAVITY_MODIFIER = 1/(196.2*10),
+        GRAVITY_MODIFIER = 1/60,
         VELOCITY_MODIFIER = 0.6,
 
         ITERATION_PRECISION = 1/20,

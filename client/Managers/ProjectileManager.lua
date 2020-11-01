@@ -25,7 +25,7 @@ end
 function ProjectileManager:makeProperties(config, direction)
     return {
         -- velocity units are provided in metres per second
-        Velocity = config.Velocity / 60 * VELOCITY_MODIFIER
+        Velocity = config.Velocity * VELOCITY_MODIFIER
     }
 end
 
