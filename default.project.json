@@ -2,16 +2,20 @@
   "name": "new-shooter-project",
   "tree": {
     "$className": "DataModel",
-
     "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
       "Source": {
         "$path": "shared"
       },
       "Assets": {
-        "$path": "assets"
+        "$ignoreUnknownInstances": true,
+        "$path": "assets",
+        "Weapons": {
+          "$ignoreUnknownInstances": true,
+          "$path": ""
+        }
       }
     },
-
     "ServerScriptService": {
       "Source": {
         "$path": "server"
