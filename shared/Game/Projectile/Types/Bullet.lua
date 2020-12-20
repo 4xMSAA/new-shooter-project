@@ -8,6 +8,9 @@ local MATERIAL_TO_HIT_FX = {
     [Enum.Material.Foil] = shared.Assets.FX.Hit.Bullet.Metal,
     [Enum.Material.ForceField] = shared.Assets.FX.Hit.Bullet.Metal,
     [Enum.Material.Grass] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.Glass] = shared.Assets.FX.Hit.Bullet.Glass,
+    [Enum.Material.Ice] = shared.Assets.FX.Hit.Bullet.Glass,
+    [Enum.Material.Wood] = shared.Assets.FX.Hit.Bullet.Wood,
     [Enum.Material.Mud] = shared.Assets.FX.Hit.Bullet.Dirt,
     [Enum.Material.Ground] = shared.Assets.FX.Hit.Bullet.Dirt,
     [Enum.Material.Fabric] = shared.Assets.FX.Hit.Bullet.Dirt,
@@ -60,7 +63,7 @@ function Bullet:hitClient(rayResult)
         CFrame.Angles(-math.pi / 2, 0, 0) *
         CFrame.Angles(0, math.random()*math.pi*2, 0)
 
-    local p = ParticleManager:createDecal(materialEffect, {CFrame = cf})
+    local p = ParticleManager:createDecal(materialEffect, {CFrame = cf}, {Color = rayResult.Instance.Color})
     p:emit()
     ParticleManager:scheduleDestroy(p, 10)
 end

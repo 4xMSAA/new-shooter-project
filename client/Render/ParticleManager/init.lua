@@ -20,19 +20,19 @@ function ParticleManager.new(controllerPath)
     return self
 end
 
-function ParticleManager:create(effect, parent)
+function ParticleManager:create(effect, parent, props)
     self._IDCounter = (self._IDCounter % 2 ^ 16) + 1
-    local p = Particle.new(effect, parent)
+    local p = Particle.new(effect, parent, props)
 
     self.Particles[self._IDCounter] = p
 
     return p
 end
 
-function ParticleManager:createDecal(effect, partProps)
+function ParticleManager:createDecal(effect, partProps, props)
     local part = effect:Clone()
     part:ClearAllChildren()
-    local particle = self:create(effect, part)
+    local particle = self:create(effect, part, props)
 
     for prop, val in pairs(partProps) do
         part[prop] = val

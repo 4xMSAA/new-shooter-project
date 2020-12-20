@@ -9,13 +9,14 @@ Particle._behaviours = Behaviours
 
 ---@param effect userdata
 ---@param parent userdata Where to parent the Particle instances to
-function Particle.new(effect, parent)
+function Particle.new(effect, parent, props)
     local self = {
         Parent = parent,
         Instances = assert(effect, "effect cannot be nil (got " .. tostring(effect) .. ")"):Clone():GetChildren(),
         Configuration = require(
             assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
-        )
+        ),
+        Properties = props
     }
 
     setmetatable(self, Particle)
@@ -26,6 +27,11 @@ function Particle.new(effect, parent)
 end
 
 function Particle:_init()
+    for _, inst in pairs(self.Instances) do
+        if self.Configuration.Colorable and self.Configuration.Colorable[inst.Name] then
+            inst.Color = self.Configuration.Colorable[inst.Name].new(self.Properties.Color)
+        end
+    end
     if not self.Parent:IsA("Part") then
         self._attachment = Instance.new("Attachment")
         self._attachment.Parent = self.Parent
@@ -53,8 +59,19 @@ end
 function Particle:emit()
     for _, child in pairs(self.Instances) do
         if Particle._behaviours[child.ClassName] then
-            Particle._behaviours[child.ClassName](child, self.Configuration)
+            Particle._behaviours[child.ClassName](child, self.Configuration, self.Properties)
         end
+    end
+
+    if self.Configuration.RandomSingleSound then
+        local sounds = {}
+        for _, sound in pairs(self.Instances) do
+            if sound:IsA("Sound") then
+                table.insert(sounds, sound)
+            end
+        end
+
+        sounds[math.random(#sounds)]:Play()
     end
 end
 
