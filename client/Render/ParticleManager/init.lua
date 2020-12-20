@@ -6,9 +6,11 @@ local Particle = require(shared.Common.Particle)
 local ParticleManager = {}
 ParticleManager.__index = ParticleManager
 
----@param settingsControllerPath string Path to a settings controller
-function ParticleManager.new(settingsControllerPath)
+---@param controllerPath string Path to a respective settings controller
+---that enables/disables an effect's appearance
+function ParticleManager.new(controllerPath)
     local self = {
+        _Controller = controllerPath,
         _IDCounter = 0,
         Particles = {}
     }
@@ -18,7 +20,37 @@ function ParticleManager.new(settingsControllerPath)
     return self
 end
 
-function ParticleManager:create(effectPath, parent)
-    self._IDCounter = self._IDCounter + 1
+function ParticleManager:create(effect, parent)
+    self._IDCounter = (self._IDCounter % 2 ^ 16) + 1
+    local p = Particle.new(effect, parent)
 
+    self.Particles[self._IDCounter] = p
+
+    return p
 end
+
+function ParticleManager:createDecal(effect, partProps)
+    local part = effect:Clone()
+    part:ClearAllChildren()
+    local particle = self:create(effect, part)
+
+    for prop, val in pairs(partProps) do
+        part[prop] = val
+    end
+    particle._linkedPart = part
+    part.Parent = _G.Path.FX
+
+    return particle
+end
+
+function ParticleManager:scheduleDestroy(particle, seconds)
+    -- TODO: use some actual scheduling not a coroutine every time
+    coroutine.wrap(
+        function()
+            wait(seconds)
+            particle:destroy()
+        end
+    )()
+end
+
+return ParticleManager

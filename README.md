@@ -17,13 +17,13 @@ A gun rig is set up with the following tree structure:
 |-- Animate                Place all Motor6D's here (not neccessary, but preferred)
 |-- Parts                  All design parts here (not neccessary, but preferred)
 |-+ Rig                    Required parts and location of arms
-  |-+ LeftArm              R15 arm with 0.75 width and depth
+  |-+ LeftArm              R15 arm with 0.5 width and depth
   | |-+ LeftHand
   | |-+ LeftLowerArm
   |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
   | |-+ LeftUpperArm
   |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
-  |-+ RightArm             R15 arm with 0.75 width and depth
+  |-+ RightArm             R15 arm with 0.5 width and depth
   | |-+ RightHand
   |   |-+ RightLowerArm    Motor6D Part1 to RightLowerArm
   | |-+ RightLowerArm
@@ -60,6 +60,21 @@ function Class:method()
     -- self exists in this context due to the : token
 end
 ```
+
+## Data specifications
+
+### Particle Configuration
+
+``Type`` specifices whether to read configurations for 2D elements or 3D elements.  
+**Expects:** string ``2D``, string ``3D``  
+``Default`` specifies a ClassName-based behaviour for objects inside the effect.  
+**Expects:** table ``{}`` with the instance's ClassName and an instance-specific property table  
+``Specification`` declares properties for objects by **name** inside the effect.
+**Expects:** table ``{}`` with the instance's name and an instance-specific property table
+
+### Gun Configuration
+
+TODO
 
 ## External Tools
 

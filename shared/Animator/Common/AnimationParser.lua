@@ -30,6 +30,8 @@ function AnimationParser.lookupJointByPose(pose, joints)
             return joint, pose
         end
     end
+
+    return nil, nil
 end
 
 ---Map all poses to their respective joint instances

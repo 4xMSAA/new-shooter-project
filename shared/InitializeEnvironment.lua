@@ -52,7 +52,6 @@ _G.Path.Players = createSharedFolder("Players", _G.Workspace)
 
 _G.Path.Hitboxes = createSharedFolder("Hitboxes", _G.Workspace)
 _G.Path.RayIgnore = createSharedFolder("RayIgnore", _G.Workspace)
-_G.Path.Effects = createSharedFolder("Effects", _G.Path.RayIgnore)
 _G.Path.Collisions = createSharedFolder("Collisions", _G.Workspace)
 
 if RunService:IsServer() then

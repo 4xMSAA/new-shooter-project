@@ -5,9 +5,10 @@ local Behaviours = require(script.Behaviours)
 ---@class Particle
 local Particle = {}
 Particle.__index = Particle
-
 Particle._behaviours = Behaviours
 
+---@param effect userdata
+---@param parent userdata Where to parent the Particle instances to
 function Particle.new(effect, parent)
     local self = {
         Parent = parent,
@@ -25,11 +26,14 @@ function Particle.new(effect, parent)
 end
 
 function Particle:_init()
-    self._attachment = Instance.new("Attachment")
-    self._attachment.Parent = self.Parent
-
+    if not self.Parent:IsA("Part") then
+        self._attachment = Instance.new("Attachment")
+        self._attachment.Parent = self.Parent
+    else
+        self._attachment = self.Parent
+    end
     for index, instance in pairs(self.Instances) do
-        -- get rid of configuration
+        -- get rid of configuration script in the cloned instance
         if instance:IsA("Script") or instance:IsA("ModuleScript") then
             table.remove(self.Instances, index)
         else

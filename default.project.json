@@ -8,11 +8,12 @@
         "$path": "shared"
       },
       "Assets": {
-        "$ignoreUnknownInstances": true,
-        "$path": "assets",
+        "$className": "Folder",
         "Weapons": {
-          "$ignoreUnknownInstances": true,
-          "$path": ""
+          "$className": "Folder",
+          "Configuration": {
+            "$path": "assets/Weapons/Configuration"
+          }
         }
       }
     },

@@ -38,6 +38,8 @@ function Projectile.new(projectileType, props, start, direction)
     return self
 end
 
+---A super function to handle the simulation of all inherited projectile classes
+---@param frameDelta number
 function Projectile:step(frameDelta)
     -- see how many iterations we should do in case of frame lag to still
     -- do a precise simulation
@@ -61,7 +63,7 @@ function Projectile:step(frameDelta)
         local keepSimulating, rayResult = self:simulate(iterationDelta)
 
         if rayResult then
-            if not self:hit(self, rayResult) then
+            if not self:hit(rayResult) then
                 return false, rayResult
             end
         end

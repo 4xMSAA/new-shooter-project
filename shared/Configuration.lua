@@ -42,8 +42,8 @@ return {
     },
 
     PROJECTILE = {
-        GRAVITY_MODIFIER = 1/60,
-        VELOCITY_MODIFIER = 0.6,
+        GRAVITY_MODIFIER = 1/120,
+        VELOCITY_MODIFIER = 0.2,
 
         ITERATION_PRECISION = 1/20,
         MAX_ITERATIONS_PER_FRAME = 5

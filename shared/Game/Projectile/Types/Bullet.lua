@@ -11,16 +11,19 @@ local MATERIAL_TO_HIT_FX = {
     [Enum.Material.Mud] = shared.Assets.FX.Hit.Bullet.Dirt,
     [Enum.Material.Ground] = shared.Assets.FX.Hit.Bullet.Dirt,
     [Enum.Material.Fabric] = shared.Assets.FX.Hit.Bullet.Dirt,
-    [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt,
+    [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt
 }
 
 local Enums = shared.Enums
 
+local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/BulletHit")
+
 local params = RaycastParams.new()
 params.FilterDescendantsInstances = {
-    workspace.GameFolder.RayIgnore,
-    workspace.GameFolder.Collisions,
-    workspace.GameFolder.Players,
+    _G.Path.RayIgnore,
+    _G.Path.Collisions,
+    _G.Path.Players,
+    _G.Path.FX,
     workspace.CurrentCamera
 }
 
@@ -38,24 +41,42 @@ function Bullet:simulate(dt)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity*dt
+        self.Position = self.Position + self.Velocity * dt
         return true
     end
 
     return false, result
 end
 
-function Bullet:hit(rayResult)
+function Bullet:hitClient(rayResult)
     -- decision logic per material and stuff
+    local materialEffect = MATERIAL_TO_HIT_FX[rayResult.Material] or MATERIAL_TO_HIT_FX["Default"]
+    local cf =
+        CFrame.lookAt(
+            rayResult.Position,
+            rayResult.Position + rayResult.Normal,
+            rayResult.Instance and rayResult.Instance.CFrame.UpVector or Vector3.new(0, 1, 0)
+        ) *
+        CFrame.Angles(-math.pi / 2, 0, 0) *
+        CFrame.Angles(0, math.random()*math.pi*2, 0)
 
+    local p = ParticleManager:createDecal(materialEffect, {CFrame = cf})
+    p:emit()
+    ParticleManager:scheduleDestroy(p, 10)
+end
+
+function Bullet:hit(rayResult)
     self.Position = rayResult.Position
+    if _G.Client then
+        self:hitClient(rayResult)
+    end
 
     return false
 end
 
 function Bullet:render()
     self._renderObject.CFrame = CFrame.new(self.Position)
-    self._renderObject.Parent = _G.Path.Effects
+    self._renderObject.Parent = _G.Path.FX
 end
 
 return Bullet
