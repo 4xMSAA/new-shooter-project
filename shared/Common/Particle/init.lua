@@ -51,11 +51,6 @@ function Particle:_init()
     end
 end
 
--- TODO: Control for ParticleManager
-function Particle:update()
-    -- TODO: Make particles respect their SettingsController
-end
-
 function Particle:emit()
     for _, child in pairs(self.Instances) do
         if Particle._behaviours[child.ClassName] then
