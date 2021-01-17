@@ -25,8 +25,6 @@ return {
 
         RECOIL_ANGULAR_DAMPENING = 2,
         RECOIL_ANGULAR_SPEED = 1.5,
-
-
     },
     VIEWMODEL = {
         LEFT_ARM_PIVOT = "LeftHand",

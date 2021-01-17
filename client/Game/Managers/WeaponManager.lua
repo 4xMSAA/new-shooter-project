@@ -90,10 +90,10 @@ function WeaponManager.new(config)
 end
 
 ---
----@param name string Weapon name to create
+---@param assetName string Weapon assetName to create
 ---@param uuid string UUID given by server
-function WeaponManager:create(name, uuid)
-    local gun = Gun.new(name, self.GameMode)
+function WeaponManager:create(assetName, uuid)
+    local gun = Gun.new(assetName, self.GameMode)
     gun.UUID = uuid
 
     return gun
@@ -112,6 +112,7 @@ end
 ---Equips the weapon onto the user's screen.
 ---Cannot equip non-client owned weapons
 ---@param weapon Gun Weapon object to equip
+---@param networked boolean Whether this call was networked or not (to prevent loopback)
 function WeaponManager:equipViewport(weapon, networked)
     local object = self.ActiveWeapons[weapon.UUID]
     assert(
@@ -148,8 +149,11 @@ function WeaponManager:fire(weapon, state)
     end
 end
 
-function WeaponManager:reload(weapon)
+function WeaponManager:reload(weapon, networked)
     weapon:reload()
+    if not networked then
+        NetworkLib:send(Enums.PacketType.WeaponReload)
+    end
 end
 
 function WeaponManager:setState(weapon, stateName, stateValue)
@@ -172,18 +176,12 @@ function WeaponManager:step(dt, camera, velocity)
 
     -- handle automatic fire
     for weapon, _ in pairs(self.AutoFire) do
-        -- local steps = 60/self.Configuration.RPM / dt
         if weapon:fire() then
             if weapon == self.Connections.Viewport then
                 fireViewportWeapon(self, weapon)
             end
         end
-        -- end
     end
-end
-
--- network plug-in
-function WeaponManager:route()
 end
 
 return WeaponManager

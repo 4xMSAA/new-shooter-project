@@ -31,7 +31,7 @@ function NetworkLib:_autoSerialize(...)
         if typeof(value) == "table" and value["serialize"] then
             value = value:serialize()
         elseif typeof(value) == "table" then
-            warn("no serialize function on object: " .. value .. "\n" ..debug.traceback())
+            warn("no serialize function on object: " .. value .. "\n" .. debug.traceback())
         end
         result[key] = value
     end
@@ -48,10 +48,10 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
-                if not listenFor then
-                    callback(receivedEnum, ...)
-                elseif listenFor and receivedEnum == listenFor then
+                if listenFor and receivedEnum == listenFor then
                     callback(...)
+                else
+                    callback(receivedEnum, ...)
                 end
             end
         )
@@ -60,10 +60,10 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(player, id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
-                if not listenFor then
-                    callback(player, receivedEnum, ...)
-                elseif listenFor and receivedEnum == listenFor then
+                if listenFor and receivedEnum == listenFor then
                     callback(player, ...)
+                else
+                    callback(player, receivedEnum, ...)
                 end
             end
         )

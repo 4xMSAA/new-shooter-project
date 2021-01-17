@@ -10,8 +10,10 @@ local Enums = {
     {"EntityUpdate", "Send entity update information"},
 
     {"WeaponRegister", "Register a weapon"},
+    {"WeaponUnregister", "Remove a weapon"},
     {"WeaponState", "Change the state of a weapon"},
     {"WeaponEquip", "Equip the weapon"},
+    {"WeaponReload", "Reload a weapon"},
 
     {"Look", "Send pitch, yaw angles for player replication"},
     {"Run", "Send run state for player replication"},

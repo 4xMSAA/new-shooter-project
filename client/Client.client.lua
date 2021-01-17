@@ -6,10 +6,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local ContextActionService = game:GetService("ContextActionService")
 
--- Initialize environment variables
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 
--- load dependancies
 local Enums = shared.Enums
 
 local NetworkLib = require(shared.Common.NetworkLib)

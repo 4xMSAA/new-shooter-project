@@ -130,6 +130,7 @@ function Gun.new(weapon, gamemode)
     self._InterpolateSpeed = {
         Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED
     }
+
     -- default spring values: 5, 50, 4, 4
     -- mass, force, dampening, speed
     self._Springs = {
@@ -138,11 +139,13 @@ function Gun.new(weapon, gamemode)
         Movement = Spring.new(20, 50, 4, 4*MOVEMENT_RECOVERY_SPEED),
         Inertia = Spring.new(5, 50, 4, 4*INERTIA_RECOVERY_SPEED)
     }
+
     self.Events = {
         Equip = Emitter.new(),
         Unequip = Emitter.new(),
         Fired = Emitter.new(),
     }
+
     self._Particles = {}
     self._Sounds = {}
     self._Lock = {}
