@@ -12,6 +12,7 @@ local Enums = {
     {"WeaponRegister", "Register a weapon"},
     {"WeaponUnregister", "Remove a weapon"},
     {"WeaponState", "Change the state of a weapon"},
+    {"WeaponFire", "Fire the weapon"},
     {"WeaponEquip", "Equip the weapon"},
     {"WeaponReload", "Reload a weapon"},
 

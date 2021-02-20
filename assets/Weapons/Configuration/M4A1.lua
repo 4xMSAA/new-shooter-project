@@ -52,7 +52,7 @@ local Configuration = {
         SpeedModifier = 1
     },
     Offset = {
-        Grip = CFrame.new(.6, -0.9, -0.8),
+        Grip = CFrame.new(0.6, -0.9, -0.8),
         Sprint = CFrame.Angles(0, 0.55, 0),
         Aim = CFrame.new(0, -0.61, -0.4)
     },

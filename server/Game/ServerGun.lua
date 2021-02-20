@@ -85,3 +85,5 @@ function ServerGun:fire(dt)
     self:setState("Cycling", false)
 
 end
+
+return ServerGun

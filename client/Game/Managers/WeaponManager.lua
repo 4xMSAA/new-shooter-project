@@ -37,9 +37,9 @@ local function fireViewportWeapon(manager, weapon)
     manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
 end
 
-local function equip(manager, weapon, networked)
+local function equipViewport(manager, weapon, networked)
     -- equip new weapon
-    manager.Connections.Viewport = weapon
+    manager.ViewportWeapon = weapon
     manager.ViewModelArms:attach(weapon)
     weapon:equip()
     weapon.ViewModel.Parent = _G.Path.ClientViewmodel
@@ -57,6 +57,7 @@ local WeaponManager = {}
 WeaponManager.__index = WeaponManager
 
 function WeaponManager.new(config)
+    assert(config, "lacking configuration, provide it as the 1st argument")
     assert(config.Camera, "WeaponManager requires a camera, provide it in the config table")
     assert(config.ProjectileManager, "WeaponManager requires ProjectileManager, provide it in the config table")
     assert(config.GameMode, "WeaponManager requires a gamemode to be specified, provide it in the config table")
@@ -74,10 +75,10 @@ function WeaponManager.new(config)
     self.GameMode = config.GameMode
     self.ActiveWeapons = {}
     self.AutoFire = {}
+    self.ViewportWeapon = nil
 
     self.Connections = {}
     self.Connections.Characters = {}
-    self.Connections.Viewport = nil
     self.Connections.LocalCharacter = nil
 
     self.ViewModelArms = ViewModelArms.new(config and config.ViewModelArmsAsset or _G.VIEWMODEL.DEFAULT_ARMS)
@@ -86,16 +87,19 @@ function WeaponManager.new(config)
     setmetatable(self, WeaponManager)
     Maid.watch(self)
 
+    self._packetToFunction = {
+        [Enums.PacketType.WeaponEquip] = self.networkEquip;
+        [Enums.PacketType.WeaponFire] = self.fire;
+        [Enums.PacketType.WeaponRegister] = self.networkRegister;
+    }
+
     return self
 end
 
 ---
 ---@param assetName string Weapon assetName to create
----@param uuid string UUID given by server
-function WeaponManager:create(assetName, uuid)
+function WeaponManager:create(assetName)
     local gun = Gun.new(assetName, self.GameMode)
-    gun.UUID = uuid
-
     return gun
 end
 
@@ -104,9 +108,23 @@ end
 ---@param uuid string
 ---@param player userdata
 function WeaponManager:register(weapon, uuid, player)
-    self.ActiveWeapons[uuid] = {Weapon = weapon, Owner = player}
     weapon.UUID = uuid
+    self.ActiveWeapons[uuid] = {Weapon = weapon, Owner = player}
+    print("registered", weapon.Configuration.Name, "with UUID of", uuid, "owned by", player)
     return WeaponManager
+end
+
+function WeaponManager:networkRegister(player, assetName, uuid)
+    local weapon = self:create(assetName)
+    self:register(weapon, uuid, player)
+end
+
+function WeaponManager:getByUUID(uuid)
+    return self.ActiveWeapons[uuid];
+end
+
+function WeaponManager:equip(player, weapon)
+    print(player, "is equipping", weapon.Configuration.Name)
 end
 
 ---Equips the weapon onto the user's screen.
@@ -114,23 +132,36 @@ end
 ---@param weapon Gun Weapon object to equip
 ---@param networked boolean Whether this call was networked or not (to prevent loopback)
 function WeaponManager:equipViewport(weapon, networked)
+    assert(self.ActiveWeapons[weapon.UUID], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
     local object = self.ActiveWeapons[weapon.UUID]
     assert(
         object.Owner == Players.LocalPlayer,
-        "cannot equip a weapon as viewport that does not belong to local player"
+        "cannot equip a weapon as Viewport that does not belong to local player"
     )
 
-    if self.Connections.Viewport then
-        local yield = self.Connections.Viewport:unequip()
-        yield:once(
-            "done",
-            function()
-                equip(self, weapon, networked)
-            end
-        )
+    if self.ViewportWeapon then
+        local yield = self.ViewportWeapon:unequip()
+        -- yield:once(
+        --     "done",
+        --     function()
+        --         equipViewport(self, weapon, networked)
+        --     end
+        -- )
+        equipViewport(self, weapon, networked)
+
     else
-        equip(self, weapon, networked)
+        equipViewport(self, weapon, networked)
     end
+end
+
+function WeaponManager:networkEquip(player, uuid)
+    if player == Players.LocalPlayer then
+        print("equip viewport weapon", self:getByUUID(uuid).Weapon)
+        self:equipViewport(self:getByUUID(uuid).Weapon, true)
+        return
+    end
+
+    self:equip(player, self:getByUUID(uuid).Weapon)
 end
 
 function WeaponManager:fire(weapon, state)
@@ -142,7 +173,7 @@ function WeaponManager:fire(weapon, state)
 
     if not weapon.Configuration.Charge and state then
         if weapon:fire() then
-            if weapon == self.Connections.Viewport then
+            if weapon == self.ViewportWeapon then
                 fireViewportWeapon(self, weapon)
             end
         end
@@ -162,25 +193,37 @@ end
 
 function WeaponManager:step(dt, camera, velocity)
     -- handle viewport weapon
-    self.CameraRecoilSpring:update(math.min(1, dt))
-    local recoil = self.CameraRecoilSpring.Position
-    camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
-    camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
+    if (self.ViewportWeapon) then
+        self.CameraRecoilSpring:update(math.min(1, dt))
+        local recoil = self.CameraRecoilSpring.Position
+        camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
+        camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
 
-    self.Connections.Viewport:setState("Movement", velocity)
-    self.Connections.Viewport.Animator:_step(dt)
-    camera:updateOffset(Enums.CameraOffset.Animation.ID, self.Connections.Viewport:getExpectedCameraCFrame())
-    self.Connections.Viewport:update(dt, camera.CFrame)
+        self.ViewportWeapon:setState("Movement", velocity)
+        self.ViewportWeapon.Animator:_step(dt)
+        camera:updateOffset(Enums.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
+        self.ViewportWeapon:update(dt, camera.CFrame)
 
-    -- TODO: handle third person weapons
-
-    -- handle automatic fire
-    for weapon, _ in pairs(self.AutoFire) do
-        if weapon:fire() then
-            if weapon == self.Connections.Viewport then
-                fireViewportWeapon(self, weapon)
+        -- handle automatic fire
+        for weapon, _ in pairs(self.AutoFire) do
+            if weapon:fire() then
+                if weapon == self.ViewportWeapon then
+                    fireViewportWeapon(self, weapon)
+                end
             end
         end
+    end
+
+    -- TODO: handle third person weapons
+    for weapon, _ in pairs(self.ActiveWeapons) do
+
+    end
+end
+
+function WeaponManager:route(packetType, player, ...)
+    local func = self._packetToFunction[packetType]
+    if func then
+        func(self, player, ...)
     end
 end
 

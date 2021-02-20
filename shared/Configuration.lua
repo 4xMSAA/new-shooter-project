@@ -1,4 +1,6 @@
 return {
+    LOG_LEVEL = 0,
+
     LOADING = {
         TIMEOUT = 30,
     },

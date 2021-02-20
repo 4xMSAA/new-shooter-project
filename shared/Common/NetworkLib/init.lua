@@ -4,11 +4,20 @@
 --]]
 local RunService = game:GetService("RunService")
 
+local LOG_LEVEL = _G.LOG_LEVEL or 2
+
 local Enums = shared.Enums
 
 local remotes = _G.Path.Remotes
 local isClient = RunService:IsClient()
 local isServer = RunService:IsServer()
+
+
+local function log(level, ...)
+    if LOG_LEVEL >= level then
+        print(...)
+    end
+end
 
 ---
 ---@class NetworkLib
@@ -27,14 +36,22 @@ end
 ---changes the entry into the serialized variant
 function NetworkLib:_autoSerialize(...)
     local result = {}
+
+    log(2, "SERIALIZE: automatically serializing contents:", ...)
     for key, value in pairs({...}) do
+        log(2, "SERIALIZE: GOT", key, "=", value)
+
         if typeof(value) == "table" and value["serialize"] then
             value = value:serialize()
         elseif typeof(value) == "table" then
             warn("no serialize function on object: " .. value .. "\n" .. debug.traceback())
         end
+
+        log(2, "SERIALIZE: ASSIGN", key, "=", value)
         result[key] = value
     end
+
+    log(2, "SERIALIZE: serialized contents:", unpack(result))
 
     return unpack(result)
 end
@@ -48,6 +65,7 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
+                log(1, "LISTEN: enum: ", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
                 if listenFor and receivedEnum == listenFor then
                     callback(...)
                 else
@@ -60,6 +78,7 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(player, id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
+                log(1, "LISTEN: from:", player, "enum: ", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
                 if listenFor and receivedEnum == listenFor then
                     callback(player, ...)
                 else
@@ -106,8 +125,10 @@ end
 ---@param enum PacketType
 function NetworkLib:send(enum, ...)
     if isClient then
+        log(1, "CLIENT SEND:", enum.Name, ..., "\n", debug.traceback())
         remotes.Signal:FireServer(enum.ID, NetworkLib:_autoSerialize(...))
     elseif isServer then
+        log(1, "SERVER SEND:", enum.Name, ..., "\n", debug.traceback())
         remotes.Signal:FireAllClients(enum.ID, NetworkLib:_autoSerialize(...))
     end
 end
@@ -119,6 +140,7 @@ function NetworkLib:sendTo(player, enum, ...)
     if isClient then
         error("cannot send to player on client", 2)
     end
+    log(1, "SERVER SEND TO:", enum.Name, ...)
     remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum, NetworkLib:_autoSerialize(...))
 end
 

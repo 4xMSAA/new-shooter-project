@@ -8,7 +8,7 @@ local Configuration = {
     AnimationPath = assetName,
     ActionType = Enums.GunActionType.ClosedBolt,
     RPM = 444,
-    FireMode = {Enums.FireMode.Single, Enums.FireMode.Safety},
+    FireMode = {Enums.FireMode.Single},
     EquipTime = 0.88,
     Zoom = 1.45,
     Ammo = {
@@ -35,17 +35,9 @@ local Configuration = {
         Type = "Bullet",
         Velocity = 853,
         Piercing = 1,
-        Amount = 1,
-        Damage = {
-            Multipliers = {
-                Head = 1,
-                Body = 0.8,
-                Limbs = 0.5
-            },
-            Max = 90,
-            Min = 20
-        }
+        Amount = 1
     },
+
     Recoil = {
         AimScale = 0.6,
         Rotation = {
@@ -58,8 +50,14 @@ local Configuration = {
             Range = Vector3.new(0, 0, 0.1)
         }
     },
+    CameraRecoil = {
+        V3 = Vector3.new(0.6, 0, 0),
+        Range = Vector3.new(0.1, 0.3, 0),
+        ForceModifier = 1,
+        SpeedModifier = 1
+    },
     Offset = {
-        Grip = CFrame.new(.6, -1, -0.8),
+        Grip = CFrame.new(0.6, -1, -0.8),
         Sprint = CFrame.Angles(0, 0.5, 0),
         Aim = CFrame.new(0, -0.46, -0.6)
     },
@@ -69,8 +67,18 @@ local Configuration = {
 }
 
 Configuration.Gamemode = {}
+Configuration.Gamemode.PvP = {
+    Damage = {
+        Multipliers = {
+            Head = 1,
+            Body = 0.8,
+            Limbs = 0.5
+        },
+        Max = 90,
+        Min = 20
+    }
+}
 Configuration.Gamemode.Zombies = {
-    FireMode = {Enums.FireMode.Single},
     Damage = {
         Multipliers = {
             Head = 3,

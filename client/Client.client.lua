@@ -17,9 +17,9 @@ local LocalCharacter = require(_G.Client.Core.LocalCharacter)
 local Movement = require(_G.Client.Game.Movement)
 
 local Camera = require(_G.Client.Core.Camera).new(workspace.CurrentCamera)
-local ProjectileManager = require(_G.Client.Managers.ProjectileManager).new()
+local ProjectileManager = require(_G.Client.Game.Managers.ProjectileManager).new()
 local WeaponManager =
-    require(_G.Client.Managers.WeaponManager).new(
+    require(_G.Client.Game.Managers.WeaponManager).new(
     {
         Camera = Camera,
         ProjectileManager = ProjectileManager,
@@ -35,10 +35,6 @@ UserInputService.MouseIconEnabled = false
 -- TODO: actual input binding
 local function spawn(character)
     spawned = true
-    local test = WeaponManager:create("M4A1", "a")
-
-    WeaponManager:register(test, test.UUID, Players.LocalPlayer)
-    WeaponManager:equipViewport(test)
 
     LocalCharacter:listenPlayer(Players.LocalPlayer)
     LocalCharacter:setTransparency(1)
@@ -48,13 +44,13 @@ local function spawn(character)
     -- temporary input binding
     local function inputHandler(name, state, object)
         if name == "Aim" then
-            WeaponManager:setState(test, "Aim", state == Enum.UserInputState.Begin and true or false)
+            WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", state == Enum.UserInputState.Begin and true or false)
         elseif name == "Fire" and state == Enum.UserInputState.Begin then
-            WeaponManager:fire(test, true)
+            WeaponManager:fire(WeaponManager.ViewportWeapon, true)
         elseif name == "Fire" and state == Enum.UserInputState.End then
-            WeaponManager:fire(test, false)
+            WeaponManager:fire(WeaponManager.ViewportWeapon, false)
         elseif name == "Reload" and state == Enum.UserInputState.Begin then
-            WeaponManager:reload(test)
+            WeaponManager:reload(WeaponManager.ViewportWeapon)
         elseif name == "debugPause" and state == Enum.UserInputState.Begin then
             debugPause = not debugPause
         elseif name == "debugLog" and state == Enum.UserInputState.Begin then
@@ -84,6 +80,10 @@ local function spawn(character)
 end
 
 -- network binds
+local function route(packetType, ...)
+    WeaponManager:route(packetType, ...)
+end
+
 NetworkLib:listenFor(
     Enums.PacketType.PlayerSpawn,
     function(id, char)
@@ -92,6 +92,8 @@ NetworkLib:listenFor(
         end
     end
 )
+
+NetworkLib:listen(route)
 
 -- runservice binds
 RunService:BindToRenderStep(

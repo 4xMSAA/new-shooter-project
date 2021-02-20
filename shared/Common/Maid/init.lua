@@ -19,7 +19,7 @@ function Maid.watch(...)
             totalTracked = totalTracked + 1
         else
             warn(
-                "already watching address " .. object .. " from: \n" ..
+                "already watching address " .. tostring(object) .. " from: \n" ..
                 debug.traceback()
             )
         end
