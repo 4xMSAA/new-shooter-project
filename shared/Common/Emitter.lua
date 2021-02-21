@@ -5,6 +5,14 @@
 --]]
 local Maid = require(shared.Common.Maid)
 
+local function getSize(t)
+    local i = 0
+    for _,_ in pairs(t) do
+        i = i + 1
+    end
+    return i
+end
+
 local Listener = {}
 function Listener.new(emitter, func, eventName, once)
     local self = {}
@@ -32,6 +40,10 @@ function Listener.new(emitter, func, eventName, once)
         end
     end
 
+    for _, data in pairs(self.emitter.eventQueue) do
+        func(unpack(data))
+    end
+
     return self
 end
 
@@ -41,6 +53,7 @@ local Emitter = {}
 function Emitter.new()
     local self = {}
     self.listeners = {}
+    self.eventQueue = {}
 
     -- Used to create the wait method of an emitter without Lua-side magickityjiggitywhatever
     local waitHack = Instance.new("BindableEvent")
@@ -90,6 +103,9 @@ function Emitter.new()
     end
 
     function self:emit(...)
+        if getSize(self.listeners) == 0 then
+            table.insert(self.eventQueue, {...})
+        end
         waitHack:Fire()
         for listener, _ in pairs(self.listeners) do
             listener.run(...)

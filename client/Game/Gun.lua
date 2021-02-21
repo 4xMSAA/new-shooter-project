@@ -2,7 +2,7 @@
     description and purpose here
 
     please don't format document
-    if line 7 isn't blank it's probably formatted
+    if line 7 isn't blank it's probably autoformatted
 --]]
 
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
@@ -149,7 +149,7 @@ function Gun.new(weapon, gamemode)
     self._Particles = {}
     self._Sounds = {}
     self._Lock = {}
-    self._Connnections = {}
+    self._Connections = {}
 
     -- additional property data
     self.Animations = {}
@@ -166,27 +166,26 @@ end
 ---@return Gun Returns itself. Useful for chaining
 function Gun:_init()
 
-    -- load the animations
+    -- load the animation necessities
     self.Animator = Animator.new(self.ViewModel)
     self._cameraJoint = Instance.new("Motor6D")
     self._gripJoint = Instance.new("Motor6D")
 
-    -- remap some vital joint names to our alternatives
-    local jointRemap = function(_, pose)
-        if pose.Name == "Handle" then
-            return self._gripJoint, pose
-        elseif pose.Name == "Camera" then
-            return self._cameraJoint, pose
-        end
-        -- not returning anything defaults behaviour
-    end
-
     local animations = PATH.WEAPON_ANIMATIONS(self.Configuration.AnimationPath)
     for _, animation in pairs(animations:GetChildren()) do
-        self.Animations[animation.Name] = self.Animator:loadAnimation(animation, jointRemap)
+        self.Animations[animation.Name] = self.Animator:loadAnimation(animation, function(_, pose)
+            -- remap some vital joint names to our alternatives
+            if pose.Name == "Handle" then
+                return self._gripJoint, pose
+            elseif pose.Name == "Camera" then
+                return self._cameraJoint, pose
+            end
+            -- not returning anything defaults behaviour
+        end)
     end
 
     -- mount the model to apply particle effects
+    -- TODO: garbage clean mounting objects
     local modelMount = mount(self.ViewModel)
     for name, data in pairs(self.Configuration.Particles) do
         assert(data.Path, "path to particle does not exist for " .. tostring(name) .. " in " .. tostring(self._assetName))
@@ -199,11 +198,22 @@ function Gun:_init()
     end
 
     -- hook sounds to animations
-    self._Connnections.Reload = self.Animations.Reload.MarkerReached:connect(function(markerName, ...)
+    local function markerToSound(markerName, ...)
         if self._Sounds[markerName] then
             self:playSound(markerName)
         end
-    end)
+    end
+
+    local function connectAnimationEvents(name)
+        if not self.Animations[name] then return end
+        self._Connections[name] = self.Animations[name].MarkerReached:connect(markerToSound)
+    end
+
+    connectAnimationEvents("Reload")
+    connectAnimationEvents("DryReload")
+    connectAnimationEvents("Equip")
+    connectAnimationEvents("Unequip")
+
 
     -- in case we forget to prepare the model, do some preparing ourselves
     for _, part in pairs(self.ViewModel:GetDescendants()) do
@@ -220,6 +230,27 @@ function Gun:_init()
     self.Handle.Anchored = true
 
     return self
+end
+
+---
+---@param gun Gun
+---@param emitter Emitter
+local function unequipGun(gun, emitter)
+    emitter:emit("DONE")
+end
+
+---
+function Gun:equip()
+    self:setState("Equipped", true)
+    self.Animations.Idle:play()
+end
+
+---
+---@return Emitter An emitter to listen to for "done" event
+function Gun:unequip()
+    self:setState("Equipped", false)
+    coroutine.wrap(unequipGun)(self, self.Events.Unequip)
+    return self.Events.Unequip
 end
 
 ---
@@ -264,18 +295,6 @@ function Gun:setState(statesOrKey, state)
     return self
 end
 
----
-function Gun:equip()
-    self:setState("Equipped", true)
-    self.Animations.Idle:play()
-end
-
----
----@return Emitter An emitter to listen to for "done" event
-function Gun:unequip()
-    self:setState("Equipped", false)
-    return self.Events.Unequip
-end
 
 ---
 function Gun:reload()
@@ -295,7 +314,7 @@ function Gun:reload()
 end
 
 --- Fires the gun
---- Listen to a detailed process via obj.Events.Fired
+--- Listen to the detailed process via obj.Events.Fired
 ---@return boolean Did the gun fire or not?
 function Gun:fire()
     if self.ActiveFireMode == Enums.FireMode.Safety then

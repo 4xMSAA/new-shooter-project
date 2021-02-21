@@ -20,37 +20,6 @@ local function springRange(v0, range)
     return SmallUtils.randomFloatRange(v0 - range, v0 + range)
 end
 
-local function fireViewportWeapon(manager, weapon)
-    local recoil = weapon.Configuration.CameraRecoil
-    local rotRange = recoil.Range
-    local rotV = recoil.V3
-    local pitch, yaw, roll =
-        springRange(rotV.x, rotRange.x),
-        springRange(rotV.y, rotRange.y),
-        springRange(rotV.z, rotRange.z)
-
-    yaw = (math.random() > 0.5 and -yaw) or yaw
-
-    manager.CameraRecoilSpring:shove(pitch, yaw, roll)
-
-    local camCF = manager.Camera:getCFrame()
-    manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
-end
-
-local function equipViewport(manager, weapon, networked)
-    -- equip new weapon
-    manager.ViewportWeapon = weapon
-    manager.ViewModelArms:attach(weapon)
-    weapon:equip()
-    weapon.ViewModel.Parent = _G.Path.ClientViewmodel
-
-    -- prevent loopback
-    if networked then
-        return
-    end
-    NetworkLib:send(Enums.PacketType.WeaponEquip, weapon.UUID)
-end
-
 ---Manages all weapons in a single container
 ---@class WeaponManager
 local WeaponManager = {}
@@ -127,6 +96,21 @@ function WeaponManager:equip(player, weapon)
     print(player, "is equipping", weapon.Configuration.Name)
 end
 
+
+---Equip weapon specifically for viewport
+---@param manager WeaponManager
+---@param weapon Gun
+local function equipViewport(manager, weapon)
+    if manager.ViewportWeapon then
+        manager.ViewportWeapon.ViewModel.Parent = nil
+    end
+    -- equip new weapon
+    manager.ViewportWeapon = weapon
+    manager.ViewModelArms:attach(weapon)
+    weapon:equip()
+    weapon.ViewModel.Parent = _G.Path.ClientViewmodel
+end
+
 ---Equips the weapon onto the user's screen.
 ---Cannot equip non-client owned weapons
 ---@param weapon Gun Weapon object to equip
@@ -140,18 +124,21 @@ function WeaponManager:equipViewport(weapon, networked)
     )
 
     if self.ViewportWeapon then
-        local yield = self.ViewportWeapon:unequip()
-        -- yield:once(
-        --     "done",
-        --     function()
-        --         equipViewport(self, weapon, networked)
-        --     end
-        -- )
-        equipViewport(self, weapon, networked)
-
+        self.ViewportWeapon:unequip():once(
+            "DONE",
+            function()
+                equipViewport(self, weapon, networked)
+            end
+        )
     else
         equipViewport(self, weapon, networked)
     end
+
+    -- prevent loopback
+    if networked then
+        return
+    end
+    NetworkLib:send(Enums.PacketType.WeaponEquip, weapon.UUID)
 end
 
 function WeaponManager:networkEquip(player, uuid)
@@ -162,6 +149,23 @@ function WeaponManager:networkEquip(player, uuid)
     end
 
     self:equip(player, self:getByUUID(uuid).Weapon)
+end
+
+local function fireViewportWeapon(manager, weapon)
+    local recoil = weapon.Configuration.CameraRecoil
+    local rotRange = recoil.Range
+    local rotV = recoil.V3
+    local pitch, yaw, roll =
+        springRange(rotV.x, rotRange.x),
+        springRange(rotV.y, rotRange.y),
+        springRange(rotV.z, rotRange.z)
+
+    yaw = (math.random() > 0.5 and -yaw) or yaw
+
+    manager.CameraRecoilSpring:shove(pitch, yaw, roll)
+
+    local camCF = manager.Camera:getCFrame()
+    manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
 end
 
 function WeaponManager:fire(weapon, state)
