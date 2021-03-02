@@ -5,13 +5,15 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local ContextActionService = game:GetService("ContextActionService")
-
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
+
+local NETWORK_CAMERA_UPDATE_INTERVAL = _G.NETWORK.INTERVALS.CAMERA_UPDATE
 
 local Enums = shared.Enums
 
 local NetworkLib = require(shared.Common.NetworkLib)
 local Maid = require(shared.Common.Maid)
+local Timer = require(shared.Common.Timer)
 
 local LocalCharacter = require(_G.Client.Core.LocalCharacter)
 local Movement = require(_G.Client.Game.Movement)
@@ -29,6 +31,9 @@ local WeaponManager =
 
 local debugPause = false
 local spawned = false
+local timers = {
+    cameraNetworkUpdate = Timer.new(NETWORK_CAMERA_UPDATE_INTERVAL)
+}
 
 UserInputService.MouseIconEnabled = false
 
@@ -119,6 +124,9 @@ RunService:BindToRenderStep(
     function(dt)
         if not spawned then
             return
+        end
+        if timers.cameraNetworkUpdate:tick(dt) then
+            NetworkLib:send(Enums.PacketType.Look, Camera.User.LookVector)
         end
         debug.profilebegin("game-camera")
         UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter

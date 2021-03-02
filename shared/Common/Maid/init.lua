@@ -1,5 +1,7 @@
 local RunService = game:GetService("RunService")
 
+local LOG_LEVEL = _G.LOG_LEVEL or 2
+
 local TableUtils = require(shared.Common.TableUtils)
 
 local ASCII = require(script.ASCII)
@@ -17,9 +19,11 @@ function Maid.watch(...)
             Maid.attachMetadata(object)
             Maid._tracked[object] = true
             totalTracked = totalTracked + 1
-        else
+        elseif LOG_LEVEL >= 2 then
+            print("MAID STUDIO DEBUG:", Maid._tracked[object])
+            print("MAID STUDIO DEBUG:")
             warn(
-                "already watching address " .. tostring(object) .. " from: \n" ..
+                "already watching address " .. tostring(Maid._tracked[object]) .. " from: \n" ..
                 debug.traceback()
             )
         end
