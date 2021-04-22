@@ -52,7 +52,6 @@ function Bullet:simulate(dt)
 end
 
 function Bullet:hitClient(rayResult)
-    -- decision logic per material and stuff
     local materialEffect = MATERIAL_TO_HIT_FX[rayResult.Material] or MATERIAL_TO_HIT_FX["Default"]
     local cf =
         CFrame.lookAt(

@@ -7,7 +7,7 @@ local UserInputService = game:GetService("UserInputService")
 local ContextActionService = game:GetService("ContextActionService")
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 
-local NETWORK_CAMERA_UPDATE_INTERVAL = _G.NETWORK.INTERVALS.CAMERA_UPDATE
+local NETWORK_CAMERA_UPDATE_INTERVAL = _G.INTERVALS.NETWORK.CAMERA_UPDATE
 
 local Enums = shared.Enums
 

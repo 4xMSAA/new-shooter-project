@@ -20,10 +20,43 @@ local function springRange(v0, range)
     return SmallUtils.randomFloatRange(v0 - range, v0 + range)
 end
 
+---Equip weapon specifically for viewport
+---@param manager WeaponManager
+---@param weapon Gun
+local function equipViewport(manager, weapon)
+    if manager.ViewportWeapon then
+        manager.ViewportWeapon.ViewModel.Parent = nil
+    end
+    -- equip new weapon
+    manager.ViewportWeapon = weapon
+    manager.ViewModelArms:attach(weapon)
+    weapon:equip()
+    weapon.ViewModel.Parent = _G.Path.ClientViewmodel
+end
+
+
+local function fireViewportWeapon(manager, weapon)
+    local recoil = weapon.Configuration.CameraRecoil
+    local rotRange = recoil.Range
+    local rotV = recoil.V3
+    local pitch, yaw, roll =
+        springRange(rotV.x, rotRange.x),
+        springRange(rotV.y, rotRange.y),
+        springRange(rotV.z, rotRange.z)
+
+    yaw = (math.random() > 0.5 and -yaw) or yaw
+
+    manager.CameraRecoilSpring:shove(pitch, yaw, roll)
+
+    local camCF = manager.Camera:getCFrame()
+    manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
+end
+
 ---Manages all weapons in a single container
 ---@class WeaponManager
 local WeaponManager = {}
 WeaponManager.__index = WeaponManager
+
 
 function WeaponManager.new(config)
     assert(config, "lacking configuration, provide it as the 1st argument")
@@ -65,14 +98,15 @@ function WeaponManager.new(config)
     return self
 end
 
----
+---Creates an unregistered Gun instance by an asset name
 ---@param assetName string Weapon assetName to create
 function WeaponManager:create(assetName)
     local gun = Gun.new(assetName, self.GameMode)
     return gun
 end
 
----
+---Register a weapon's UUID to allow communication
+---of weapon data over the network
 ---@param weapon Gun
 ---@param uuid string
 ---@param player userdata
@@ -83,32 +117,37 @@ function WeaponManager:register(weapon, uuid, player)
     return WeaponManager
 end
 
+---Unregister a weapon UUID for garbage cleaning
+function WeaponManager:unregister(weaponOrUUID)
+    local uuid = weaponOrUUID
+    if typeof(weaponOrUUID) ~= "string" then
+        uuid = weaponOrUUID.UUID
+    end
+    assert(self.ActiveWeapons[uuid], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+    self.ActiveWeapons[uuid].Weapon:destroy()
+end
+
 function WeaponManager:networkRegister(player, assetName, uuid)
     local weapon = self:create(assetName)
     self:register(weapon, uuid, player)
 end
 
 function WeaponManager:getByUUID(uuid)
+    assert(self.ActiveWeapons[uuid], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+
     return self.ActiveWeapons[uuid];
+end
+
+function Weaponmanager:getOwnerEquipped(owner)
+    for uuid, container in pairs(self.ActiveWeapons) do
+        if container.Owner == owner then
+            return container.Weapon, uuid
+        end
+    end
 end
 
 function WeaponManager:equip(player, weapon)
     print(player, "is equipping", weapon.Configuration.Name)
-end
-
-
----Equip weapon specifically for viewport
----@param manager WeaponManager
----@param weapon Gun
-local function equipViewport(manager, weapon)
-    if manager.ViewportWeapon then
-        manager.ViewportWeapon.ViewModel.Parent = nil
-    end
-    -- equip new weapon
-    manager.ViewportWeapon = weapon
-    manager.ViewModelArms:attach(weapon)
-    weapon:equip()
-    weapon.ViewModel.Parent = _G.Path.ClientViewmodel
 end
 
 ---Equips the weapon onto the user's screen.
@@ -151,23 +190,6 @@ function WeaponManager:networkEquip(player, uuid)
     self:equip(player, self:getByUUID(uuid).Weapon)
 end
 
-local function fireViewportWeapon(manager, weapon)
-    local recoil = weapon.Configuration.CameraRecoil
-    local rotRange = recoil.Range
-    local rotV = recoil.V3
-    local pitch, yaw, roll =
-        springRange(rotV.x, rotRange.x),
-        springRange(rotV.y, rotRange.y),
-        springRange(rotV.z, rotRange.z)
-
-    yaw = (math.random() > 0.5 and -yaw) or yaw
-
-    manager.CameraRecoilSpring:shove(pitch, yaw, roll)
-
-    local camCF = manager.Camera:getCFrame()
-    manager.ProjectileManager:create(weapon, camCF.p, camCF.lookVector)
-end
-
 function WeaponManager:fire(weapon, state)
     if weapon.ActiveFireMode == Enums.FireMode.Automatic and state then
         self.AutoFire[weapon] = true
@@ -197,7 +219,7 @@ end
 
 function WeaponManager:step(dt, camera, velocity)
     -- handle viewport weapon
-    if (self.ViewportWeapon) then
+    if self.ViewportWeapon then
         self.CameraRecoilSpring:update(math.min(1, dt))
         local recoil = self.CameraRecoilSpring.Position
         camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
@@ -219,8 +241,13 @@ function WeaponManager:step(dt, camera, velocity)
     end
 
     -- TODO: handle third person weapons
-    for weapon, _ in pairs(self.ActiveWeapons) do
-
+    for _, container in pairs(self.ActiveWeapons) do
+        if not self.ViewportWeapon == container.Weapon then
+            -- ! dangerous - Character may not always be available and roblox is
+            -- ! stupid, so make a yet again wrapped instance maybe?
+            -- TODO: wrapper to player for lookvectors
+            container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
+        end
     end
 end
 

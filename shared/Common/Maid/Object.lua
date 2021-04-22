@@ -18,6 +18,7 @@ function Object.destroy(self)
     end
     setmetatable(self, nil)
 end
+Object.Destroy = Object.destroy
 
 return function(runtimeMaid)
     Maid = runtimeMaid

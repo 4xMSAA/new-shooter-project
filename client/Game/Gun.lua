@@ -409,7 +409,6 @@ function Gun:update(dt, pivot)
     -- update InterpolateStates and Springs
     for state, value in pairs(self.State) do
         if self._InterpolateState[state] then
-            -- clamp value between 0 and 1 with max and min selectors
             self._InterpolateState[state] =
                 math.min(
                     1,

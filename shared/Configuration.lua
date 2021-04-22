@@ -5,11 +5,11 @@ return {
         TIMEOUT = 30,
     },
 
-    NETWORK = {
-        INTERVALS = {
+    INTERVALS = {
+        NETWORK = {
             CAMERA_UPDATE = 1/10
         }
-    }
+    },
 
     WEAPON = {
         SWAY_AMPLIFY = 0.025,

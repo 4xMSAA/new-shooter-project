@@ -6,8 +6,9 @@ Rewriting MMCZP to be better and less gay
 
 (make a plugin for this dumbass)
 
-Models are located in assets/Weapons/Models - A model can
-be FirstPerson (high-poly) or ThirdPerson (low-poly, optimized for en masse use)
+Models are located in assets/Weapons/Models (not mounted)
+Animations are located in assets/Weapons/Animations (not mounted)
+Configurations are located in assets/Weapons/Configuration
 
 A gun rig is set up with the following tree structure:
 
@@ -17,13 +18,13 @@ A gun rig is set up with the following tree structure:
 |-- Animate                Place all Motor6D's here (not neccessary, but preferred)
 |-- Parts                  All design parts here (not neccessary, but preferred)
 |-+ Rig                    Required parts and location of arms
-  |-+ LeftArm              R15 arm with 0.5 width and depth
+  |-+ LeftArm              R15 arm with 0.35 width and depth
   | |-+ LeftHand
   | |-+ LeftLowerArm
   |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
   | |-+ LeftUpperArm
   |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
-  |-+ RightArm             R15 arm with 0.5 width and depth
+  |-+ RightArm             R15 arm with 0.35 width and depth
   | |-+ RightHand
   |   |-+ RightLowerArm    Motor6D Part1 to RightLowerArm
   | |-+ RightLowerArm
@@ -47,6 +48,8 @@ See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 
 ## Code stylization
 
+**UTF-8, LF, 4 spaces**
+
 A lot of this follows <https://roblox.github.io/lua-style-guide/>.  
 Here's a quick rundown:
 
@@ -57,6 +60,9 @@ Methods in classes are defined with a colon ``:`` and are **camelCase**
 
 ```lua
 function Class:method()
+    local pain
+    self.PublicProperty = "hi"
+    self._privateProperty = "do not touch me"
     -- self exists in this context due to the : token
 end
 ```
