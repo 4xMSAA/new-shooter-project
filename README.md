@@ -43,8 +43,7 @@ See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 * When loading objects by configuration - do not modify configuration values as they should be final.
   Instead, copy the value and make it a state.
 * OOP is not enforced, but borrow the polymorphism concept.
-* ContextActionService will be used. UserInputService will be used on cases where we need pure input.
-* Remember to plan ahead for VR interactions.
+* ContextActionService will be used. UserInputService will be used on cases where we need more raw input.
 
 ## Code stylization
 
