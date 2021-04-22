@@ -4,8 +4,20 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "$ignoreUnknownInstances": true,
+      "GameModes": {
+        "$className": "Folder",
+        "Configuration": {
+          "$path": "gamemodes/Configuration"
+        }
+      },
       "Source": {
-        "$path": "shared"
+        "$path": "shared",
+        "Common": {
+          "$path": "common"
+        },
+        "Enums": {
+          "$path": "enums"
+        }
       },
       "Assets": {
         "$className": "Folder",
@@ -20,6 +32,9 @@
     "ServerScriptService": {
       "Source": {
         "$path": "server"
+      },
+      "GameModes": {
+        "$path": "gamemodes"
       }
     },
     "StarterPlayer": {

@@ -22,6 +22,11 @@ local ServerWeaponManager =
 ClientManager:init()
 ClientManager.ClientAdded:listen(
     function(client)
+
+        --!
+        --! TEST CODE - NOT FINAL
+        --!
+        
         client.GameCharacter = GameCharacter.new(client)
         client.GameCharacter:spawn()
 
@@ -44,3 +49,5 @@ NetworkLib:listen(route)
 
 -- TODO: objects have :serialize method
 -- TODO: map loading (including terrain)
+-- TODO: load game mode
+-- TODO: game loop
