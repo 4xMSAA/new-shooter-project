@@ -37,20 +37,18 @@ function ServerWeaponManager.new(config)
 end
 
 ---
----@param name string Weapon name to create
----@param uuid string UUID given by server
-function ServerWeaponManager:create(name, uuid)
+---@param name string Create a weapon from the asset name provided
+function ServerWeaponManager:create(name)
     local weapon = ServerGun.new(name, self.GameMode)
-    weapon.UUID = uuid or HttpService:GenerateGUID(false)
 
     return weapon
 end
 
----
+---Assigns an UUID and prepares it for networking
 ---@param weapon ServerGun
----@param uuid string
 ---@param client Client
 function ServerWeaponManager:register(weapon, client)
+    weapon.UUID = uuid or HttpService:GenerateGUID(false)
     self.ActiveWeapons[weapon.UUID] = {Weapon = weapon, Owner = client}
 
     NetworkLib:send(Enums.PacketType.WeaponRegister, client, weapon.AssetName, weapon.UUID)
