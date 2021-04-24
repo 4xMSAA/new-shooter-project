@@ -6,9 +6,9 @@ Rewriting MMCZP to be better and less gay
 
 (make a plugin for this dumbass)
 
-Models are located in assets/Weapons/Models (not mounted)
-Animations are located in assets/Weapons/Animations (not mounted)
-Configurations are located in assets/Weapons/Configuration
+Models are located in assets/Weapons/Models (not mounted)  
+Animations are located in assets/Weapons/Animations (not mounted)  
+Configurations are located in assets/Weapons/Configuration  
 
 A gun rig is set up with the following tree structure:
 
