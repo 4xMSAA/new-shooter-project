@@ -1,6 +1,7 @@
 --[[
     Handle new incoming connections
 --]]
+local Maid = require(shared.Common.Maid)
 local Enums = shared.Enums
 
 local Players = game:GetService("Players")
@@ -66,6 +67,7 @@ function ClientManager.new(joinProcedures, leaveProcedures)
     end
 
     setmetatable(self, ClientManager)
+    Maid.watch(self)
     return self
 end
 
@@ -86,7 +88,7 @@ function ClientManager:init()
         end
     )
 
-    -- studio hack (still have to do this in 2020 KEKW)
+    -- studio hack (still have to do this in 2021 KEKW)
     for _, player in pairs(Players:GetPlayers()) do
         self:addClientByPlayer(player)
     end
@@ -100,6 +102,20 @@ function ClientManager:getClientByPlayer(player)
             return client
         end
     end
+end
+
+function ClientManager:getClients(filter)
+    if filter then
+        local results = {}
+        for index, client in pairs(self.Clients) do
+            if filter(index, client) then
+                table.insert(results, client)
+            end
+        end    
+        return results
+    end
+
+    return self.Clients
 end
 
 ---
@@ -144,7 +160,6 @@ end
 ---@param player userdata
 function ClientManager:removeClientByPlayer(player)
     local client = self:getClientByPlayer(player)
-    -- run them through modules in LeaveProcedures
     self:removeClient(client)
     return client
 end
@@ -156,7 +171,7 @@ function ClientManager:flush()
     end
 end
 
---- Leaves the ClientManageer to garbage collection
+--- Leaves the ClientManager to garbage collection
 function ClientManager:destroy()
     self._PlayerAdded:disconnect()
     self._PlayerRemoving:disconnect()

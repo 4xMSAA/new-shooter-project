@@ -21,9 +21,9 @@ A gun rig is set up with the following tree structure:
   |-+ LeftArm              R15 arm with 0.35 width and depth
   | |-+ LeftHand
   | |-+ LeftLowerArm
-  |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
+  |   |-+ LeftUpperArm     Motor6D Part1 to LeftUpperArm
   | |-+ LeftUpperArm
-  |   |-+ LeftUpperArm    Motor6D Part1 to LeftUpperArm
+  |   |-+ LeftUpperArm     Motor6D Part1 to LeftUpperArm
   |-+ RightArm             R15 arm with 0.35 width and depth
   | |-+ RightHand
   |   |-+ RightLowerArm    Motor6D Part1 to RightLowerArm

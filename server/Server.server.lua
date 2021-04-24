@@ -6,48 +6,36 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 
+local Maid = require(shared.Common.Maid)
 local NetworkLib = require(shared.Common.NetworkLib)
-local ClientManager = require(_G.Server.Core.ClientManager).new()
-local GameCharacter = require(_G.Server.Game.GameCharacter)
 
-local ProjectileManager = require(_G.Server.Game.Managers.ServerProjectileManager)
-local ServerWeaponManager =
-    require(_G.Server.Game.Managers.ServerWeaponManager).new(
-    {
-        GameMode = "Zombies",
-        ProjectileManager = ProjectileManager
+local ClientManager = require(_G.Server.Core.ClientManager)
+
+local GameModeLoader = require(_G.Server.Game.GameModeLoader)
+
+
+---A class description
+---@class Server
+local Server = {}
+Server.__index = Server
+
+function Server.new()
+    local self = {
+        ClientManager = ClientManager.new(),
+        GameMode = "Zombies"
     }
-)
+    self.ClientManager:init()
 
-ClientManager:init()
-ClientManager.ClientAdded:listen(
-    function(client)
-
-        --!
-        --! TEST CODE - NOT FINAL
-        --!
-        
-        client.GameCharacter = GameCharacter.new(client)
-        client.GameCharacter:spawn()
-
-        local gun = ServerWeaponManager:create("M1Garand")
-        local gun2 = ServerWeaponManager:create("M4A1")
-        ServerWeaponManager:register(gun, client)
-        ServerWeaponManager:register(gun2, client)
-        ServerWeaponManager:equip(client, gun)
-        wait(10)
-        ServerWeaponManager:equip(client, gun2)
-
-    end
-)
-
-local function route(packetType, ...)
-    ServerWeaponManager:route(packetType, ...)
+    setmetatable(self, Server)
+    Maid.watch(self)
+    return self
 end
 
-NetworkLib:listen(route)
+local server = Server.new()
+
+local GameMode = GameModeLoader.load(server)
 
 -- TODO: objects have :serialize method
--- TODO: map loading (including terrain)
+-- TODO: scene loading (including terrain)
 -- TODO: load game mode
 -- TODO: game loop

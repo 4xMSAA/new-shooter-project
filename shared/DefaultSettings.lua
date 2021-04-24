@@ -4,7 +4,6 @@ local DefaultSettings = {
         CasingsEnabled = true,
     },
     Camera = {
-        MoveSway = 100,
         Sensitivity = 100,
     }
 }

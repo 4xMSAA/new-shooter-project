@@ -133,12 +133,12 @@ function WeaponManager:networkRegister(player, assetName, uuid)
 end
 
 function WeaponManager:getByUUID(uuid)
-    assert(self.ActiveWeapons[uuid], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+    assert(self.ActiveWeapons[uuid], "UUID is not registered in this WeaponManager, unable to get Weapon instance")
 
     return self.ActiveWeapons[uuid];
 end
 
-function Weaponmanager:getOwnerEquipped(owner)
+function WeaponManager:getOwnerEquipped(owner)
     for uuid, container in pairs(self.ActiveWeapons) do
         if container.Owner == owner then
             return container.Weapon, uuid
