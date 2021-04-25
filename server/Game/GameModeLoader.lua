@@ -17,7 +17,7 @@ function GameModeLoader.initialize()
     end
 end
 
-function GameModeLoader.load(server)
+function GameModeLoader.loadFromServer(server)
     local self = GameModeLoader
     local name = server.GameMode
     local base = GameMode.new(server)

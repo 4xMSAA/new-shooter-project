@@ -47,7 +47,7 @@ See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 
 ## Code stylization
 
-**UTF-8, LF, 4 spaces**
+Text encoding is **UTF-8, LF, 4 spaces**
 
 A lot of this follows <https://roblox.github.io/lua-style-guide/>.  
 Here's a quick rundown:

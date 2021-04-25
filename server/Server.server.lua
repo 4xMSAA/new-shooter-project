@@ -33,7 +33,7 @@ end
 
 local server = Server.new()
 
-local GameMode = GameModeLoader.load(server)
+local GameMode = GameModeLoader.loadFromServer(server)
 
 -- TODO: objects have :serialize method
 -- TODO: scene loading (including terrain)
