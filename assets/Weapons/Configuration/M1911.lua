@@ -3,13 +3,13 @@ local Enums = shared.Enums
 local assetName = script.Name
 
 local Configuration = {
-    Name = "M4A1",
+    Name = "M1911",
     ModelPath = assetName,
     AnimationPath = assetName,
     ActionType = Enums.GunActionType.ClosedBolt,
-    RPM = 800,
-    FireMode = {Enums.FireMode.Automatic, Enums.FireMode.Safety},
-    EquipTime = 0.88,
+    RPM = 700,
+    FireMode = {Enums.FireMode.Single, Enums.FireMode.Safety},
+    EquipTime = 0.56,
     Zoom = 1.25,
     Ammo = {
         Max = 30,
@@ -17,19 +17,18 @@ local Configuration = {
     },
     Particles = {
         Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
-        -- Eject = {Path = "Gun/Casing/5.56x9mm", Speed = 14}
+        -- Eject = {Path = "Gun/Casing/.45ACP", Speed = 14}
     },
     Sounds = {
         BoltForward = 5104015522,
         MagIn = 5104152875,
         MagOut = {SoundId = 268445237, Volume = 0.7},
-        -- Fire = {SoundId = 988203005, Volume = 0.4},
-        Fire = {SoundId = 300537398, Volume = 0.4},
+        Fire = {SoundId = 988203005, Volume = 0.4},
         DistantFire = 4788389522
     },
     Projectile = {
         Type = "Bullet",
-        Velocity = 910,
+        Velocity = 253,
         Piercing = 1,
         Amount = 1
     },
@@ -70,22 +69,22 @@ Configuration.Gamemode.PvP = {
                 Body = 0.8,
                 Limbs = 0.5
             },
-            Max = 90,
+            Max = 40,
             Min = 20
         }
     }
 }
 Configuration.Gamemode.Zombies = {
-    FireMode = {Enums.FireMode.Automatic},
+    FireMode = {Enums.FireMode.Single},
     Projectile = {
         Damage = {
             Multipliers = {
-                Head = 3,
-                Body = 1.5,
-                Limbs = 1
+                Head = 1,
+                Body = 0.75,
+                Limbs = 0.2
             },
-            Max = 200,
-            Min = 20
+            Max = 20,
+            Min = 10
         }
     }
 }

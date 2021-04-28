@@ -10,6 +10,13 @@
           "$path": "gamemodes/Configuration"
         }
       },
+      "Scenes": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "Configuration": {
+          "$path": "scenes/Configuration"
+        }
+      },
       "Source": {
         "$path": "shared",
         "Common": {
@@ -21,6 +28,7 @@
       },
       "Assets": {
         "$className": "Folder",
+        "$ignoreUnknownInstances": true,
         "Weapons": {
           "$className": "Folder",
           "Configuration": {

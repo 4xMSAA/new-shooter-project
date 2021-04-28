@@ -14,13 +14,10 @@ local Configuration = {
     Ammo = {
         Max = 8,
         Reserve = 120,
-        Eject = {
-            Particle = "Gun/Casing/.30-06",
-            Speed = 14
-        }
     },
     Particles = {
-        Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"}
+        Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
+        -- Eject = {Path = "Gun/Casing/.30-06", Speed = 14}
     },
     Sounds = {
         BoltBack = 3607477790,

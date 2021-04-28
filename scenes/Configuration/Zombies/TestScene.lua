@@ -1,0 +1,5 @@
+local CONFIGURATION = {
+    ENEMY_ENTITIES = {"ZOMBIES"}
+}
+
+return CONFIGURATION
