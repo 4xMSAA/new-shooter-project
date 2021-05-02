@@ -3,4 +3,4 @@
 *.rbxmx
 *.lock
 .vscode
-.code-workspace
+*.code-workspace
