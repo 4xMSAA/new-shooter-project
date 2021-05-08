@@ -17,8 +17,6 @@ local MATERIAL_TO_HIT_FX = {
     [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt
 }
 
-local Enums = shared.Enums
-
 local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/BulletHit")
 
 local params = RaycastParams.new()
@@ -79,6 +77,10 @@ end
 function Bullet:render()
     self._renderObject.CFrame = CFrame.new(self.Position)
     self._renderObject.Parent = _G.Path.FX
+end
+
+function Bullet.staticStep(dt)
+    ParticleManager:step(dt)
 end
 
 return Bullet

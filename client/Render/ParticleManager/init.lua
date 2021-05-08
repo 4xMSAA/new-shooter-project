@@ -12,6 +12,7 @@ function ParticleManager.new(controllerPath)
     local self = {
         _Controller = controllerPath,
         _IDCounter = 0,
+        _Lifetimes = {},
         Particles = {}
     }
 
@@ -44,13 +45,22 @@ function ParticleManager:createDecal(effect, partProps, props)
 end
 
 function ParticleManager:scheduleDestroy(particle, seconds)
-    -- TODO: use some actual scheduling not a coroutine every time
-    coroutine.wrap(
-        function()
-            wait(seconds)
-            particle:destroy()
+    self._Lifetimes[particle] = seconds    
+end
+
+function ParticleManager:step(dt)
+    for particle, lifetime in pairs(self._Lifetimes) do
+        if lifetime <= 0 then
+            self._Lifetimes[particle] = nil
+            
+            -- racing condition with projectile destroying itself before the particle
+            if particle.destroy then
+                particle:destroy()
+            end
         end
-    )()
+
+        self._Lifetimes[particle] = lifetime - dt
+    end
 end
 
 return ParticleManager

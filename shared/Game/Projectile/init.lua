@@ -3,22 +3,24 @@ local Maid = require(shared.Common.Maid)
 local ITERATION_PRECISION = _G.PROJECTILE.ITERATION_PRECISION
 local MAX_ITERATIONS_PER_FRAME = _G.PROJECTILE.MAX_ITERATIONS_PER_FRAME
 
-local projectileTypes = {}
-
-for _, module in pairs(script.Types:GetChildren()) do
-    local projectileType = require(module)
-    projectileTypes[module.Name] = projectileType
-end
 
 ---A projectile with different properties
 ---@class Projectile
-local Projectile = {}
+local Projectile = {
+    ProjectileTypes = {}
+}
+
+for _, module in pairs(script.Types:GetChildren()) do
+    local projectileType = require(module)
+    Projectile.ProjectileTypes[module.Name] = projectileType
+    print("hello bullet")
+end
 
 function Projectile.new(projectileType, props, start, direction)
-    assert(projectileTypes[projectileType])
+    assert(Projectile.ProjectileTypes[projectileType], "projectile type not found: got " .. tostring(projectileType))
     local self = {}
 
-    self.Type = projectileTypes[projectileType]
+    self.Type = Projectile.ProjectileTypes[projectileType]
     self.Lifetime = 0
 
     self.Origin = start
@@ -29,7 +31,7 @@ function Projectile.new(projectileType, props, start, direction)
     self.props = props
 
     setmetatable(self, {
-        __index = function(self, index)
+        __index = function(this, index)
             return rawget(self.Type, index) or rawget(Projectile, index)
         end
     })

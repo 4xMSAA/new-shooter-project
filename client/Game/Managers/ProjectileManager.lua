@@ -54,9 +54,20 @@ function ProjectileManager:discard(projectile)
     self.Projectiles[projectile] = nil
 end
 
+local typesWithStep = {}
+for _, projectileType in pairs(Projectile.ProjectileTypes) do
+    if projectileType["staticStep"] then
+        table.insert(typesWithStep, projectileType)
+    end
+end
+
 ---
 ---@param dt number Delta time since last update
 function ProjectileManager:step(dt)
+    for _, projectileType in pairs(typesWithStep) do
+        projectileType.staticStep(dt)
+    end
+    
     for proj, _ in pairs(self.Projectiles) do
         local keepSimulating = proj:step(dt)
         proj:render()
