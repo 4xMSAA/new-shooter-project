@@ -35,6 +35,8 @@ local timers = {
     cameraNetworkUpdate = Timer.new(NETWORK_CAMERA_UPDATE_INTERVAL)
 }
 
+local isSprinting = false
+
 UserInputService.MouseIconEnabled = false
 
 -- TODO: actual input binding
@@ -48,17 +50,18 @@ local function spawn(character)
 
     -- temporary input binding
     local function inputHandler(name, state, object)
+        local boolState = state == Enum.UserInputState.Begin and true or false
         if name == "Aim" then
-            WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", state == Enum.UserInputState.Begin and true or false)
-        elseif name == "Fire" and state == Enum.UserInputState.Begin then
-            WeaponManager:fire(WeaponManager.ViewportWeapon, true)
-        elseif name == "Fire" and state == Enum.UserInputState.End then
-            WeaponManager:fire(WeaponManager.ViewportWeapon, false)
-        elseif name == "Reload" and state == Enum.UserInputState.Begin then
+            WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", boolState)
+        elseif name == "Fire" then
+            WeaponManager:fire(WeaponManager.ViewportWeapon, boolState)
+        elseif name == "Reload" and boolState then
             WeaponManager:reload(WeaponManager.ViewportWeapon)
-        elseif name == "debugPause" and state == Enum.UserInputState.Begin then
+        elseif name == "Sprint" then
+            isSprinting = boolState
+        elseif name == "debugPause" and boolState then
             debugPause = not debugPause
-        elseif name == "debugLog" and state == Enum.UserInputState.Begin then
+        elseif name == "debugLog" and boolState then
             Maid.info()
         end
     end
@@ -72,6 +75,7 @@ local function spawn(character)
     ContextActionService:BindAction("Aim", inputHandler, true, Enum.UserInputType.MouseButton2)
     ContextActionService:BindAction("Fire", inputHandler, true, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction("Reload", inputHandler, true, Enum.KeyCode.R)
+    ContextActionService:BindAction("Sprint", inputHandler, true, Enum.KeyCode.LeftShift)
     ContextActionService:BindAction("debugPause", inputHandler, true, Enum.KeyCode.P)
     ContextActionService:BindAction("debugLog", inputHandler, true, Enum.KeyCode.O)
 
@@ -113,7 +117,7 @@ RunService:BindToRenderStep(
         debug.profileend("game-character")
 
         debug.profilebegin("game-weaponmanager")
-        WeaponManager:step(dt, Camera, LocalCharacter.Velocity)
+        WeaponManager:step(dt, Camera, LocalCharacter.Velocity, isSprinting)
         debug.profilebegin("game-weaponmanager")
     end
 )

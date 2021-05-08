@@ -53,7 +53,7 @@ local Configuration = {
     },
     Offset = {
         Grip = CFrame.new(0.6, -0.9, -0.8),
-        Sprint = CFrame.Angles(0, 0.55, 0),
+        Sprint = CFrame.Angles(0, 0.85, 0.2),
         Aim = CFrame.new(0, -0.61, -0.4)
     },
     InterpolateSpeed = {

@@ -1,10 +1,3 @@
---[[
-    description and purpose here
-
-    please don't format document
-    if line 7 isn't blank it's probably autoformatted
---]]
-
 local SWAY_SPEED = _G.WEAPON.SWAY_SPEED
 local SWAY_AMPLIFY = _G.WEAPON.SWAY_AMPLIFY
 
@@ -12,6 +5,9 @@ local ADS_SWAY_MODIFIER = _G.WEAPON.ADS_SWAY_MODIFIER
 
 local AIM_SPEED = _G.WEAPON.AIM_SPEED
 local AIM_STYLE = _G.WEAPON.AIM_STYLE
+
+local SPRINT_SPEED = _G.WEAPON.SPRINT_SPEED
+local SPRINT_STYLE = _G.WEAPON.SPRINT_STYLE
 
 local MOVEMENT_AMPLIFY = _G.WEAPON.MOVEMENT_AMPLIFY
 local MOVEMENT_SPEED = _G.WEAPON.MOVEMENT_SPEED
@@ -102,6 +98,7 @@ function Gun.new(weapon, gamemode)
         Equipped = false,
         Aim = false,
         Cycling = false,
+        Sprint = false,
         Walk = false,
         Crouch = false,
         Prone = false,
@@ -117,6 +114,7 @@ function Gun.new(weapon, gamemode)
     -- private states
     -- all states range from 0 to 1 for linear interpolation purposes
     self._InterpolateState = {
+        Sprint = 0,
         Aim = 0,
         Equip = 0,
         Unequip = 0,
@@ -128,8 +126,10 @@ function Gun.new(weapon, gamemode)
     self._StateOverride = {}
 
     self._InterpolateSpeed = {
-        Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED
+        Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED,
+        Sprint = (self.Configuration.InterpolateSpeed.Sprint or 1) * SPRINT_SPEED
     }
+    
 
     -- default spring values: 5, 50, 4, 4
     -- mass, force, dampening, speed
@@ -185,11 +185,10 @@ function Gun:_init()
     end
 
     -- mount the model to apply particle effects
-    -- TODO: garbage clean mounting objects
-    local modelMount = mount(self.ViewModel)
+    self._ModelMount = mount(self.ViewModel)
     for name, data in pairs(self.Configuration.Particles) do
         assert(data.Path, "path to particle does not exist for " .. tostring(name) .. " in " .. tostring(self._assetName))
-        self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), modelMount(data.Parent))
+        self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), self._ModelMount(data.Parent))
     end
 
     -- give sounds
@@ -205,8 +204,35 @@ function Gun:_init()
     end
 
     local function connectAnimationEvents(name)
-        if not self.Animations[name] then return end
+        if not self.Animations[name] then 
+            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function connectAnimationEvents") 
+            return 
+        end
+
         self._Connections[name] = self.Animations[name].MarkerReached:connect(markerToSound)
+    end
+
+    local function reloadEvents(name)
+        if not self.Animations[name] then 
+            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function reloadEvents") 
+            return 
+        end
+
+        self.Animations[name].MarkerReached:on("Reload", function()
+            -- TODO: actual ammo counting and subtraction
+
+            local subtractAmmo = self.State.Max - self.State.Loaded
+
+            self:setState("Loaded", self.State.Max)
+        end)
+
+        self.Animations[name].MarkerReached:on("Chamber", function()
+            self:setState("Chambered", true)
+        end)
+    
+        self.Animations[name].Stopped:on(nil, function()
+            self._Lock.Reload = false
+        end)
     end
 
     connectAnimationEvents("Reload")
@@ -214,8 +240,12 @@ function Gun:_init()
     connectAnimationEvents("Equip")
     connectAnimationEvents("Unequip")
 
+    reloadEvents("Reload")
+    reloadEvents("DryReload")
 
-    -- in case we forget to prepare the model, do some preparing ourselves
+
+    -- in case we forget to prepare the model in the editor,
+    -- do some preparing ourselves
     for _, part in pairs(self.ViewModel:GetDescendants()) do
         if part:IsA("BasePart") then
             part.CanCollide = false
@@ -225,7 +255,7 @@ function Gun:_init()
         end
     end
 
-    -- joints are weird, so rootpriority helps decide which is the real "pivot"
+    -- joints are weird, so RootPriority helps decide which is the real "pivot"
     self.Handle.RootPriority = 100
     self.Handle.Anchored = true
 
@@ -246,7 +276,7 @@ function Gun:equip()
 end
 
 ---
----@return Emitter An emitter to listen to for "done" event
+---@return Emitter UnequipEmitter An emitter to listen to for "done" event
 function Gun:unequip()
     self:setState("Equipped", false)
     coroutine.wrap(unequipGun)(self, self.Events.Unequip)
@@ -265,17 +295,15 @@ function Gun:emitParticle(name)
     return self
 end
 
----
----@param name string
----@param range number
+---Play a sound that was given from the Configuration module of the gun
+---@param name string Name of the sound to be played
+---@param range number How many instances of the same sound can play at the same time
 function Gun:playSound(name, range)
     if not self._Sounds[name] then
         warn("no sound named " .. name .. " in " .. self.Configuration.Name)
         return self
     end
 
-    -- if we have a "how many times can sound play at once" then use the
-    -- playMultiple function instead
     if not range then
         self._Sounds[name]:play()
     else
@@ -301,21 +329,15 @@ function Gun:reload()
     if self._Lock.Reload then return end
 
     self._Lock.Reload = true
-    self.Animations.Reload:play()
-
-    self.Animations.Reload.MarkerReached:once("Reload", function()
-        -- TODO: actual ammo counting and subtraction
-        self:setState("Loaded", self.State.Max)
-    end)
-
-    self.Animations.Reload.Stopped:once(nil, function()
-        self._Lock.Reload = false
-    end)
+    
+    local reloadType = self.Chambered and "Reload" or "DryReload"
+    self.Animations[reloadType]:play()
 end
 
---- Fires the gun
---- Listen to the detailed process via obj.Events.Fired
----@return boolean Did the gun fire or not?
+---Fires the gun and emits `FIRE` on success or `SAFETY`, `CYCLING`, 
+---`EMPTY` or `RELOADING` on failure.  
+---The emitter's detailed process is found via `obj.Events.Fired`
+---@return boolean DidFire Did the gun fire or not?
 function Gun:fire()
     if self.ActiveFireMode == Enums.FireMode.Safety then
         self.Events.Fired:emit("SAFETY")
@@ -326,7 +348,7 @@ function Gun:fire()
         self.Events.Fired:emit("CYCLING")
         return false
     end
-    if  self.State.Loaded <= 0 then
+    if self.State.Loaded <= 0 then
         self.Events.Fired:emit("EMPTY")
         return false
     end
@@ -341,7 +363,7 @@ function Gun:fire()
 
     self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 7)
 
-    self:setState("Loaded", self.State.Loaded - 1)
+    self:setState("Loaded", math.max(0, self.State.Loaded - 1))
 
     -- viewmodel recoil
     local recoil = self.Configuration.Recoil
@@ -370,6 +392,10 @@ function Gun:fire()
 
     self:setState("Cycling", false)
 
+    if self.State.Loaded == 0 then
+        self:setState("Chambered", false)
+    end
+
     return true
 end
 
@@ -380,7 +406,7 @@ end
 
 ---
 ---@param dt number Delta time since last frame
----@param pivot userdata CFrame  at which the gun should be located at
+---@param pivot userdata CFrame at which the gun should be located at
 function Gun:update(dt, pivot)
     local cfg = self.Configuration
 
@@ -406,7 +432,7 @@ function Gun:update(dt, pivot)
         )
     local inertia = self._Springs.Inertia.Position
 
-    -- update InterpolateStates and Springs
+    -- update InterpolateStates
     for state, value in pairs(self.State) do
         if self._InterpolateState[state] then
             self._InterpolateState[state] =
@@ -419,6 +445,8 @@ function Gun:update(dt, pivot)
             )
         end
     end
+
+    -- update springs
     for _, spring in pairs(self._Springs) do
         spring:update(math.min(1, dt))
     end
@@ -445,6 +473,12 @@ function Gun:update(dt, pivot)
     local posRecoil = self._Springs.ModelPositionRecoil.Position * (lerp(1,  cfg.Recoil.AimScale, self._InterpolateState.Aim))
     local rotRecoil = self._Springs.ModelRotationRecoil.Position * (lerp(1,  cfg.Recoil.AimScale, self._InterpolateState.Aim))
 
+    local sprintCF =
+        CF000:lerp(
+            cfg.Offset.Sprint,
+            Styles[SPRINT_STYLE](self._InterpolateState.Sprint)
+    )
+
     -- position the weapon
     local renderCF =
         pivot
@@ -453,6 +487,7 @@ function Gun:update(dt, pivot)
         * self._gripJoint.Transform
         * swayCF
         * movementCF
+        * sprintCF
         * CFrame.new(posRecoil)
         * CFrame.Angles(rotRecoil.x, rotRecoil.y, rotRecoil.z)
         * CFrame.Angles(-inertia.X, inertia.Y, 0)

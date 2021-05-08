@@ -191,6 +191,7 @@ function WeaponManager:networkEquip(player, uuid)
 end
 
 function WeaponManager:fire(weapon, state)
+    if weapon.State.Sprint then return end
     if weapon.ActiveFireMode == Enums.FireMode.Automatic and state then
         self.AutoFire[weapon] = true
     else
@@ -207,6 +208,7 @@ function WeaponManager:fire(weapon, state)
 end
 
 function WeaponManager:reload(weapon, networked)
+    if weapon.State.Sprint then return end
     weapon:reload()
     if not networked then
         NetworkLib:send(Enums.PacketType.WeaponReload)
@@ -217,7 +219,7 @@ function WeaponManager:setState(weapon, stateName, stateValue)
     weapon:setState(stateName, stateValue)
 end
 
-function WeaponManager:step(dt, camera, velocity)
+function WeaponManager:step(dt, camera, velocity, isSprinting)
     -- handle viewport weapon
     if self.ViewportWeapon then
         self.CameraRecoilSpring:update(math.min(1, dt))
@@ -233,7 +235,7 @@ function WeaponManager:step(dt, camera, velocity)
         -- handle automatic fire
         for weapon, _ in pairs(self.AutoFire) do
             if weapon:fire() then
-                if weapon == self.ViewportWeapon then
+                if weapon == self.ViewportWeapon and not weapon.State.Sprint then
                     fireViewportWeapon(self, weapon)
                 end
             end
@@ -244,7 +246,8 @@ function WeaponManager:step(dt, camera, velocity)
     for _, container in pairs(self.ActiveWeapons) do
         if not self.ViewportWeapon == container.Weapon then
             -- ! dangerous - Character may not always be available and roblox is
-            -- ! stupid, so make a yet again wrapped instance maybe?
+            -- ! usually stupid for when it's ready, 
+            -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
             container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
         end
