@@ -40,13 +40,9 @@ function ZombiesGamemode.new(super)
             client.GameCharacter = GameCharacter.new(client)
             client.GameCharacter:spawn()
 
-            local gun = self.WeaponManager:create("M1Garand")
-            local gun2 = self.WeaponManager:create("M4A1")
+            local gun = self.WeaponManager:create("M4A1")
             self.WeaponManager:register(gun, client)
-            self.WeaponManager:register(gun2, client)
             self.WeaponManager:equip(client, gun)
-            wait(10)
-            self.WeaponManager:equip(client, gun2)
 
         end
     )
