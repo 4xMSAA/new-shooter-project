@@ -3,9 +3,10 @@ local Players = game:GetService("Players")
 local CAMERA_RECOIL_ANGULAR_DAMPENING = _G.CAMERA.RECOIL_ANGULAR_DAMPENING
 local CAMERA_RECOIL_ANGULAR_SPEED = _G.CAMERA.RECOIL_ANGULAR_SPEED
 
-local NetworkLib = require(shared.Common.NetworkLib)
 local Enums = shared.Enums
 
+local NetworkLib = require(shared.Common.NetworkLib)
+local log = require(shared.Common.Log)(script:GetFullName())
 local Spring = require(shared.Common.Spring)
 local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
@@ -57,7 +58,9 @@ end
 local WeaponManager = {}
 WeaponManager.__index = WeaponManager
 
-
+---
+---@param config table
+---@return table
 function WeaponManager.new(config)
     assert(config, "lacking configuration, provide it as the 1st argument")
     assert(config.Camera, "WeaponManager requires a camera, provide it in the config table")
@@ -113,11 +116,12 @@ end
 function WeaponManager:register(weapon, uuid, player)
     weapon.UUID = uuid
     self.ActiveWeapons[uuid] = {Weapon = weapon, Owner = player}
-    print("registered", weapon.Configuration.Name, "with UUID of", uuid, "owned by", player)
+    log(1, "registered", weapon.Configuration.Name, "with UUID of", uuid, "owned by", player)
     return WeaponManager
 end
 
 ---Unregister a weapon UUID for garbage cleaning
+---@param weaponOrUUID table
 function WeaponManager:unregister(weaponOrUUID)
     local uuid = weaponOrUUID
     if typeof(weaponOrUUID) ~= "string" then
@@ -127,17 +131,28 @@ function WeaponManager:unregister(weaponOrUUID)
     self.ActiveWeapons[uuid].Weapon:destroy()
 end
 
+---
+---@param player any
+---@param assetName any
+---@param uuid any
 function WeaponManager:networkRegister(player, assetName, uuid)
     local weapon = self:create(assetName)
     self:register(weapon, uuid, player)
 end
 
+---
+---@param uuid any
+---@return any
 function WeaponManager:getByUUID(uuid)
     assert(self.ActiveWeapons[uuid], "UUID is not registered in this WeaponManager, unable to get Weapon instance")
 
     return self.ActiveWeapons[uuid];
 end
 
+---
+---@param owner any
+---@return any
+---@return any
 function WeaponManager:getOwnerEquipped(owner)
     for uuid, container in pairs(self.ActiveWeapons) do
         if container.Owner == owner then
@@ -147,7 +162,8 @@ function WeaponManager:getOwnerEquipped(owner)
 end
 
 function WeaponManager:equip(player, weapon)
-    print(player, "is equipping", weapon.Configuration.Name)
+    log(1, player, "is equipping", weapon.Configuration.Name)
+    weapon.ViewModel.Parent = _G.Path.RayIgnore
 end
 
 ---Equips the weapon onto the user's screen.
@@ -156,6 +172,8 @@ end
 ---@param networked boolean Whether this call was networked or not (to prevent loopback)
 function WeaponManager:equipViewport(weapon, networked)
     assert(self.ActiveWeapons[weapon.UUID], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+    log(1, "equip viewport weapon", weapon.Configuration.Name)
+
     local object = self.ActiveWeapons[weapon.UUID]
     assert(
         object.Owner == Players.LocalPlayer,
@@ -182,7 +200,6 @@ end
 
 function WeaponManager:networkEquip(player, uuid)
     if player == Players.LocalPlayer then
-        print("equip viewport weapon", self:getByUUID(uuid).Weapon)
         self:equipViewport(self:getByUUID(uuid).Weapon, true)
         return
     end
@@ -244,9 +261,9 @@ function WeaponManager:step(dt, camera, velocity, isSprinting)
 
     -- TODO: handle third person weapons
     for _, container in pairs(self.ActiveWeapons) do
-        if not self.ViewportWeapon == container.Weapon then
+        if self.ViewportWeapon ~= container.Weapon then
             -- ! dangerous - Character may not always be available and roblox is
-            -- ! usually stupid for when it's ready, 
+            -- ! usually stupid for telling when it's ready, 
             -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
             container.Weapon:update(dt, container.Owner.Character.Head.CFrame)

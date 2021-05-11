@@ -13,7 +13,6 @@ local Projectile = {
 for _, module in pairs(script.Types:GetChildren()) do
     local projectileType = require(module)
     Projectile.ProjectileTypes[module.Name] = projectileType
-    print("hello bullet")
 end
 
 function Projectile.new(projectileType, props, start, direction)

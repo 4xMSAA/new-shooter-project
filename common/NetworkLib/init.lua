@@ -4,21 +4,12 @@
 --]]
 local RunService = game:GetService("RunService")
 
-local LOG_LEVEL = _G.LOG_LEVEL or 2
-
 local Enums = shared.Enums
+local log = require(shared.Common.Log)(script:GetFullName())
 
 local remotes = _G.Path.Remotes
 local isClient = RunService:IsClient()
 local isServer = RunService:IsServer()
-
-
-local function log(level, ...)
-    if LOG_LEVEL >= level then
-        print(...)
-    end
-end
-
 ---
 ---@class NetworkLib
 local NetworkLib = {}

@@ -55,7 +55,8 @@ Here's a quick rundown:
 Variables, functions are **camelCase**  
 Properties in objects are **PascalCase**  
 Internal properties in objects are **_camelCase**  
-Methods in classes are defined with a colon ``:`` and are **camelCase**  
+Methods in classes are defined with a colon `:` and are **camelCase**  
+Static methods in classes are defined with a full stop `.`
 
 ```lua
 function Class:method()
@@ -70,12 +71,12 @@ end
 
 ### Particle Configuration
 
-``Type`` specifices whether to read configurations for 2D elements or 3D elements.  
-**Expects:** string ``2D``, string ``3D``  
-``Default`` specifies a ClassName-based behaviour for objects inside the effect.  
-**Expects:** table ``{}`` with the instance's ClassName and an instance-specific property table  
-``Specification`` declares properties for objects by **name** inside the effect.
-**Expects:** table ``{}`` with the instance's name and an instance-specific property table
+`Type` specifices whether to read configurations for 2D elements or 3D elements.  
+**Expects:** string `2D`, string `3D`  
+`Default` specifies a ClassName-based behaviour for objects inside the effect.  
+**Expects:** table `{}` with the instance's ClassName and an instance-specific property table  
+`Specification` declares properties for objects by **name** inside the effect.
+**Expects:** table `{}` with the instance's name and an instance-specific property table
 
 ### Gun Configuration
 

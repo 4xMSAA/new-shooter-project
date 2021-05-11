@@ -61,7 +61,8 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
                 end
             end
             if not customProps.Ignore then
-                -- makes zero sense but it works
+                -- if we have a remap and it has a pose for that joint, 
+                -- use that - otherwise get joint in the Animator model
                 local joint, mappedPose = (map and map(keyframe, pose)) or AnimationParser.lookupJointByPose(pose, joints)
                 pose = mappedPose or pose
 
