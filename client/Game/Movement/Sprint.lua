@@ -1,3 +1,0 @@
-local SprintModule = {}
-
-return SprintModule

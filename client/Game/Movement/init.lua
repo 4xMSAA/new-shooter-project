@@ -1,7 +1,17 @@
+local Emitter = require(shared.Common.Emitter)
+
+local HALF_PI = math.pi/2
 local MOVEMENT_FRICTION = _G.MOVEMENT.FRICTION
 local MOVEMENT_ACCELERATION_SPEED = _G.MOVEMENT.ACCELERATION_SPEED
 
 local COLLISION_CAPSULE = shared.Assets.Collision.Capsule
+
+local loadedMovementModules = {}
+for _, module in pairs(script.Modules:GetChildren()) do
+    if module:IsA("ModuleScript") then
+        loadedMovementModules[module.Name] = require(module)
+    end
+end
 
 local rayParams = RaycastParams.new()
 rayParams.FilterType = Enum.RaycastFilterType.Blacklist
@@ -9,7 +19,7 @@ rayParams.FilterDescendantsInstances = {
     _G.Path.Ignore,
     _G.Path.Players,
     _G.Path.ClientViewmodel,
-    workspace.GameFolder.RayIgnore,
+    _G.Path.RayIgnore,
     workspace.CurrentCamera
 }
 rayParams.IgnoreWater = true
@@ -36,6 +46,7 @@ end
 ---@class Movement
 local Movement = {}
 Movement.__index = Movement
+Movement.Modules = loadedMovementModules
 
 function Movement.new(character)
     local self = {
@@ -43,10 +54,16 @@ function Movement.new(character)
         RootPart = character.PrimaryPart,
         Humanoid = character:WaitForChild("Humanoid"),
         Velocity = Vector3.new(),
+        PhysicsVelocity = Vector3.new(),
         Location = CFrame.new(),
         Acceleration = Vector3.new(),
         MoveAcceleration = Vector3.new(),
-        CollisionCapsule = COLLISION_CAPSULE:Clone()
+        CollisionCapsule = COLLISION_CAPSULE:Clone(),
+
+        Changed = Emitter.new(),
+        
+        _speedModifiers = {},
+        _movementModules = {}
     }
 
     local weldConstraint = Instance.new("WeldConstraint")
@@ -56,23 +73,53 @@ function Movement.new(character)
     weldConstraint.Parent = self.CollisionCapsule
     self.CollisionCapsule.Parent = _G.Path.Collisions
 
+    
+    self._originalSpeed = self.Humanoid.WalkSpeed
+    self.Speed = self._originalSpeed
+    self.JumpPower = self.Humanoid.JumpPower
+    
     self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, false)
     self.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
-
-    self.Speed = self.Humanoid.WalkSpeed
-    self.JumpPower = self.Humanoid.JumpPower
-
+    
     setmetatable(self, Movement)
     return self
 end
 
+function Movement:loadModule(module)
+    local instancedModule = module.new(self)
+    table.insert(self._movementModules, instancedModule)
+    return instancedModule
+end
+
+function Movement:setState(property, value)
+    if self[property] and self[property] ~= value then
+        self.Changed:emit(property, self[property])
+    end
+
+    self[property] = value
+end
+
+function Movement:setSpeedModifier(name, value)
+    self._speedModifiers[name] = value
+end
+
 function Movement:update(dt, lookV)
+    local moveDir = self.Humanoid.MoveDirection
+    for _, module in pairs(self._movementModules) do
+        module:update(dt, lookV, moveDir)
+    end
+
+    self.Speed = self._originalSpeed
+    for _, value in pairs(self._speedModifiers) do
+        self.Speed = self.Speed + value
+    end
+
     dt = math.min(dt, 1)
 
     self.RootPart.CFrame =
         CFrame.new(self.RootPart.Position, self.RootPart.Position + lookV - Vector3.new(0, lookV.Y, 0))
 
-    -- we can still extract MoveDirectionn
+    -- we can still extract MoveDirection even if WalkSpeed is 0
     self.Humanoid.WalkSpeed = 0
     self.Humanoid.JumpPower = self.JumpPower
 
@@ -81,7 +128,6 @@ function Movement:update(dt, lookV)
     -- TODO: make into object space acceleration rather than world space
     -- character is standing on ground according to roblox
     if self.Humanoid.FloorMaterial ~= Enum.Material.Air then
-        local moveDir = self.Humanoid.MoveDirection
         self.MoveAcceleration =
             Vector3.new(
             reachTargetValue(self.MoveAcceleration.X, self.Speed * moveDir.X, dt*MOVEMENT_ACCELERATION_SPEED),
@@ -132,21 +178,21 @@ function Movement:update(dt, lookV)
         local xzNormal = raycastLeft.Normal - Vector3.new(0, raycastLeft.Normal.Y, 0)
         self.Velocity =
             self.Velocity +
-            (xzNormal * xzVelocity.magnitude / 2) * math.min(1, (1 - xzVelocity.unit:Dot(xzNormal)))
+            (xzNormal * xzVelocity.magnitude / HALF_PI) * math.min(1, (1 - xzVelocity.unit:Dot(xzNormal)))
     elseif raycastRight then
         local xzNormal = raycastRight.Normal - Vector3.new(0, raycastRight.Normal.Y, 0)
         self.Velocity =
             self.Velocity +
-            (xzNormal * xzVelocity.magnitude / 2) * math.min(1, (1 - xzVelocity.unit:Dot(xzNormal)))
+            (xzNormal * xzVelocity.magnitude / HALF_PI) * math.min(1, (1 - xzVelocity.unit:Dot(xzNormal)))
     elseif raycastMid then
         local xzNormal = raycastMid.Normal - Vector3.new(0, raycastMid.Normal.Y, 0)
         self.Velocity =
             self.Velocity +
             (xzNormal * xzVelocity.magnitude) * math.min(1, (1 - xzVelocity.unit:Dot(xzNormal)))
     end
-    -- end
 
-    self.RootPart.Velocity = Vector3.new(self.Velocity.x, self.RootPart.Velocity.y + self.Velocity.y, self.Velocity.z)
+    self.PhysicsVelocity = Vector3.new(self.Velocity.x, self.RootPart.Velocity.y + self.Velocity.y, self.Velocity.z)
+    self.RootPart.Velocity = self.PhysicsVelocity
 end
 
 -- function Movement:jump()

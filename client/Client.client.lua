@@ -35,30 +35,30 @@ local timers = {
     cameraNetworkUpdate = Timer.new(NETWORK_CAMERA_UPDATE_INTERVAL)
 }
 
-local isSprinting = false
 
 UserInputService.MouseIconEnabled = false
+LocalCharacter.listenPlayer(Players.LocalPlayer)
 
 -- TODO: actual input binding
 local function spawn(character)
-    spawned = true
-
-    LocalCharacter:listenPlayer(Players.LocalPlayer)
-    LocalCharacter:setTransparency(1)
+    LocalCharacter.setTransparency(1)
 
     LocalCharacter.Controller = Movement.new(character)
+    local SprintModule = LocalCharacter.Controller:loadModule(Movement.Modules.Sprint)
+    local AimModule = LocalCharacter.Controller:loadModule(Movement.Modules.ADS)
 
     -- temporary input binding
     local function inputHandler(name, state, object)
         local boolState = state == Enum.UserInputState.Begin and true or false
         if name == "Aim" then
             WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", boolState)
+            AimModule.Aim = boolState
         elseif name == "Fire" then
             WeaponManager:fire(WeaponManager.ViewportWeapon, boolState)
         elseif name == "Reload" and boolState then
             WeaponManager:reload(WeaponManager.ViewportWeapon)
         elseif name == "Sprint" then
-            isSprinting = boolState
+            SprintModule.Sprint = boolState
         elseif name == "debugPause" and boolState then
             debugPause = not debugPause
         elseif name == "debugLog" and boolState then
@@ -86,6 +86,8 @@ local function spawn(character)
             LocalCharacter.Controller:update(dt, Camera.CFrame.LookVector)
         end
     )
+
+    spawned = true
 end
 
 -- network binds
@@ -112,12 +114,9 @@ RunService:BindToRenderStep(
         if debugPause or not spawned then
             return
         end
-        debug.profilebegin("game-character")
-        LocalCharacter:step(dt)
-        debug.profileend("game-character")
 
         debug.profilebegin("game-weaponmanager")
-        WeaponManager:step(dt, Camera, LocalCharacter.Velocity, isSprinting)
+        WeaponManager:step(dt, Camera, LocalCharacter.Controller)
         debug.profilebegin("game-weaponmanager")
     end
 )

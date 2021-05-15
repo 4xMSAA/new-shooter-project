@@ -239,15 +239,17 @@ function WeaponManager:setState(weapon, stateName, stateValue)
     weapon:setState(stateName, stateValue)
 end
 
-function WeaponManager:step(dt, camera, velocity, isSprinting)
+function WeaponManager:step(dt, camera, movementController)
     -- handle viewport weapon
     if self.ViewportWeapon then
+        self.ViewportWeapon:setState("Sprint", movementController.IsSprinting)
+
         self.CameraRecoilSpring:update(math.min(1, dt))
         local recoil = self.CameraRecoilSpring.Position
         camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
         camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
 
-        self.ViewportWeapon:setState("Movement", velocity)
+        self.ViewportWeapon:setState("Movement", movementController.Velocity.magnitude)
         self.ViewportWeapon.Animator:_step(dt)
         camera:updateOffset(Enums.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
         self.ViewportWeapon:update(dt, camera.CFrame)

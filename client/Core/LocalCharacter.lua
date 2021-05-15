@@ -31,33 +31,33 @@ end
 
 ---Returns the character currently as the player's character
 ---@return userdata LocalPlayer's character
-function LocalCharacter:get()
-    return self.Character
+function LocalCharacter.get()
+    return LocalCharacter.Character
 end
 
 ---Sets a character model to be the active character to manage
 ---@param character userdata The LocalCharacter model of a Player to manage
-function LocalCharacter:set(character)
+function LocalCharacter.set(character)
     if not character then
         return
     end
 
-    self.Character = character
+    LocalCharacter.Character = character
     character.DescendantAdded:connect(
         function(object)
-            self:setTransparency(self.CharacterTransparency, object)
+            LocalCharacter.setTransparency(LocalCharacter.CharacterTransparency, object)
         end
     )
-    self:setTransparency(self.CharacterTransparency)
+    LocalCharacter.setTransparency(LocalCharacter.CharacterTransparency)
 end
 
 ---Sets the active character's transparency to the specified value, optionally using an exclusion list
 ---@param value number Target transparency for the character
 ---@param target userdata Specify a part to change - default iterates through character
-function LocalCharacter:setTransparency(value, target)
-    self.CharacterTransparency = value
-    if not target and self:get() then
-        for _, object in pairs(self:get():GetDescendants()) do
+function LocalCharacter.setTransparency(value, target)
+    LocalCharacter.CharacterTransparency = value
+    if not target and LocalCharacter.Character then
+        for _, object in pairs(LocalCharacter.Character:GetDescendants()) do
             setObjectTransparency(object, value)
         end
     elseif target then
@@ -65,27 +65,15 @@ function LocalCharacter:setTransparency(value, target)
     end
 end
 
-function LocalCharacter:listenPlayer(player)
-    self.Player = player
+function LocalCharacter.listenPlayer(player)
+    LocalCharacter.Player = player
     player.CharacterAdded:connect(
         function(char)
-            self:set(char)
+            LocalCharacter.set(char)
         end
     )
     if player.Character then
-        self:set(player.Character)
-    end
-end
-
--- it's 2020 and roblox still does not provide a reliable way to get velocity,
--- because GetPropertyChangedSignal is too busy being brokenn
-function LocalCharacter:step(dt)
-    if not self.Controller then
-        if self:get() and self:get().PrimaryPart then
-            self.Velocity = self:get().PrimaryPart.Velocity.magnitude
-        end
-    else
-        self.Velocity = self.Controller.Velocity.magnitude
+        LocalCharacter.set(player.Character)
     end
 end
 
