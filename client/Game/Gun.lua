@@ -92,6 +92,8 @@ function Gun.new(weapon, gamemode)
     self.Configuration = config
     self.ActiveFireMode = config.FireMode[1]
 
+    self.StateChanged = Emitter.new()
+
     -- states
     self.State = {
         InitialEquip = true,
@@ -312,14 +314,12 @@ function Gun:playSound(name, range)
     return self
 end
 
-function Gun:setState(statesOrKey, state)
-    if typeof(statesOrKey) == "string" then
-        self.State[statesOrKey] = state
-        return self
+function Gun:setState(property, value)
+    if self.State[property] and self.State[property] ~= value then
+        self.StateChanged:emit(property, self.State[property])
     end
-    for key, value in pairs(statesOrKey) do
-        self.State[key] = value
-    end
+
+    self.State[property] = value
     return self
 end
 
