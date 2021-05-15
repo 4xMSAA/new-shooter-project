@@ -216,9 +216,12 @@ function WeaponManager:fire(weapon, state)
     end
 
     if not weapon.Configuration.Charge and state then
-        if weapon:fire() then
-            if weapon == self.ViewportWeapon then
+        if weapon == self.ViewportWeapon then
+            local didFire, reason = weapon:fire()
+            if didFire then
                 fireViewportWeapon(self, weapon)
+            elseif reason == "EMPTY" then
+                self:reload(weapon)
             end
         end
     end
@@ -251,9 +254,12 @@ function WeaponManager:step(dt, camera, velocity, isSprinting)
 
         -- handle automatic fire
         for weapon, _ in pairs(self.AutoFire) do
-            if weapon:fire() then
-                if weapon == self.ViewportWeapon and not weapon.State.Sprint then
+            if weapon == self.ViewportWeapon and not weapon.State.Sprint then
+                local didFire, reason = weapon:fire()
+                if didFire then
                     fireViewportWeapon(self, weapon)
+                elseif reason == "EMPTY" then
+                    self:reload(weapon)
                 end
             end
         end

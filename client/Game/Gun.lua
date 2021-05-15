@@ -336,25 +336,24 @@ end
 
 ---Fires the gun and emits `FIRE` on success or `SAFETY`, `CYCLING`, 
 ---`EMPTY` or `RELOADING` on failure.  
----The emitter's detailed process is found via `obj.Events.Fired`
----@return boolean DidFire Did the gun fire or not?
+---@return boolean DidFire, string Reason Returns whether the gun fire or not.
 function Gun:fire()
     if self.ActiveFireMode == Enums.FireMode.Safety then
         self.Events.Fired:emit("SAFETY")
-        return false
+        return false, "SAFETY"
     end
 
     if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() or self.State.Cycling then
         self.Events.Fired:emit("CYCLING")
-        return false
+        return false, "CYCLING"
     end
     if self.State.Loaded <= 0 then
         self.Events.Fired:emit("EMPTY")
-        return false
+        return false, "EMPTY"
     end
     if self._Lock.Reload then
         self.Events.Fired:emit("RELOADING")
-        return false
+        return false, "RELOADING"
     end
 
     self.Events.Fired:emit("FIRE")
