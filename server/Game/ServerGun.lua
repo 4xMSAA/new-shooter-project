@@ -9,7 +9,7 @@ local PATH = {
     WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
 }
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 ---Serverside Weapon class for server-enforcement
 ---@class ServerGun

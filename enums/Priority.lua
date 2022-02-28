@@ -1,7 +1,7 @@
 local TableUtils = require(shared.Common.TableUtils)
 
 ---@class Priority
-local Enums = {
+local GameEnum = {
     {"Critical", ""},
     {"Important", ""},
     {"Normal", ""},
@@ -9,4 +9,4 @@ local Enums = {
     {"Last", ""},
 }
 
-return TableUtils.toEnumList(script.Parent.Name, Enums)
+return TableUtils.toEnumList(script.Parent.Name, GameEnum)

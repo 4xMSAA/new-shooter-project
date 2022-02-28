@@ -34,9 +34,9 @@ for key, data in pairs(require(shared.Source:WaitForChild("Configuration"))) do
 end
 
 -- load enums
-shared.Enums = {}
-for _, enumModule in pairs(shared.Source:WaitForChild("Enums"):GetChildren()) do
-    shared.Enums[enumModule.Name] = require(enumModule)
+shared.GameEnum = {}
+for _, enumModule in pairs(shared.Source:WaitForChild("GameEnum"):GetChildren()) do
+    shared.GameEnum[enumModule.Name] = require(enumModule)
 end
 
 -- define global paths we weant quick access to

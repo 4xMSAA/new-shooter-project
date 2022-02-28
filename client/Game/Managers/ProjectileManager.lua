@@ -4,6 +4,7 @@ local Maid = require(shared.Common.Maid)
 
 local Projectile = require(shared.Game.Projectile)
 
+
 ---A class description
 ---@class ProjectileManager
 local ProjectileManager = {}
@@ -19,6 +20,7 @@ function ProjectileManager.new()
     return self
 end
 
+
 ---
 ---@param config userdata
 ---@param direction userdata
@@ -28,6 +30,7 @@ function ProjectileManager:makeProperties(config, direction)
         Velocity = config.Velocity * VELOCITY_MODIFIER
     }
 end
+
 
 ---
 ---@param gun Gun Configuration to read and use to create a projectile from
@@ -54,12 +57,14 @@ function ProjectileManager:discard(projectile)
     self.Projectiles[projectile] = nil
 end
 
+
 local typesWithStep = {}
 for _, projectileType in pairs(Projectile.ProjectileTypes) do
     if projectileType["staticStep"] then
         table.insert(typesWithStep, projectileType)
     end
 end
+
 
 ---
 ---@param dt number Delta time since last update
@@ -70,9 +75,10 @@ function ProjectileManager:step(dt)
     
     for proj, _ in pairs(self.Projectiles) do
         local keepSimulating = proj:step(dt)
-        proj:render()
-        if not keepSimulating or proj.Lifetime > 5 then
+        if not keepSimulating or proj.Lifetime > 10 then
             self:discard(proj)
+        elseif keepSimulating then
+            proj:render()
         end
     end
 end

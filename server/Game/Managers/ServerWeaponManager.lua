@@ -3,7 +3,7 @@ local HttpService = game:GetService("HttpService")
 local Maid = require(shared.Common.Maid)
 
 local NetworkLib = require(shared.Common.NetworkLib)
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local ServerGun = require(_G.Server.Game.ServerGun)
 
@@ -30,8 +30,8 @@ function ServerWeaponManager.new(config)
     Maid.watch(self)
 
     self._packetToFunction = {
-        [Enums.PacketType.WeaponEquip] = self.equip,
-        [Enums.PacketType.WeaponFire] = self.fire,
+        [GameEnum.PacketType.WeaponEquip] = self.equip,
+        [GameEnum.PacketType.WeaponFire] = self.fire,
     }
     return self
 end
@@ -51,7 +51,7 @@ function ServerWeaponManager:register(weapon, client)
     weapon.UUID = uuid or HttpService:GenerateGUID(false)
     self.ActiveWeapons[weapon.UUID] = {Weapon = weapon, Owner = client}
 
-    NetworkLib:send(Enums.PacketType.WeaponRegister, client, weapon.AssetName, weapon.UUID)
+    NetworkLib:send(GameEnum.PacketType.WeaponRegister, client, weapon.AssetName, weapon.UUID)
 
     return ServerWeaponManager
 end
@@ -68,7 +68,7 @@ function ServerWeaponManager:equip(client, weaponOrUUID)
         warn("gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
     end
 
-    NetworkLib:send(Enums.PacketType.WeaponEquip, client, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponEquip, client, uuid)
 end
 
 ---
@@ -85,7 +85,7 @@ function ServerWeaponManager:fire(client, weaponOrUUID, bulletUUID, direction)
         warn("gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
     end
 
-    NetworkLib:send(Enums.packetType.WeaponFire, client, uuid)
+    NetworkLib:send(GameEnum.packetType.WeaponFire, client, uuid)
     -- TODO: sanity check high RPM
 end
 

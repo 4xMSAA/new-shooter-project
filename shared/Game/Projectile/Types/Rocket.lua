@@ -20,7 +20,7 @@ local MATERIAL_TO_HIT_FX = {
     [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt
 }
 
-local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/BulletHit")
+local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/ExplosionHit")
 
 local params = RaycastParams.new()
 params.FilterDescendantsInstances = {
@@ -45,7 +45,7 @@ function Bullet:simulate(dt)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity * dt
+        self.Position = self.Position + self.Velocity
         return true
     end
 
@@ -88,7 +88,6 @@ function Bullet:hit(rayResult)
 end
 
 function Bullet:render()
-    if not self._renderObject then return end
 
     self._renderObject.CFrame = CFrame.new(self.Position)
     self._renderObject.Parent = _G.Path.FX

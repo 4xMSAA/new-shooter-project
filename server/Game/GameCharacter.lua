@@ -1,7 +1,7 @@
 local StarterPlayer = game:GetService("StarterPlayer")
 local Players = game:GetService("Players")
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local NetworkLib = require(shared.Common.NetworkLib)
 
@@ -33,7 +33,7 @@ end
 
 function GameCharacter:spawn(cf)
     local char = self:loadCharacter(cf)
-    NetworkLib:send(Enums.PacketType.PlayerSpawn, self.Client.ID, char)
+    NetworkLib:send(GameEnum.PacketType.PlayerSpawn, self.Client.ID, char)
 end
 
 function GameCharacter:updateCharacterPosition()

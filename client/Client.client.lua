@@ -9,7 +9,7 @@ require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 
 local NETWORK_CAMERA_UPDATE_INTERVAL = _G.INTERVALS.NETWORK.CAMERA_UPDATE
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local NetworkLib = require(shared.Common.NetworkLib)
 local Maid = require(shared.Common.Maid)
@@ -96,7 +96,7 @@ local function route(packetType, ...)
 end
 
 NetworkLib:listenFor(
-    Enums.PacketType.PlayerSpawn,
+    GameEnum.PacketType.PlayerSpawn,
     function(id, char)
         if id == Players.LocalPlayer.UserId then
             spawn(char)
@@ -129,7 +129,7 @@ RunService:BindToRenderStep(
             return
         end
         if timers.cameraNetworkUpdate:tick(dt) then
-            NetworkLib:send(Enums.PacketType.Look, Camera.User.LookVector)
+            NetworkLib:send(GameEnum.PacketType.Look, Camera.User.LookVector)
         end
         debug.profilebegin("game-camera")
         UserInputService.MouseBehavior = Enum.MouseBehavior.LockCenter

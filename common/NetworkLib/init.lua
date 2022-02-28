@@ -4,7 +4,7 @@
 --]]
 local RunService = game:GetService("RunService")
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 local log = require(shared.Common.Log)(script:GetFullName())
 
 local remotes = _G.Path.Remotes
@@ -16,7 +16,7 @@ local NetworkLib = {}
 NetworkLib._activeListeners = {}
 
 function NetworkLib:_toEnum(id)
-    return Enums.PacketType(id)
+    return GameEnum.PacketType(id)
 end
 
 function NetworkLib:_toInstance(object)

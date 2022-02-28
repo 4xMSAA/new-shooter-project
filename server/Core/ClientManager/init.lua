@@ -2,7 +2,7 @@
     Handle new incoming connections
 --]]
 local Maid = require(shared.Common.Maid)
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local Players = game:GetService("Players")
 
@@ -17,9 +17,9 @@ local LEAVE_PROCEDURES_FOLDER = script.LeaveProcedures
 ---                        with
 local function orderModulesByPriority(moduleList)
     local orderedList = {}
-    for pass = 1, #Enums.Priority do
+    for pass = 1, #GameEnum.Priority do
         for _, module in pairs(moduleList) do
-            if module.Priority == Enums.Priority(pass) then
+            if module.Priority == GameEnum.Priority(pass) then
                 table.insert(orderedList, module)
             end
         end

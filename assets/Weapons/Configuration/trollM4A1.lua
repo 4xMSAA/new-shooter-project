@@ -1,34 +1,35 @@
 local GameEnum = shared.GameEnum
 
-local assetName = script.Name
+local assetName = "M4A1"
 
 local Configuration = {
-    Name = "M1911",
+    Name = "Troll M4A1",
     ModelPath = assetName,
     AnimationPath = assetName,
     ActionType = GameEnum.GunActionType.ClosedBolt,
-    RPM = 700,
-    FireMode = {GameEnum.FireMode.Single, GameEnum.FireMode.Safety},
-    EquipTime = 0.56,
+    RPM = 400,
+    FireMode = {GameEnum.FireMode.Automatic, GameEnum.FireMode.Safety},
+    EquipTime = 0.88,
     Zoom = 1.25,
     Ammo = {
-        Max = 30,
+        Max = 90,
         Reserve = 180
     },
     Particles = {
         Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
-        -- Eject = {Path = "Gun/Casing/.45ACP", Speed = 14}
+        -- Eject = {Path = "Gun/Casing/5.56x9mm", Speed = 14}
     },
     Sounds = {
         BoltForward = 5104015522,
         MagIn = 5104152875,
         MagOut = {SoundId = 268445237, Volume = 0.7},
-        Fire = {SoundId = 988203005, Volume = 0.4},
+        -- Fire = {SoundId = 988203005, Volume = 0.4},
+        Fire = {SoundId = 300537398, Volume = 0.4},
         DistantFire = 4788389522
     },
     Projectile = {
-        Type = "Bullet",
-        Velocity = 253,
+        Type = "Rocket",
+        Velocity = 100,
         Piercing = 1,
         Amount = 1
     },
@@ -52,7 +53,7 @@ local Configuration = {
     },
     Offset = {
         Grip = CFrame.new(0.6, -0.9, -0.8),
-        Sprint = CFrame.Angles(0, 0.55, 0),
+        Sprint = CFrame.new(-0.4, 0, 0) * CFrame.Angles(0, 0.85, 0.2),
         Aim = CFrame.new(0, -0.61, -0.4)
     },
     InterpolateSpeed = {
@@ -69,22 +70,22 @@ Configuration.Gamemode.PvP = {
                 Body = 0.8,
                 Limbs = 0.5
             },
-            Max = 40,
+            Max = 90,
             Min = 20
         }
     }
 }
 Configuration.Gamemode.Zombies = {
-    FireMode = {GameEnum.FireMode.Single},
+    FireMode = {GameEnum.FireMode.Automatic},
     Projectile = {
         Damage = {
             Multipliers = {
-                Head = 1,
-                Body = 0.75,
-                Limbs = 0.2
+                Head = 3,
+                Body = 1.5,
+                Limbs = 1
             },
-            Max = 20,
-            Min = 10
+            Max = 200,
+            Min = 20
         }
     }
 }

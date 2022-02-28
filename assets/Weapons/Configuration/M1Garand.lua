@@ -1,4 +1,4 @@
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local assetName = script.Name
 
@@ -6,9 +6,9 @@ local Configuration = {
     Name = "M1 Garand",
     ModelPath = assetName,
     AnimationPath = assetName,
-    ActionType = Enums.GunActionType.ClosedBolt,
+    ActionType = GameEnum.GunActionType.ClosedBolt,
     RPM = 444,
-    FireMode = {Enums.FireMode.Single},
+    FireMode = {GameEnum.FireMode.Single},
     EquipTime = 0.88,
     Zoom = 1.45,
     Ammo = {

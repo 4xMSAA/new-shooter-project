@@ -1,9 +1,9 @@
 local TableUtils = require(shared.Common.TableUtils)
 
 ---@class ProjectileType
-local Enums = {
+local GameEnum = {
     {"Bullet", ""},
     {"Launcher", ""},
 }
 
-return TableUtils.toEnumList(script.Parent.Name, Enums)
+return TableUtils.toEnumList(script.Parent.Name, GameEnum)

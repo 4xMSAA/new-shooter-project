@@ -1,7 +1,7 @@
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local Ready = {
-    Priority = Enums.Priority.Last
+    Priority = GameEnum.Priority.Last
 }
 
 function Ready.Run(client)

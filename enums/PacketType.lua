@@ -1,7 +1,7 @@
 local TableUtils = require(shared.Common.TableUtils)
 
 ---@class PacketType
-local Enums = {
+local GameEnum = {
     {"Ready", "Ready signals to send between client and server"},
     {"GameInfo", "Data about the game's settings"},
     {"PlayerSpawn", "Send player spawn information"},
@@ -21,4 +21,4 @@ local Enums = {
     {"Stance", "Send stance state for player replication"},
 }
 
-return TableUtils.toEnumList(script.Parent.Name, Enums)
+return TableUtils.toEnumList(script.Parent.Name, GameEnum)

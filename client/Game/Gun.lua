@@ -36,7 +36,7 @@ local PATH = {
     WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
 }
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local Animator = require(shared.Source.Animator)
 local Particle = require(shared.Common.Particle) -- TODO: change particle to particlemanager
@@ -338,7 +338,7 @@ end
 ---`EMPTY` or `RELOADING` on failure.  
 ---@return boolean DidFire, string Reason Returns whether the gun fire or not.
 function Gun:fire()
-    if self.ActiveFireMode == Enums.FireMode.Safety then
+    if self.ActiveFireMode == GameEnum.FireMode.Safety then
         self.Events.Fired:emit("SAFETY")
         return false, "SAFETY"
     end

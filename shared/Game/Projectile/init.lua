@@ -27,7 +27,7 @@ function Projectile.new(projectileType, props, start, direction)
 
     self.Direction = direction
     self.Velocity = self.Direction * props.Velocity
-    self.props = props
+    self._props = props
 
     setmetatable(self, {
         __index = function(this, index)

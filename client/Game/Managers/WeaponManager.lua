@@ -3,7 +3,7 @@ local Players = game:GetService("Players")
 local CAMERA_RECOIL_ANGULAR_DAMPENING = _G.CAMERA.RECOIL_ANGULAR_DAMPENING
 local CAMERA_RECOIL_ANGULAR_SPEED = _G.CAMERA.RECOIL_ANGULAR_SPEED
 
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local NetworkLib = require(shared.Common.NetworkLib)
 local log = require(shared.Common.Log)(script:GetFullName())
@@ -70,8 +70,8 @@ function WeaponManager.new(config)
     local camera = config.Camera
 
     if camera then
-        camera:addOffset(Enums.CameraOffset.Animation.ID, CFrame.new())
-        camera:addOffset(Enums.CameraOffset.Recoil.ID, CFrame.new(), true)
+        camera:addOffset(GameEnum.CameraOffset.Animation.ID, CFrame.new())
+        camera:addOffset(GameEnum.CameraOffset.Recoil.ID, CFrame.new(), true)
     end
 
     local self = {}
@@ -93,9 +93,9 @@ function WeaponManager.new(config)
     Maid.watch(self)
 
     self._packetToFunction = {
-        [Enums.PacketType.WeaponEquip] = self.networkEquip;
-        [Enums.PacketType.WeaponFire] = self.fire;
-        [Enums.PacketType.WeaponRegister] = self.networkRegister;
+        [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
+        [GameEnum.PacketType.WeaponFire] = self.fire;
+        [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
     }
 
     return self
@@ -195,7 +195,7 @@ function WeaponManager:equipViewport(weapon, networked)
     if networked then
         return
     end
-    NetworkLib:send(Enums.PacketType.WeaponEquip, weapon.UUID)
+    NetworkLib:send(GameEnum.PacketType.WeaponEquip, weapon.UUID)
 end
 
 function WeaponManager:networkEquip(player, uuid)
@@ -209,7 +209,7 @@ end
 
 function WeaponManager:fire(weapon, state)
     if weapon.State.Sprint then return end
-    if weapon.ActiveFireMode == Enums.FireMode.Automatic and state then
+    if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
         self.AutoFire[weapon] = true
     else
         self.AutoFire[weapon] = nil
@@ -231,7 +231,7 @@ function WeaponManager:reload(weapon, networked)
     if weapon.State.Sprint then return end
     weapon:reload()
     if not networked then
-        NetworkLib:send(Enums.PacketType.WeaponReload)
+        NetworkLib:send(GameEnum.PacketType.WeaponReload)
     end
 end
 
@@ -246,12 +246,12 @@ function WeaponManager:step(dt, camera, movementController)
 
         self.CameraRecoilSpring:update(math.min(1, dt))
         local recoil = self.CameraRecoilSpring.Position
-        camera:updateOffset(Enums.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
+        camera:updateOffset(GameEnum.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
         camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
 
         self.ViewportWeapon:setState("Movement", movementController.Velocity.magnitude)
         self.ViewportWeapon.Animator:_step(dt)
-        camera:updateOffset(Enums.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
+        camera:updateOffset(GameEnum.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
         self.ViewportWeapon:update(dt, camera.CFrame)
 
         -- handle automatic fire

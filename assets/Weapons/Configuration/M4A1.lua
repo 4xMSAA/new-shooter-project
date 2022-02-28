@@ -1,4 +1,4 @@
-local Enums = shared.Enums
+local GameEnum = shared.GameEnum
 
 local assetName = script.Name
 
@@ -6,9 +6,9 @@ local Configuration = {
     Name = "M4A1",
     ModelPath = assetName,
     AnimationPath = assetName,
-    ActionType = Enums.GunActionType.ClosedBolt,
+    ActionType = GameEnum.GunActionType.ClosedBolt,
     RPM = 800,
-    FireMode = {Enums.FireMode.Automatic, Enums.FireMode.Safety},
+    FireMode = {GameEnum.FireMode.Automatic, GameEnum.FireMode.Safety},
     EquipTime = 0.88,
     Zoom = 1.25,
     Ammo = {
@@ -76,7 +76,7 @@ Configuration.Gamemode.PvP = {
     }
 }
 Configuration.Gamemode.Zombies = {
-    FireMode = {Enums.FireMode.Automatic},
+    FireMode = {GameEnum.FireMode.Automatic},
     Projectile = {
         Damage = {
             Multipliers = {

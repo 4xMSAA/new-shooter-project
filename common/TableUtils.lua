@@ -112,7 +112,7 @@ function TableUtils.toEnumList(name, t)
 
     local enumWrapper = {}
     function enumWrapper:__index(key)
-        return error("did not find enum " .. key .. " in Enums." .. name, 2)
+        return error("did not find enum " .. key .. " in GameEnum." .. name, 2)
     end
 
     function enumWrapper:__call(key)

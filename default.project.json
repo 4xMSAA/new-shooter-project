@@ -22,7 +22,7 @@
         "Common": {
           "$path": "common"
         },
-        "Enums": {
+        "GameEnum": {
           "$path": "enums"
         }
       },
