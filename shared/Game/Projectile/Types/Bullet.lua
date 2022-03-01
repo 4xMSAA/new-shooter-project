@@ -88,8 +88,6 @@ function Bullet:hit(rayResult)
 end
 
 function Bullet:render()
-    if not self._renderObject then return end
-
     self._renderObject.CFrame = CFrame.new(self.Position)
     self._renderObject.Parent = _G.Path.FX
 end
