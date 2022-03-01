@@ -10,9 +10,12 @@ Particle._behaviours = Behaviours
 ---@param effect userdata
 ---@param parent userdata Where to parent the Particle instances to
 function Particle.new(effect, parent, props)
+    assert(effect, "effect cannot be nil (must be an Instance)")
+
     local self = {
         Parent = parent,
-        Instances = assert(effect, "effect cannot be nil (got " .. tostring(effect) .. ")"):Clone():GetChildren(),
+        Instances = effect:Clone():GetChildren(),
+        Name = effect:GetFullName(),
         Configuration = require(
             assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
         ),
@@ -65,8 +68,11 @@ function Particle:emit()
                 table.insert(sounds, sound)
             end
         end
-
-        sounds[math.random(#sounds)]:Play()
+        if #sounds > 0 then
+            sounds[math.random(#sounds)]:Play()
+        else
+            warn("no sound instances for particle " .. self.Name)
+        end
     end
 end
 

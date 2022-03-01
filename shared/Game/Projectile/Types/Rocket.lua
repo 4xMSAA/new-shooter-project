@@ -4,21 +4,14 @@ local FX_HIT_LIFETIME = 5
 
 local Debris = game:GetService("Debris")
 
+local explEffect = Instance.new("Explosion")
+explEffect.BlastPressure = 0
+explEffect.BlastRadius = 0
+explEffect.ExplosionType = Enum.ExplosionType.NoCraters
+explEffect.DestroyJointRadiusPercent = 0
+
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Rocket.Normal,
-    [Enum.Material.CorrodedMetal] = shared.Assets.FX.Hit.Rocket.Metal,
-    [Enum.Material.DiamondPlate] = shared.Assets.FX.Hit.Rocket.Metal,
-    [Enum.Material.Metal] = shared.Assets.FX.Hit.Rocket.Metal,
-    [Enum.Material.Foil] = shared.Assets.FX.Hit.Rocket.Metal,
-    [Enum.Material.ForceField] = shared.Assets.FX.Hit.Rocket.Metal,
-    [Enum.Material.Grass] = shared.Assets.FX.Hit.Rocket.Dirt,
-    [Enum.Material.Glass] = shared.Assets.FX.Hit.Rocket.Glass,
-    [Enum.Material.Ice] = shared.Assets.FX.Hit.Rocket.Glass,
-    [Enum.Material.Wood] = shared.Assets.FX.Hit.Rocket.Wood,
-    [Enum.Material.Mud] = shared.Assets.FX.Hit.Rocket.Dirt,
-    [Enum.Material.Ground] = shared.Assets.FX.Hit.Rocket.Dirt,
-    [Enum.Material.Fabric] = shared.Assets.FX.Hit.Rocket.Dirt,
-    [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Rocket.Dirt
 }
 
 local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/ExplosionHit")
@@ -68,13 +61,27 @@ function Rocket:hitClient(rayResult)
     p:emit()
     ParticleManager:scheduleDestroy(p, FX_HIT_LIFETIME)
 
-    -- dereference renderObject (part which leaves trail) and destroy 
-    -- it after a fixed time by ourselves (trail disappears with parent...)
-    
     self:render() -- one final time to update position
 
+    -- dereference renderObject (part which leaves trail) and destroy 
+    -- it after a fixed time by ourselves (trail disappears with parent...)
     local renderObject = self._renderObject
     self._renderObject = nil
+    
+    local expl = explEffect:Clone()
+    expl.Position = renderObject.Position
+    expl.Parent = _G.Path.FX
+
+    renderObject.ExplosionSound:play()
+    renderObject.Transparency = 1
+
+    -- disable all particles
+    for _, particle in pairs(renderObject:GetDescendants()) do
+        if particle:IsA("ParticleEmitter") then
+            particle.Enabled = false
+        end
+    end
+    
     Debris:AddItem(renderObject, FX_HIT_LIFETIME)
 end
 
