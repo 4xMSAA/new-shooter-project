@@ -1,18 +1,11 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 local ROCKET_GRAVITY_MODIFIER = 0.05 -- rockets are unguided but... they are still propulsion
 local FX_HIT_LIFETIME = 5
-
-local Debris = game:GetService("Debris")
-
-local explEffect = Instance.new("Explosion")
-explEffect.BlastPressure = 0
-explEffect.BlastRadius = 0
-explEffect.ExplosionType = Enum.ExplosionType.NoCraters
-explEffect.DestroyJointRadiusPercent = 0
-
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Rocket.Normal,
 }
+
+local Debris = game:GetService("Debris")
 
 local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/ExplosionHit")
 
@@ -24,6 +17,12 @@ params.FilterDescendantsInstances = {
     _G.Path.FX,
     workspace.CurrentCamera
 }
+
+local explEffect = Instance.new("Explosion")
+explEffect.BlastPressure = 0
+explEffect.BlastRadius = 0
+explEffect.ExplosionType = Enum.ExplosionType.NoCraters
+explEffect.DestroyJointRadiusPercent = 0
 
 ---@class Rocket
 local Rocket = {}

@@ -4,7 +4,6 @@ local Maid = require(shared.Common.Maid)
 
 local Projectile = require(shared.Game.Projectile)
 
-
 ---A class description
 ---@class ProjectileManager
 local ProjectileManager = {}
@@ -20,7 +19,6 @@ function ProjectileManager.new()
     return self
 end
 
-
 ---
 ---@param config userdata
 ---@param direction userdata
@@ -30,7 +28,6 @@ function ProjectileManager:makeProperties(config, direction)
         Velocity = config.Velocity * VELOCITY_MODIFIER
     }
 end
-
 
 ---
 ---@param gun Gun Configuration to read and use to create a projectile from
@@ -51,12 +48,10 @@ function ProjectileManager:create(gun, start, direction, networked)
     end
 end
 
-
 function ProjectileManager:discard(projectile)
     projectile:destroy()
     self.Projectiles[projectile] = nil
 end
-
 
 local typesWithStep = {}
 for _, projectileType in pairs(Projectile.ProjectileTypes) do
@@ -64,7 +59,6 @@ for _, projectileType in pairs(Projectile.ProjectileTypes) do
         table.insert(typesWithStep, projectileType)
     end
 end
-
 
 ---
 ---@param dt number Delta time since last update

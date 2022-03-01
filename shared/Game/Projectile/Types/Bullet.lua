@@ -1,8 +1,5 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 local FX_HIT_LIFETIME = 5
-
-local Debris = game:GetService("Debris")
-
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Bullet.Normal,
     [Enum.Material.CorrodedMetal] = shared.Assets.FX.Hit.Bullet.Metal,
@@ -19,6 +16,8 @@ local MATERIAL_TO_HIT_FX = {
     [Enum.Material.Fabric] = shared.Assets.FX.Hit.Bullet.Dirt,
     [Enum.Material.LeafyGrass] = shared.Assets.FX.Hit.Bullet.Dirt
 }
+
+local Debris = game:GetService("Debris")
 
 local ParticleManager = _G.Client and require(_G.Client.Render.ParticleManager).new("Particles/BulletHit")
 
