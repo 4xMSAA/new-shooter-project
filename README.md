@@ -41,24 +41,34 @@ See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 ## Design patterns
 
 * When loading objects by configuration - do not modify configuration values as they should be final.
-  Instead, copy the value and make it a state.
-* OOP is not enforced, but borrow the polymorphism concept.
+  Instead, copy the value and make it a mutable variable.
+* OOP is not enforced, but a lot of code is written with "objects".
 * ContextActionService will be used. UserInputService will be used on cases where we need more raw input.
 
 ## Code stylization
 
-Text encoding is **UTF-8, LF, 4 spaces**
+Text encoding is **UTF-8, Line Feed only, 4 indentation spaces**
 
 A lot of this follows <https://roblox.github.io/lua-style-guide/>.  
 Here's a quick rundown:
 
-Variables, functions are **camelCase**  
-Properties in objects are **PascalCase**  
-Internal properties in objects are **_camelCase**  
-Methods in classes are defined with a colon `:` and are **camelCase**  
-Static methods in classes are defined with a full stop `.`
++ **Variables**, functions are **camelCase**  
++ **Properties** in objects are **PascalCase**  
++ **Internal properties** in objects are **_camelCase**  
++ **Methods** in objects are defined with a colon `:` and are **camelCase**  
++ **Static methods** in objects are defined with a full stop `.`
++ Keep **one-line spaces** between functions
++ Constants or configurable values that do not depend on external modules are **top most**
++ Roblox services come second from the top most order
++ Game modules come third from the top most order
 
 ```lua
+local CONSTANT = 5
+
+local Debris = game:GetService("Debris")
+
+local GameModule = require(shared.Common.NetworkLib)
+
 function Class:method()
     local pain
     self.PublicProperty = "hi"
