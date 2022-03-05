@@ -184,11 +184,11 @@ function WeaponManager:equipViewport(weapon, networked)
         self.ViewportWeapon:unequip():once(
             "DONE",
             function()
-                equipViewport(self, weapon, networked)
+                equipViewport(self, weapon)
             end
         )
     else
-        equipViewport(self, weapon, networked)
+        equipViewport(self, weapon)
     end
 
     -- prevent loopback
