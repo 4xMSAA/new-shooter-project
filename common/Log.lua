@@ -8,6 +8,12 @@ return function(context)
             print("[" + context + "]:", ...)
         end
     end
+    
+    local function logwarn(level, ...)
+        if LOG_LEVEL >= level then
+            warn("[" + context + "]:", ...)
+        end
+    end
 
-    return log
+    return log, logwarn
 end
