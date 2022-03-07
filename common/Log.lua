@@ -5,13 +5,13 @@ local LOG_LEVEL = _G.LOG_LEVEL or 2
 return function(context)
     local function log(level, ...)
         if LOG_LEVEL >= level then
-            print("[" + context + "]:", ...)
+            print("[" .. context .. "]:", ...)
         end
     end
     
     local function logwarn(level, ...)
         if LOG_LEVEL >= level then
-            warn("[" + context + "]:", ...)
+            warn("[" .. context .. "]:", ...)
         end
     end
 
