@@ -5,7 +5,7 @@
 local RunService = game:GetService("RunService")
 
 local GameEnum = shared.GameEnum
-local log = require(shared.Common.Log)(script:GetFullName())
+local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 
 local remotes = _G.Path.Remotes
 local isClient = RunService:IsClient()
@@ -35,7 +35,7 @@ function NetworkLib:_autoSerialize(...)
         if typeof(value) == "table" and value["serialize"] then
             value = value:serialize()
         elseif typeof(value) == "table" then
-            warn("no serialize function on object: " .. tostring(value) .. "\n" .. debug.traceback())
+            logwarn("no serialize function on object: " .. tostring(value) .. "\n" .. debug.traceback())
         end
 
         log(2, "SERIALIZE: ASSIGN", key, "=", value)
