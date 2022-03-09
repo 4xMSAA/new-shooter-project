@@ -40,16 +40,24 @@ function ZombiesGamemode.new(super)
             client.GameCharacter = GameCharacter.new(client)
             client.GameCharacter:spawn()
 
+            self:sendExistingStateToAdhoc(client)
+
             local gun = self.WeaponManager:create("trollM4A1")
             self.WeaponManager:register(gun, client)
             self.WeaponManager:equip(client, gun)
-
         end
     )
 
     setmetatable(self, ZombiesGamemode)
     Maid.watch(self)
     return self
+end
+
+---Sends game state to clients that have joined ad-hoc (in progress game)
+---and are not aware of the game's previous state.
+---@param client Client
+function ZombiesGamemode:sendExistingStateToAdhoc(client)
+    self.WeaponManager:adhocUpdate(client)
 end
 
 return ZombiesGamemode

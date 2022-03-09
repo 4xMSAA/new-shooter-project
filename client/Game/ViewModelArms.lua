@@ -38,6 +38,13 @@ function ViewModelArms:_init()
     end
 end
 
+function ViewModelArms:unattach()
+    self.LeftMotor:Destroy()
+    self.RightMotor:Destroy()
+
+    self.Model.Parent = nil
+end
+
 function ViewModelArms:attach(gun)
     local Part0 = gun.Handle
     local LeftPart1 = self.LeftArm:WaitForChild(LEFT_ARM_PIVOT)

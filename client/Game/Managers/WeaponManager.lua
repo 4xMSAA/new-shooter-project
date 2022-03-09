@@ -6,7 +6,7 @@ local CAMERA_RECOIL_ANGULAR_SPEED = _G.CAMERA.RECOIL_ANGULAR_SPEED
 local GameEnum = shared.GameEnum
 
 local NetworkLib = require(shared.Common.NetworkLib)
-local log = require(shared.Common.Log)(script:GetFullName())
+local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 local Spring = require(shared.Common.Spring)
 local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
@@ -26,6 +26,7 @@ end
 ---@param weapon Gun
 local function equipViewport(manager, weapon)
     if manager.ViewportWeapon then
+        manager.ViewModelArms:unattach()
         manager.ViewportWeapon.ViewModel.Parent = nil
     end
     -- equip new weapon
@@ -96,6 +97,7 @@ function WeaponManager.new(config)
         [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
         [GameEnum.PacketType.WeaponFire] = self.fire;
         [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
+        [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
     }
 
     return self
@@ -135,7 +137,14 @@ end
 ---@param player any
 ---@param assetName any
 ---@param uuid any
-function WeaponManager:networkRegister(player, assetName, uuid)
+function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
+    if self.ActiveWeapons[uuid] and not overwrite then
+        logwarn(1, "UUID", uuid, "is already registered in this WeaponManager (is server wrong?) ignoring")
+        return
+    else
+        logwarn(2, "server is overwriting UUID of", uuid)
+    end
+
     local weapon = self:create(assetName)
     self:register(weapon, uuid, player)
 end
@@ -144,9 +153,8 @@ end
 ---@param uuid any
 ---@return any
 function WeaponManager:getByUUID(uuid)
-    assert(self.ActiveWeapons[uuid], "UUID is not registered in this WeaponManager, unable to get Weapon instance")
-
-    return self.ActiveWeapons[uuid];
+    assert(self.ActiveWeapons[uuid], "UUID " .. uuid .. " is not registered in this WeaponManager, unable to get Weapon instance")
+    return self.ActiveWeapons[uuid]
 end
 
 ---
@@ -276,6 +284,12 @@ function WeaponManager:step(dt, camera, movementController)
             -- TODO: wrapper to player for lookvectors
             container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
         end
+    end
+end
+
+function WeaponManager:networkAdhocRegister(weapons)
+    for _, weapon in pairs(weapons) do
+        self:networkRegister(weapon.Owner, weapon.AssetName, weapon.UUID)
     end
 end
 

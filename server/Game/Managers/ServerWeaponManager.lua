@@ -1,19 +1,29 @@
 local HttpService = game:GetService("HttpService")
 
 local Maid = require(shared.Common.Maid)
+local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 
 local NetworkLib = require(shared.Common.NetworkLib)
 local GameEnum = shared.GameEnum
 
 local ServerGun = require(_G.Server.Game.ServerGun)
 
+local function resolveUUID(weaponOrUUID)
+    if typeof(weaponOrUUID) ~= "string" then
+        return weaponOrUUID.UUID
+    end
+    return weaponOrUUID
+end
 ---Server-side weapon manager to handle routing of all weapons
 ---@class ServerWeaponManager
 local ServerWeaponManager = {}
 ServerWeaponManager.__index = ServerWeaponManager
 
+---Create a new container that manages weapon instances and their networking
+---@param config table A configuration table for different behaviour
+---@return ServerWeaponManager A new instance of this manager
 function ServerWeaponManager.new(config)
-    assert(config, "lacking configuration, provide it as the 1st argument")
+    assert(config, "missing configuration argument, provide it as the 1st argument")
     assert(config.ProjectileManager, "WeaponManager requires ProjectileManager, provide it in the config table")
     assert(config.GameMode, "WeaponManager requires a gamemode to be specified, provide it in the config table")
 
@@ -23,15 +33,18 @@ function ServerWeaponManager.new(config)
     self.GameMode = config.GameMode
     self.ActiveWeapons = {}
 
-    self.Connections = {}
-    self.Connections.Characters = {}
+    self._Equipped = {}
 
     setmetatable(self, ServerWeaponManager)
     Maid.watch(self)
 
+    -- !IMPORTANT
+    -- !Any function here will allow itself to have data sent to by clients.
+    -- !Sanitize it.
     self._packetToFunction = {
         [GameEnum.PacketType.WeaponEquip] = self.equip,
         [GameEnum.PacketType.WeaponFire] = self.fire,
+        [GameEnum.PacketType.WeaponHit] = self.hit,
     }
     return self
 end
@@ -46,7 +59,7 @@ end
 
 ---Assigns an UUID and prepares it for networking
 ---@param weapon ServerGun
----@param client Client
+---@param client Client The owner of the registered weapon
 function ServerWeaponManager:register(weapon, client)
     weapon.UUID = uuid or HttpService:GenerateGUID(false)
     self.ActiveWeapons[weapon.UUID] = {Weapon = weapon, Owner = client}
@@ -56,39 +69,34 @@ function ServerWeaponManager:register(weapon, client)
     return ServerWeaponManager
 end
 
+---! NETWORKED FUNCTION !
 ---
 ---@param client Client
 ---@param weaponOrUUID any
 function ServerWeaponManager:equip(client, weaponOrUUID)
-    local uuid = weaponOrUUID
-    if typeof(weaponOrUUID) ~= "string" then
-        uuid = weaponOrUUID.UUID
-    end
-    if not self.ActiveWeapons[uuid] then
-        warn("gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
-    end
+    local uuid = resolveUUID(weaponOrUUID)
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+
+    self._Equipped[client] = uuid
 
     NetworkLib:send(GameEnum.PacketType.WeaponEquip, client, uuid)
 end
 
+---! NETWORKED FUNCTION !
 ---
 ---@param client Client
 ---@param weaponOrUUID userdata
 ---@param bulletUUID string
 ---@param direction userdata
 function ServerWeaponManager:fire(client, weaponOrUUID, bulletUUID, direction)
-    local uuid = weaponOrUUID
-    if typeof(weaponOrUUID) ~= "string" then
-        uuid = weaponOrUUID.UUID
-    end
-    if not self.ActiveWeapons[uuid] then
-        warn("gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
-    end
+    local uuid = resolveUUID(weaponOrUUID)
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
     NetworkLib:send(GameEnum.packetType.WeaponFire, client, uuid)
     -- TODO: sanity check high RPM
 end
 
+---! NETWORKED FUNCTION !
 ---
 ---@param client Client
 ---@param uuid string
@@ -96,9 +104,23 @@ end
 ---@param targetPart userdata
 ---@param position userdata
 function ServerWeaponManager:hit(client, uuid, bulletUUID, targetPart, position)
-    if not self.ActiveWeapons[uuid] then
-        warn("gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+end
+
+---Tell an ad-hoc client about the weapons that already exist before them
+---@param client Client
+function ServerWeaponManager:adhocUpdate(client)
+    local serializedAdhocWeapons = {}
+    for uuid, container in pairs(self.ActiveWeapons) do
+        table.insert(serializedAdhocWeapons, {UUID = uuid, AssetName = container.Weapon.AssetName, Owner = container.Owner:serialize()})
     end
+
+    NetworkLib:sendTo(client, GameEnum.PacketType.WeaponAdhocRegister, serializedAdhocWeapons)
+    for client, uuid in pairs(self._Equipped) do
+        NetworkLib:sendTo(client, GameEnum.PacketType.WeaponEquip, client, uuid)
+    end
+
+    log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", serializedEquipped)
 end
 
 function ServerWeaponManager:route(player, packetType, ...)
