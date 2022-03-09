@@ -98,7 +98,7 @@ end
 ---@param player userdata
 function ClientManager:getClientByPlayer(player)
     for _, client in pairs(self.Clients) do
-        if client.PlayerInstance == player then
+        if client.Instance == player then
             return client
         end
     end

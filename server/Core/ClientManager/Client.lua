@@ -9,7 +9,7 @@ Client.__index = Client
 
 function Client.new(player)
     local self = {
-        PlayerInstance = player,
+        Instance = player,
         ID = player.UserId,
         Name = player.Name,
         IsReady = false,
@@ -24,7 +24,7 @@ end
 ---Serialize the data for network transfer
 function Client:serialize()
     -- TODO: actually output client rather than player instance
-    return self.PlayerInstance
+    return self.Instance
 end
 
 return Client

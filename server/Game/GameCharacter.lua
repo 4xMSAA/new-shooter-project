@@ -27,7 +27,7 @@ function GameCharacter:loadCharacter(cf, parent)
     char:SetPrimaryPartCFrame(cf or CFrame.new(0, 50, 0))
     char.Name = self.Client.Name
     char.Parent = parent or _G.Path.Players
-    self.Client.PlayerInstance.Character = char
+    self.Client.Instance.Character = char
     return char
 end
 
