@@ -92,7 +92,7 @@ function ServerWeaponManager:fire(client, weaponOrUUID, bulletUUID, direction)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:send(GameEnum.packetType.WeaponFire, client, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponFire, client, uuid)
     -- TODO: sanity check high RPM
 end
 
@@ -116,11 +116,11 @@ function ServerWeaponManager:adhocUpdate(client)
     end
 
     NetworkLib:sendTo(client, GameEnum.PacketType.WeaponAdhocRegister, serializedAdhocWeapons)
-    for client, uuid in pairs(self._Equipped) do
-        NetworkLib:sendTo(client, GameEnum.PacketType.WeaponEquip, client, uuid)
+    for owner, uuid in pairs(self._Equipped) do
+        NetworkLib:sendTo(client, GameEnum.PacketType.WeaponEquip, owner, uuid)
     end
 
-    log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", serializedEquipped)
+    log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", self._Equipped)
 end
 
 function ServerWeaponManager:route(player, packetType, ...)
