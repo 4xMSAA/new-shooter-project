@@ -1,5 +1,5 @@
 return {
-    LOG_LEVEL = 0,
+    LOG_LEVEL = 1,
 
     LOADING = {
         TIMEOUT = 30,
