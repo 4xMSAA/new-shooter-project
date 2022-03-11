@@ -336,33 +336,34 @@ end
 
 ---Fires the gun and emits `FIRE` on success or `SAFETY`, `CYCLING`, 
 ---`EMPTY` or `RELOADING` on failure.  
+---@param networked boolean Was the gun fired over the network?
 ---@return boolean DidFire, string Reason Returns whether the gun fire or not.
-function Gun:fire()
-    if self.ActiveFireMode == GameEnum.FireMode.Safety then
-        self.Events.Fired:emit("SAFETY")
-        return false, "SAFETY"
-    end
+function Gun:fire(networked)
+    if not networked then
+        if self.ActiveFireMode == GameEnum.FireMode.Safety then
+            self.Events.Fired:emit("SAFETY")
+            return false, "SAFETY"
+        end
 
-    if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() or self.State.Cycling then
-        self.Events.Fired:emit("CYCLING")
-        return false, "CYCLING"
-    end
-    if self.State.Loaded <= 0 then
-        self.Events.Fired:emit("EMPTY")
-        return false, "EMPTY"
-    end
-    if self._Lock.Reload then
-        self.Events.Fired:emit("RELOADING")
-        return false, "RELOADING"
-    end
+        if (self._Lock.Fire or 0) + 60/self.Configuration.RPM > elapsedTime() or self.State.Cycling then
+            self.Events.Fired:emit("CYCLING")
+            return false, "CYCLING"
+        end
+        if self.State.Loaded <= 0 then
+            self.Events.Fired:emit("EMPTY")
+            return false, "EMPTY"
+        end
+        if self._Lock.Reload then
+            self.Events.Fired:emit("RELOADING")
+            return false, "RELOADING"
+        end
 
-    self.Events.Fired:emit("FIRE")
-
-    self._Lock.Fire = elapsedTime()
+        self._Lock.Fire = elapsedTime()
+        self:setState("Loaded", math.max(0, self.State.Loaded - 1))
+    end
 
     self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 7)
-
-    self:setState("Loaded", math.max(0, self.State.Loaded - 1))
+    self.Events.Fired:emit("FIRE")
 
     -- viewmodel recoil
     local recoil = self.Configuration.Recoil

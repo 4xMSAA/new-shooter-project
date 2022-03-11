@@ -95,7 +95,7 @@ function WeaponManager.new(config)
 
     self._packetToFunction = {
         [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
-        [GameEnum.PacketType.WeaponFire] = self.fire;
+        [GameEnum.PacketType.WeaponFire] = self.networkFire;
         [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
         [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
     }
@@ -200,10 +200,9 @@ function WeaponManager:equipViewport(weapon, networked)
     end
 
     -- prevent loopback
-    if networked then
-        return
+    if not networked then
+        NetworkLib:send(GameEnum.PacketType.WeaponEquip, weapon.UUID)
     end
-    NetworkLib:send(GameEnum.PacketType.WeaponEquip, weapon.UUID)
 end
 
 function WeaponManager:networkEquip(player, uuid)
@@ -224,22 +223,26 @@ function WeaponManager:fire(weapon, state)
     end
 
     if not weapon.Configuration.Charge and state then
-        if weapon == self.ViewportWeapon then
-            local didFire, reason = weapon:fire()
-            if didFire then
-                fireViewportWeapon(self, weapon)
-            elseif reason == "EMPTY" then
-                self:reload(weapon)
-            end
+        local didFire, reason = weapon:fire()
+        if didFire then
+            fireViewportWeapon(self, weapon)
+        elseif reason == "EMPTY" then
+            self:reload(weapon)
         end
     end
+    
+    NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID)
+end
+
+function WeaponManager:networkFire(uuid)
+    self:getByUUID(uuid):fire(true)
 end
 
 function WeaponManager:reload(weapon, networked)
     if weapon.State.Sprint then return end
     weapon:reload()
     if not networked then
-        NetworkLib:send(GameEnum.PacketType.WeaponReload)
+        NetworkLib:send(GameEnum.PacketType.WeaponReload, self.ViewportWeapon.UUID)
     end
 end
 

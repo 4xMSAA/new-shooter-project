@@ -29,8 +29,8 @@ function GameMode.new(server)
         })
     }
 
-    local function route(packetType, ...)
-        self.WeaponManager:route(packetType, ...)
+    local function route(player, packetType, ...)
+        self.WeaponManager:route(packetType, self.ClientManager:getClientByPlayer(player), ...)
     end
 
     self._WeaponManagerListener = NetworkLib:listen(route)

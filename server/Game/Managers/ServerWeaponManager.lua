@@ -85,14 +85,13 @@ end
 ---! NETWORKED FUNCTION !
 ---
 ---@param client Client
----@param weaponOrUUID userdata
----@param bulletUUID string
----@param direction userdata
-function ServerWeaponManager:fire(client, weaponOrUUID, bulletUUID, direction)
+---@param weaponOrUUID any
+function ServerWeaponManager:fire(client, weaponOrUUID)
+    log(1, client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:send(GameEnum.PacketType.WeaponFire, client, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponFire, uuid)
     -- TODO: sanity check high RPM
 end
 
@@ -126,7 +125,7 @@ end
 function ServerWeaponManager:route(player, packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
-        func(self, ...)
+        func(self, player, ...)
     end
 end
 
