@@ -119,10 +119,10 @@ end
 ---@param enum PacketType
 function NetworkLib:send(enum, ...)
     if isClient then
-        log(3, "CLIENT SEND:", enum.Name, ..., "\n", debug.traceback())
+        log(2, "CLIENT SEND:", enum.Name, ..., "\n", debug.traceback())
         remotes.Signal:FireServer(enum.ID, NetworkLib:_autoSerialize(...))
     elseif isServer then
-        log(3, "SERVER SEND:", enum.Name, ..., "\n", debug.traceback())
+        log(2, "SERVER SEND:", enum.Name, ..., "\n", debug.traceback())
         remotes.Signal:FireAllClients(enum.ID, NetworkLib:_autoSerialize(...))
     end
 end
@@ -134,7 +134,7 @@ function NetworkLib:sendTo(player, enum, ...)
     if isClient then
         error("cannot send to player on client", 2)
     end
-    log(3, "SERVER SEND TO " .. player.Name .. ":", enum.Name, ...)
+    log(2, "SERVER SEND TO " .. player.Name .. ":", enum.Name, ...)
     remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum.ID, NetworkLib:_autoSerialize(...))
 end
 
@@ -145,10 +145,10 @@ function NetworkLib:sendToExcept(player, enum, ...)
     if isClient then
         error("cannot send to player on client", 2)
     end
-    log(3, "SERVER SEND TO (except " .. player.Name .. "):", enum.Name, ...)
+    log(2, "SERVER SEND TO (except " .. player.Name .. "):", enum.Name, ...)
     for _, player in pairs(Players:GetPlayers()) do
         if player ~= NetworkLib:_toInstance(player) then
-            remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum.ID, NetworkLib:_autoSerialize(...))
+            remotes.Signal:FireClient(player, enum.ID, NetworkLib:_autoSerialize(...))
         end
     end
 end
