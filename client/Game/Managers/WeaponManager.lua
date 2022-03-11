@@ -96,6 +96,7 @@ function WeaponManager.new(config)
     self._packetToFunction = {
         [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
         [GameEnum.PacketType.WeaponFire] = self.networkFire;
+        [GameEnum.PacketType.WeaponReload] = self.networkReload;
         [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
         [GameEnum.PacketType.WeaponUnregister] = self.networkUnregister;
         [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
@@ -232,17 +233,23 @@ function WeaponManager:fire(weapon, state)
         local didFire, reason = weapon:fire()
         if didFire then
             fireViewportWeapon(self, weapon)
-            NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID)
+            NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID, state)
         elseif reason == "EMPTY" then
             self:reload(weapon)
         end
     end
 end
 
-function WeaponManager:networkFire(uuid)
+function WeaponManager:networkFire(uuid, state)
     local weapon = self:getByUUID(uuid).Weapon
     if not weapon then return end
     if weapon == self.ViewportWeapon then return end
+
+    if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
+        self.AutoFire[weapon] = true
+    else
+        self.AutoFire[weapon] = nil
+    end
 
     weapon:fire(true)
 end
@@ -278,17 +285,19 @@ function WeaponManager:step(dt, camera, movementController)
         self.ViewportWeapon.Animator:_step(dt)
         camera:updateOffset(GameEnum.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
         self.ViewportWeapon:update(dt, camera.CFrame)
+    end
 
-        -- handle automatic fire
-        for weapon, _ in pairs(self.AutoFire) do
-            if weapon == self.ViewportWeapon and not weapon.State.Sprint then
-                local didFire, reason = weapon:fire()
-                if didFire then
-                    fireViewportWeapon(self, weapon)
-                elseif reason == "EMPTY" then
-                    self:reload(weapon)
-                end
+    -- handle automatic fire
+    for weapon, _ in pairs(self.AutoFire) do
+        if weapon == self.ViewportWeapon and not weapon.State.Sprint then
+            local didFire, reason = weapon:fire()
+            if didFire then
+                fireViewportWeapon(self, weapon)
+            elseif reason == "EMPTY" then
+                self:reload(weapon)
             end
+        elseif weapon ~= self.ViewportWeapon then
+            weapon:fire(true)
         end
     end
 
@@ -313,6 +322,7 @@ end
 function WeaponManager:route(packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
+        log(1, func, packetType.Name, ...)
         func(self, ...)
     end
 end

@@ -100,7 +100,7 @@ function ServerWeaponManager:fire(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponFire, uuid)
     -- TODO: sanity check high RPM
 end
 
@@ -109,7 +109,7 @@ function ServerWeaponManager:reload(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
     
-    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponReload, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponReload, uuid)
 end
 
 ---! NETWORKED FUNCTION !
