@@ -1,5 +1,5 @@
 return {
-    LOG_LEVEL = 1,
+    LOG_LEVEL = 2,
 
     LOADING = {
         TIMEOUT = 30,
@@ -7,7 +7,7 @@ return {
 
     INTERVALS = {
         NETWORK = {
-            CAMERA_UPDATE = 1/10
+            CAMERA_UPDATE = 999
         }
     },
 

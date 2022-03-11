@@ -221,35 +221,43 @@ function WeaponManager:networkEquip(player, uuid)
 end
 
 function WeaponManager:fire(weapon, state)
-    if weapon.State.Sprint then return end
     if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
         self.AutoFire[weapon] = true
     else
         self.AutoFire[weapon] = nil
     end
 
+    if weapon.State.Sprint then return end
     if not weapon.Configuration.Charge and state then
         local didFire, reason = weapon:fire()
         if didFire then
             fireViewportWeapon(self, weapon)
+            NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID)
         elseif reason == "EMPTY" then
             self:reload(weapon)
         end
     end
-    
-    NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID)
 end
 
 function WeaponManager:networkFire(uuid)
-    self:getByUUID(uuid):fire(true)
+    local weapon = self:getByUUID(uuid).Weapon
+    if not weapon then return end
+    if weapon == self.ViewportWeapon then return end
+
+    weapon:fire(true)
 end
 
-function WeaponManager:reload(weapon, networked)
+function WeaponManager:reload(weapon)
     if weapon.State.Sprint then return end
     weapon:reload()
-    if not networked then
-        NetworkLib:send(GameEnum.PacketType.WeaponReload, self.ViewportWeapon.UUID)
-    end
+    NetworkLib:send(GameEnum.PacketType.WeaponReload, weapon.UUID)
+end
+
+function WeaponManager:networkReload(uuid)
+    local weapon = self:getByUUID(uuid).Weapon
+    if not weapon then return end
+        
+    weapon:reload()
 end
 
 function WeaponManager:setState(weapon, stateName, stateValue)

@@ -3,6 +3,7 @@
 
 --]]
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local GameEnum = shared.GameEnum
 local log, logwarn = require(shared.Common.Log)(script:GetFullName())
@@ -58,7 +59,7 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
-                log(3, "LISTEN: enum: ", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
+                log(2, "LISTEN: enum: ", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
                 if listenFor and receivedEnum == listenFor then
                     callback(...)
                 else
@@ -71,7 +72,7 @@ function NetworkLib:_listenHandler(ev, callback, listenFor)
             ev:connect(
             function(player, id, ...)
                 local receivedEnum = NetworkLib:_toEnum(id)
-                log(3, "LISTEN: from:", player, "enum: ", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
+                log(2, "LISTEN: from:", player, "enum:", receivedEnum and receivedEnum.Name or "nil", "contents:", ...)
                 if listenFor and receivedEnum == listenFor then
                     callback(player, ...)
                 else
@@ -133,10 +134,23 @@ function NetworkLib:sendTo(player, enum, ...)
     if isClient then
         error("cannot send to player on client", 2)
     end
-    log(3, "SERVER SEND TO:", enum.Name, ...)
-    print(..., NetworkLib:_autoSerialize(...))
-    print(NetworkLib:_toInstance(player))
+    log(3, "SERVER SEND TO " .. player.Name .. ":", enum.Name, ...)
     remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum.ID, NetworkLib:_autoSerialize(...))
+end
+
+---
+---@param player userdata
+---@param enum PacketType
+function NetworkLib:sendToExcept(player, enum, ...)
+    if isClient then
+        error("cannot send to player on client", 2)
+    end
+    log(3, "SERVER SEND TO (except " .. player.Name .. "):", enum.Name, ...)
+    for _, player in pairs(Players:GetPlayers()) do
+        if player ~= NetworkLib:_toInstance(player) then
+            remotes.Signal:FireClient(NetworkLib:_toInstance(player), enum.ID, NetworkLib:_autoSerialize(...))
+        end
+    end
 end
 
 return NetworkLib

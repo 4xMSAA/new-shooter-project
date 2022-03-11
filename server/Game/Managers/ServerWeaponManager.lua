@@ -45,6 +45,7 @@ function ServerWeaponManager.new(config)
         [GameEnum.PacketType.WeaponEquip] = self.equip,
         [GameEnum.PacketType.WeaponFire] = self.fire,
         [GameEnum.PacketType.WeaponHit] = self.hit,
+        [GameEnum.PacketType.WeaponReload] = self.reload,
     }
     return self
 end
@@ -70,7 +71,7 @@ function ServerWeaponManager:register(weapon, client)
 end
 
 
-function ServerWeaponManager:unregisterAllFromClient(client)
+function ServerWeaponManager:unregisterAllFrom(client)
     for uuid, container in pairs(self.ActiveWeapons) do
         container.Weapon:Destroy()
         self.ActiveWeapons[uuid] = nil
@@ -96,12 +97,19 @@ end
 ---@param client Client
 ---@param weaponOrUUID any
 function ServerWeaponManager:fire(client, weaponOrUUID)
-    log(1, client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:send(GameEnum.PacketType.WeaponFire, uuid)
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid)
     -- TODO: sanity check high RPM
+end
+
+---! NETWORKED FUNCTION !
+function ServerWeaponManager:reload(client, weaponOrUUID)
+    local uuid = resolveUUID(weaponOrUUID)
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponReload, uuid)
 end
 
 ---! NETWORKED FUNCTION !
@@ -131,7 +139,8 @@ function ServerWeaponManager:adhocUpdate(client)
     log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", self._Equipped)
 end
 
-function ServerWeaponManager:route(player, packetType, ...)
+function ServerWeaponManager:route(packetType, player, ...)
+    log(1, player, packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
         func(self, player, ...)

@@ -49,7 +49,7 @@ function ZombiesGamemode.new(super)
     )
     self.ClientManager.ClientRemoving:listen(
         function(client)
-            self.WeaponManager:unregisterAllFromClient(client)
+            self.WeaponManager:unregisterAllFrom(client)
         end
     )
 
