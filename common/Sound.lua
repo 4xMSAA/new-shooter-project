@@ -1,4 +1,5 @@
 local Maid = require(shared.Common.Maid)
+local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 
 ---A wrapper around the Roblox Sound instance for extra features
 ---@class Sound
@@ -91,7 +92,7 @@ function Sound:_getPlayableInstance(max)
         return sound
     end
 
-    -- warn("exceeding maximum range (" .. max .. ") for sound " .. self.Instance.SoundId)
+    logwarn(2, "exceeding maximum range (" .. max .. ") for sound " .. self.Instance.SoundId)
 
     local biggestTimePos, inst = 0
     for _, sound in ipairs(self._instances) do

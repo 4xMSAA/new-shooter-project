@@ -98,11 +98,12 @@ end
 ---
 ---@param client Client
 ---@param weaponOrUUID any
-function ServerWeaponManager:fire(client, weaponOrUUID)
+function ServerWeaponManager:fire(client, weaponOrUUID, state)
     local uuid = resolveUUID(weaponOrUUID)
+    assert(typeof(state) == "boolean", client.Name .. " - client is sending bad args for fire() (#3)")
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid)
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid, state)
     -- TODO: sanity check high RPM
 end
 

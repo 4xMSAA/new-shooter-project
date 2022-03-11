@@ -20,8 +20,7 @@ function Maid.watch(...)
             Maid._tracked[object] = true
             totalTracked = totalTracked + 1
         elseif LOG_LEVEL >= 2 then
-            print("MAID STUDIO DEBUG:", Maid._tracked[object])
-            print("MAID STUDIO DEBUG:")
+            print("MAID STUDIO DEBUG:", object)
             warn(
                 "already watching address " .. tostring(Maid._tracked[object]) .. " from: \n" ..
                 debug.traceback()

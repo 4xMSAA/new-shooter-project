@@ -130,7 +130,7 @@ function WeaponManager:unregister(weaponOrUUID)
     if typeof(weaponOrUUID) ~= "string" then
         uuid = weaponOrUUID.UUID
     end
-    assert(self.ActiveWeapons[uuid], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+    assert(self.ActiveWeapons[uuid], "weapon with UUID of " .. uuid .. " is not registered in this WeaponManager")
     self.ActiveWeapons[uuid].Weapon:destroy()
     self.ActiveWeapons[uuid] = nil
 end
@@ -148,7 +148,7 @@ function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
     end
     
     local extraData = {
-        ThirdPersonGun = (player == Players.LocalPlayer or nil)
+        ThirdPersonGun = (player ~= Players.LocalPlayer or nil)
     }
     local weapon = self:create(assetName, extraData)
     self:register(weapon, uuid, player)
@@ -248,8 +248,10 @@ function WeaponManager:networkFire(uuid, state)
     if not weapon then return end
     if weapon == self.ViewportWeapon then return end
 
-    if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
+    if state then
         weapon:fire()
+    end
+    if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
         self.AutoFire[weapon] = true
     else
         self.AutoFire[weapon] = nil
@@ -269,7 +271,7 @@ function WeaponManager:networkReload(uuid)
 
     self.AutoFire[weapon] = nil
         
-    print(uuid, weapon:reload())
+    weapon:reload()
 end
 
 function WeaponManager:setState(weapon, stateName, stateValue)
@@ -299,7 +301,10 @@ function WeaponManager:step(dt, camera, movementController)
             -- ! usually stupid for telling when it's ready, 
             -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
-            container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
+            if container.Owner and container.Owner.Character then
+                container.Weapon.Animator:_step(dt)
+                container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
+            end
         end
     end
 
@@ -310,11 +315,10 @@ function WeaponManager:step(dt, camera, movementController)
             if didFire then
                 fireViewportWeapon(self, weapon)
             elseif reason == "EMPTY" then
-                NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID, false)
                 self:reload(weapon)
             end
         elseif weapon ~= self.ViewportWeapon and not weapon.State.Sprint then
-           print(weapon:fire())
+            weapon:fire()
         end
     end
 end
