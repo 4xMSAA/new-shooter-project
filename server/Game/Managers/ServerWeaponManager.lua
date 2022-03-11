@@ -140,7 +140,6 @@ function ServerWeaponManager:adhocUpdate(client)
 end
 
 function ServerWeaponManager:route(packetType, player, ...)
-    log(1, player, packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
         func(self, player, ...)

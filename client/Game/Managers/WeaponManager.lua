@@ -310,10 +310,10 @@ function WeaponManager:networkAdhocRegister(weapons)
     end
 end
 
-function WeaponManager:route(packetType, player, ...)
+function WeaponManager:route(packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
-        func(self, player, ...)
+        func(self, ...)
     end
 end
 
