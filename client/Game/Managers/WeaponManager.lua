@@ -97,6 +97,7 @@ function WeaponManager.new(config)
         [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
         [GameEnum.PacketType.WeaponFire] = self.networkFire;
         [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
+        [GameEnum.PacketType.WeaponUnregister] = self.networkUnregister;
         [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
     }
 
@@ -131,6 +132,7 @@ function WeaponManager:unregister(weaponOrUUID)
     end
     assert(self.ActiveWeapons[uuid], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
     self.ActiveWeapons[uuid].Weapon:destroy()
+    self.ActiveWeapons[uuid] = nil
 end
 
 ---
@@ -147,6 +149,10 @@ function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
 
     local weapon = self:create(assetName)
     self:register(weapon, uuid, player)
+end
+
+function WeaponManager:networkUnregister(uuid)
+    self:unregister(uuid)
 end
 
 ---

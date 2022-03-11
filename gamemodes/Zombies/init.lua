@@ -47,6 +47,11 @@ function ZombiesGamemode.new(super)
             self.WeaponManager:equip(client, gun)
         end
     )
+    self.ClientManager.ClientRemoving:listen(
+        function(client)
+            self.WeaponManager:unregisterAllFromClient(client)
+        end
+    )
 
     setmetatable(self, ZombiesGamemode)
     Maid.watch(self)

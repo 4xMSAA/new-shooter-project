@@ -69,6 +69,15 @@ function ServerWeaponManager:register(weapon, client)
     return ServerWeaponManager
 end
 
+
+function ServerWeaponManager:unregisterAllFromClient(client)
+    for uuid, container in pairs(self.ActiveWeapons) do
+        container.Weapon:Destroy()
+        self.ActiveWeapons[uuid] = nil
+        NetworkLib:send(GameEnum.PacketType.WeaponUnregister, uuid)
+    end
+end
+
 ---! NETWORKED FUNCTION !
 ---
 ---@param client Client
