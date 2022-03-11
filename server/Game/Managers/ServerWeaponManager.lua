@@ -73,9 +73,11 @@ end
 
 function ServerWeaponManager:unregisterAllFrom(client)
     for uuid, container in pairs(self.ActiveWeapons) do
-        container.Weapon:Destroy()
-        self.ActiveWeapons[uuid] = nil
-        NetworkLib:send(GameEnum.PacketType.WeaponUnregister, uuid)
+        if container.Owner == client then
+            container.Weapon:Destroy()
+            self.ActiveWeapons[uuid] = nil
+            NetworkLib:send(GameEnum.PacketType.WeaponUnregister, uuid)
+        end
     end
 end
 
@@ -100,7 +102,7 @@ function ServerWeaponManager:fire(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
 
-    NetworkLib:send(GameEnum.PacketType.WeaponFire, uuid)
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid)
     -- TODO: sanity check high RPM
 end
 
@@ -109,7 +111,7 @@ function ServerWeaponManager:reload(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
     
-    NetworkLib:send(GameEnum.PacketType.WeaponReload, uuid)
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponReload, uuid)
 end
 
 ---! NETWORKED FUNCTION !

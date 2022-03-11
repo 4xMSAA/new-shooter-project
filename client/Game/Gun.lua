@@ -67,7 +67,7 @@ Gun.__index = Gun
 ---Creates a new Gun class
 ---@param weapon any A string or ModuleScript instance of a gun configuration
 ---@param gamemode string use configuration specific to a gamemode
-function Gun.new(weapon, gamemode)
+function Gun.new(weapon, gamemode, extraData)
     assert(type(gamemode) == "string", "gamemode must be specified on creation for object by name of " .. weapon)
 
     -- make string to config by search or use config directly
@@ -160,13 +160,13 @@ function Gun.new(weapon, gamemode)
 
     Maid.watch(self)
 
-    return self:_init()
+    return self:_init(gamemode, extraData)
 end
 
 ---
 ---@private
----@return Gun Returns itself. Useful for chaining
-function Gun:_init()
+---@return Gun Gun Returns itself. Useful for chaining
+function Gun:_init(gamemode, extraData)
 
     -- load the animation necessities
     self.Animator = Animator.new(self.ViewModel)
@@ -195,7 +195,13 @@ function Gun:_init()
 
     -- give sounds
     for name, data in pairs(self.Configuration.Sounds) do
-        self._Sounds[name] = Sound.new(data, {IsGlobal = true})
+        self._Sounds[name] = Sound.new(
+            data, 
+            {
+                IsGlobal = (not extraData.ThirdPersonGun), 
+                Parent = (extraData.ThirdPersonGun and self.Handle or nil)
+            }
+        )
     end
 
     -- hook sounds to animations
@@ -388,9 +394,9 @@ function Gun:fire(networked)
     self._Springs.ModelPositionRecoil:shove(x, y, z)
     self._Springs.ModelRotationRecoil:shove(pitch, yaw, roll)
 
-    self.Animations.Fire:play()
-
     self:setState("Cycling", false)
+
+    self.Animations.Fire:play()
 
     if self.State.Loaded == 0 then
         self:setState("Chambered", false)

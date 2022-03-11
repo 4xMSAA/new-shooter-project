@@ -107,8 +107,8 @@ end
 
 ---Creates an unregistered Gun instance by an asset name
 ---@param assetName string Weapon assetName to create
-function WeaponManager:create(assetName)
-    local gun = Gun.new(assetName, self.GameMode)
+function WeaponManager:create(assetName, extraData)
+    local gun = Gun.new(assetName, self.GameMode, extraData)
     return gun
 end
 
@@ -121,7 +121,6 @@ function WeaponManager:register(weapon, uuid, player)
     weapon.UUID = uuid
     self.ActiveWeapons[uuid] = {Weapon = weapon, Owner = player}
     log(1, "registered", weapon.Configuration.Name, "with UUID of", uuid, "owned by", player)
-    return WeaponManager
 end
 
 ---Unregister a weapon UUID for garbage cleaning
@@ -147,8 +146,11 @@ function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
     else
         logwarn(2, "server is overwriting UUID of", uuid)
     end
-
-    local weapon = self:create(assetName)
+    
+    local extraData = {
+        ThirdPersonGun = (player == Players.LocalPlayer or nil)
+    }
+    local weapon = self:create(assetName, extraData)
     self:register(weapon, uuid, player)
 end
 
@@ -226,6 +228,7 @@ function WeaponManager:fire(weapon, state)
         self.AutoFire[weapon] = true
     else
         self.AutoFire[weapon] = nil
+        NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID, false)
     end
 
     if weapon.State.Sprint then return end
@@ -246,12 +249,12 @@ function WeaponManager:networkFire(uuid, state)
     if weapon == self.ViewportWeapon then return end
 
     if weapon.ActiveFireMode == GameEnum.FireMode.Automatic and state then
+        weapon:fire()
         self.AutoFire[weapon] = true
     else
         self.AutoFire[weapon] = nil
     end
 
-    weapon:fire(true)
 end
 
 function WeaponManager:reload(weapon)
@@ -263,8 +266,10 @@ end
 function WeaponManager:networkReload(uuid)
     local weapon = self:getByUUID(uuid).Weapon
     if not weapon then return end
+
+    self.AutoFire[weapon] = nil
         
-    weapon:reload()
+    print(uuid, weapon:reload())
 end
 
 function WeaponManager:setState(weapon, stateName, stateValue)
@@ -287,20 +292,6 @@ function WeaponManager:step(dt, camera, movementController)
         self.ViewportWeapon:update(dt, camera.CFrame)
     end
 
-    -- handle automatic fire
-    for weapon, _ in pairs(self.AutoFire) do
-        if weapon == self.ViewportWeapon and not weapon.State.Sprint then
-            local didFire, reason = weapon:fire()
-            if didFire then
-                fireViewportWeapon(self, weapon)
-            elseif reason == "EMPTY" then
-                self:reload(weapon)
-            end
-        elseif weapon ~= self.ViewportWeapon then
-            weapon:fire(true)
-        end
-    end
-
     -- TODO: handle third person weapons
     for _, container in pairs(self.ActiveWeapons) do
         if self.ViewportWeapon ~= container.Weapon then
@@ -309,6 +300,21 @@ function WeaponManager:step(dt, camera, movementController)
             -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
             container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
+        end
+    end
+
+    -- handle automatic fire
+    for weapon, _ in pairs(self.AutoFire) do
+        if weapon == self.ViewportWeapon and not weapon.State.Sprint then
+            local didFire, reason = weapon:fire()
+            if didFire then
+                fireViewportWeapon(self, weapon)
+            elseif reason == "EMPTY" then
+                NetworkLib:send(GameEnum.PacketType.WeaponFire, weapon.UUID, false)
+                self:reload(weapon)
+            end
+        elseif weapon ~= self.ViewportWeapon and not weapon.State.Sprint then
+           print(weapon:fire())
         end
     end
 end
@@ -322,7 +328,6 @@ end
 function WeaponManager:route(packetType, ...)
     local func = self._packetToFunction[packetType]
     if func then
-        log(1, func, packetType.Name, ...)
         func(self, ...)
     end
 end
