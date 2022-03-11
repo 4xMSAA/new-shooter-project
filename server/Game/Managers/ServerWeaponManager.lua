@@ -76,6 +76,7 @@ function ServerWeaponManager:unregisterAllFrom(client)
         if container.Owner == client then
             container.Weapon:Destroy()
             self.ActiveWeapons[uuid] = nil
+            self._Equipped[client] = nil
             NetworkLib:send(GameEnum.PacketType.WeaponUnregister, uuid)
         end
     end

@@ -290,8 +290,8 @@ function WeaponManager:step(dt, camera, movementController)
 
         self.ViewportWeapon:setState("Movement", movementController.Velocity.magnitude)
         self.ViewportWeapon.Animator:_step(dt)
-        camera:updateOffset(GameEnum.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
         self.ViewportWeapon:update(dt, camera.CFrame)
+        camera:updateOffset(GameEnum.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
     end
 
     -- TODO: handle third person weapons
