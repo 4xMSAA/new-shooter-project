@@ -80,13 +80,14 @@ end
 ---Bakes a joint map based on the rig provided by Animator for playback
 ---@param rig userdata
 function AnimationTrack:bake(rig)
-    if not AnimationTrack._cache[self.Animation] or self._rebake then
+    if not AnimationTrack._cache[rig] or not AnimationTrack._cache[rig][self.Animation] or self._rebake then
         self._rebake = nil
         local keyframes = AnimationParser.createTrack(self.Animation, rig, self.JointMap)
-        AnimationTrack._cache[self.Animation] = keyframes
+        AnimationTrack._cache[rig] = AnimationTrack._cache[rig] or {}
+        AnimationTrack._cache[rig][self.Animation] = keyframes
         self.Keyframes = keyframes
     else
-        self.Keyframes = AnimationTrack._cache[self.Animation]
+        self.Keyframes = AnimationTrack._cache[rig][self.Animation]
     end
 end
 
