@@ -68,6 +68,7 @@ function Particle:emit()
                 table.insert(sounds, sound)
             end
         end
+
         if #sounds > 0 then
             sounds[math.random(#sounds)]:Play()
         else

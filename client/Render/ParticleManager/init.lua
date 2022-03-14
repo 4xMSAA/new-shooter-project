@@ -53,7 +53,7 @@ function ParticleManager:step(dt)
         if lifetime <= 0 then
             self._Lifetimes[particle] = nil
             
-            -- racing condition with projectile destroying itself before the particle
+            -- TODO: investigate racing condition with projectile destroying itself before the particle
             if particle.destroy then
                 particle:destroy()
             end
