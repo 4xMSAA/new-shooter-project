@@ -18,12 +18,6 @@ params.FilterDescendantsInstances = {
     workspace.CurrentCamera
 }
 
-local explEffect = Instance.new("Explosion")
-explEffect.BlastPressure = 0
-explEffect.BlastRadius = 0
-explEffect.ExplosionType = Enum.ExplosionType.NoCraters
-explEffect.DestroyJointRadiusPercent = 0
-
 ---@class Rocket
 local Rocket = {}
 
@@ -66,12 +60,7 @@ function Rocket:hitClient(rayResult)
     -- it after a fixed time by ourselves (trail disappears with parent...)
     local renderObject = self._renderObject
     self._renderObject = nil
-    
-    local expl = explEffect:Clone()
-    expl.Position = renderObject.Position
-    expl.Parent = _G.Path.FX
 
-    renderObject.ExplosionSound:play()
     renderObject.Transparency = 1
 
     -- disable all particles
