@@ -4,10 +4,11 @@ local function cfgRandom(range)
     return type(range) == "number" and range or math.random(range[1], range[2])
 end
 
-local function scheduleDelete(obj, time)
+local function disable(obj, time)
     wait(time)
-    obj:Destroy()
+    obj.Enabled = false
 end
+
 
 return {
     ParticleEmitter = function(inst, config)
@@ -22,9 +23,7 @@ return {
     PointLight = function(inst, config)
         if config.Chance and config.Chance[inst.Name] and math.random() > config.Chance[inst.Name] then return end
 
-        local light = inst:Clone()
-        light.Enabled = true
-        light.Parent = inst.Parent
-        coroutine.wrap(scheduleDelete)(light, config.Specification[inst.Name].Lifetime)
+        inst.Enabled = true
+        coroutine.wrap(disable)(inst, config.Specification[inst.Name].Lifetime)
     end
 }

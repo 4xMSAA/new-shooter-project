@@ -9,12 +9,12 @@ Particle._behaviours = Behaviours
 
 ---@param effect userdata
 ---@param parent userdata Where to parent the Particle instances to
-function Particle.new(effect, parent, props)
+function Particle.new(effect, parent, props, _clone)
     assert(effect, "effect cannot be nil (must be an Instance)")
 
     local self = {
         Parent = parent,
-        Instances = effect:Clone():GetChildren(),
+        Instances = clone and effect:Clone():GetChildren() or parent:GetChildren(),
         Name = effect:GetFullName(),
         Configuration = require(
             assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
@@ -29,28 +29,28 @@ function Particle.new(effect, parent, props)
     return self
 end
 
+function Particle.fromExisting(effect, parent, props)
+    Particle.new(effect, parent, props, )
+end
+
 function Particle:_init()
-    for _, inst in pairs(self.Instances) do
-        if self.Configuration.Colorable and self.Configuration.Colorable[inst.Name] then
-            inst.Color = self.Configuration.Colorable[inst.Name].new(self.Properties.Color)
-        end
-    end
     if not self.Parent:IsA("Part") then
         self._attachment = Instance.new("Attachment")
         self._attachment.Parent = self.Parent
     else
         self._attachment = self.Parent
     end
-    for index, instance in pairs(self.Instances) do
-        -- get rid of configuration script in the cloned instance
-        if instance:IsA("Script") or instance:IsA("ModuleScript") then
-            table.remove(self.Instances, index)
-        else
-            if instance:IsA("Light") or instance:IsA("ParticleEmitter") then
-                instance.Enabled = false
-            end
-            instance.Parent = self._attachment
+
+    for _, instance in pairs(self.Instances) do
+        if self.Configuration.Colorable and self.Configuration.Colorable[inst.Name] then
+            inst.Color = self.Configuration.Colorable[inst.Name].new(self.Properties.Color)
         end
+
+        if instance:IsA("Light") or instance:IsA("ParticleEmitter") then
+            instance.Enabled = false
+        end
+
+        instance.Parent = self._attachment
     end
 end
 
