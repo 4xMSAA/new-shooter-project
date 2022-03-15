@@ -17,7 +17,7 @@ Mount.__call = function(self, path, sep)
     local head = self.Location
     for _, fileName in ipairs(splitPath) do
         if typeof(head) == "table" then
-            head = head[fileName] or error("path does not exist:", fileName, "from", path)
+            head = head[fileName] or error("path does not exist:" .. fileName .. "from" .. path, 2)
         elseif typeof(head) == "Instance" then
             head =
                 head:FindFirstChild(fileName) or
