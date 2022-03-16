@@ -26,13 +26,13 @@ function Rocket:init()
 end
 
 function Rocket:simulate(dt)
-    self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity)/9.81 * GRAVITY_MODIFIER * ROCKET_GRAVITY_MODIFIER), 0) * dt
+    self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity)/9.81 * GRAVITY_MODIFIER * ROCKET_GRAVITY_MODIFIER), 0)
 
     local result = workspace:Raycast(self.Position, self.Velocity, params)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity
+        self.Position = self.Position + self.Velocity * dt
         return true
     end
 
