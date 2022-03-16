@@ -12,9 +12,12 @@ Particle._behaviours = Behaviours
 function Particle.new(effect, parent, props, _noClone)
     assert(effect, "effect cannot be nil (must be an Instance)")
 
+    local clonedEffect = effect:Clone()
     local self = {
+        _HostObject = clonedEffect,
+
         Parent = parent,
-        Instances = not _noClone and effect:Clone():GetChildren() or parent:GetChildren(),
+        Instances = clonedEffect:Clone():GetChildren(),
         Name = effect:GetFullName(),
         Configuration = require(
             assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
@@ -29,16 +32,18 @@ function Particle.new(effect, parent, props, _noClone)
     return self
 end
 
-function Particle.fromExisting(effect, parent, props)
-    return Particle.new(effect, parent, props, clone)
-end
-
 function Particle:_init()
-    if not self.Parent:IsA("Part") then
-        self._attachment = Instance.new("Attachment")
-        self._attachment.Parent = self.Parent
+    if self.Parent then
+        if self.Parent:IsA("BasePart") then
+            self._attachment = Instance.new("Attachment")
+            self._attachment.Parent = self.Parent
+        elseif self.Parent:IsA("BasePart") then
+            self._attachment = self.Parent
+        end
+    elseif self.Properties["UseEffectPart"] == true then
+        self._attachment = self._HostObject
     else
-        self._attachment = self.Parent
+        logwarn(1, "particle", self.Name, "has missing parent, started from:", debug.traceback("\n"))
     end
 
     for _, instance in pairs(self.Instances) do

@@ -22,7 +22,7 @@ function ParticleManager.new(controllerPath)
 end
 
 function ParticleManager:create(effect, parent, props)
-    return Particle.new(effect, parent, props)
+    return self:addID(Particle.new(effect, parent, props))
 end
 
 function ParticleManager:addID(particle)
@@ -33,16 +33,16 @@ function ParticleManager:addID(particle)
 end
 
 function ParticleManager:createDecal(effect, partProps, props)
-    local part = effect:Clone()
-    local particle = Particle.fromExisting(effect, part, props)
-    self:addID(particle)
+    assert(effect:IsA("BasePart"), "effect" .. effect:GetFullName() .. "must be a descendant of BasePart")
 
+    props.UseEffectPart = true
+    local particle = self:create(effect, nil, props)
+    local part = particle._HostObject
     for prop, val in pairs(partProps) do
         part[prop] = val
     end
-    particle._linkedPart = part
-    part.Parent = _G.Path.FX
 
+    part.Parent = _G.Path.FX
     return particle
 end
 
