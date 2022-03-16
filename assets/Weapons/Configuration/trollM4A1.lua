@@ -29,7 +29,7 @@ local Configuration = {
     },
     Projectile = {
         Type = "Rocket",
-        Velocity = 20,
+        Velocity = 210,
         Piercing = 1,
         Amount = 1
     },

@@ -1,5 +1,5 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
-local ROCKET_GRAVITY_MODIFIER = 0.05 -- rockets are unguided but... they are still propulsion
+local ROCKET_GRAVITY_MODIFIER = 0.2 -- rockets are unguided but... they are still propulsion
 local FX_HIT_LIFETIME = 5
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Rocket.Normal,
@@ -28,11 +28,11 @@ end
 function Rocket:simulate(dt)
     self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity)/9.81 * GRAVITY_MODIFIER * ROCKET_GRAVITY_MODIFIER), 0)
 
-    local result = workspace:Raycast(self.Position, self.Velocity, params)
+    local result = workspace:Raycast(self.Position, self.Velocity * dt, params)
 
     -- continue going
     if not result then
-        self.Position = self.Position + self.Velocity * dt
+        self.Position = self.Position + (self.Velocity * dt)
         return true
     end
 
@@ -85,7 +85,7 @@ end
 
 function Rocket:render()
 
-    self._renderObject.CFrame = CFrame.lookAt(self.Position, self.Position + self.Velocity, Vector3.new(0, 1, 0))
+    self._renderObject.CFrame = CFrame.lookAt(self.Position, self.Position + self.Velocity, Vector3.new(0, 1, 0)) * CFrame.Angles(0, 0, os.clock()*2)
     self._renderObject.Parent = _G.Path.FX
 end
 
