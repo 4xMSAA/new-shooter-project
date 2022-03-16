@@ -30,7 +30,7 @@ function Particle.new(effect, parent, props, _noClone)
 end
 
 function Particle.fromExisting(effect, parent, props)
-    Particle.new(effect, parent, props, clone)
+    return Particle.new(effect, parent, props, clone)
 end
 
 function Particle:_init()
@@ -42,8 +42,8 @@ function Particle:_init()
     end
 
     for _, instance in pairs(self.Instances) do
-        if self.Configuration.Colorable and self.Configuration.Colorable[inst.Name] then
-            inst.Color = self.Configuration.Colorable[inst.Name].new(self.Properties.Color)
+        if self.Configuration.Colorable and self.Configuration.Colorable[instance.Name] then
+            instance.Color = self.Configuration.Colorable[instance.Name].new(self.Properties.Color)
         end
 
         if instance:IsA("Light") or instance:IsA("ParticleEmitter") then
