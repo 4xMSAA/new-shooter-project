@@ -25,8 +25,8 @@ return {
         AIM_SPEED = 4,
         AIM_STYLE = "sine",
 
-        SPRINT_SPEED = 2,
-        SPRINT_STYLE = "quad",
+        SPRINT_SPEED = 5,
+        SPRINT_STYLE = "sine",
 
         INERTIA_MODIFIER = 0.6,
         INERTIA_RECOVERY_SPEED = 1.5,
@@ -52,7 +52,7 @@ return {
 
     PROJECTILE = {
         GRAVITY_MODIFIER = 1,
-        VELOCITY_MODIFIER = 1,
+        VELOCITY_MODIFIER = 1 * (35 / 9.81),
 
         ITERATION_PRECISION = 1/20,
         MAX_ITERATIONS_PER_FRAME = 5

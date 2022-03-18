@@ -2,6 +2,7 @@ local Players = game:GetService("Players")
 
 local CAMERA_RECOIL_ANGULAR_DAMPENING = _G.CAMERA.RECOIL_ANGULAR_DAMPENING
 local CAMERA_RECOIL_ANGULAR_SPEED = _G.CAMERA.RECOIL_ANGULAR_SPEED
+local WEAPON_AIM_STYLE = _G.WEAPON.AIM_STYLE
 
 local GameEnum = shared.GameEnum
 
@@ -10,6 +11,7 @@ local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 local Spring = require(shared.Common.Spring)
 local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
+local Styles = require(shared.Common.Styles)
 
 local Gun = require(_G.Client.Game.Gun)
 local ViewModelArms = require(_G.Client.Game.ViewModelArms)
@@ -280,23 +282,25 @@ end
 
 function WeaponManager:step(dt, camera, movementController)
     -- handle viewport weapon
-    if self.ViewportWeapon then
-        self.ViewportWeapon:setState("Sprint", movementController.IsSprinting)
+    local vpw = self.ViewportWeapon
+    if vpw then
+        vpw:setState("Sprint", movementController.IsSprinting)
 
         self.CameraRecoilSpring:update(math.min(1, dt))
         local recoil = self.CameraRecoilSpring.Position
         camera:updateOffset(GameEnum.CameraOffset.Recoil.ID, CFrame.Angles(recoil.X, recoil.Y, recoil.Z))
         camera:rawMoveLook(recoil.Y * dt * 60, recoil.X * dt * 60)
 
-        self.ViewportWeapon:setState("Movement", movementController.Velocity.magnitude)
-        self.ViewportWeapon.Animator:_step(dt)
-        self.ViewportWeapon:update(dt, camera.CFrame)
-        camera:updateOffset(GameEnum.CameraOffset.Animation.ID, self.ViewportWeapon:getExpectedCameraCFrame())
+        vpw:setState("Movement", movementController.Velocity.magnitude)
+        vpw.Animator:_step(dt)
+        vpw:update(dt, camera.CFrame)
+        camera:updateOffset(GameEnum.CameraOffset.Animation.ID, vpw:getExpectedCameraCFrame())
+        camera:setZoom(SmallUtils.lerp(1, vpw.Configuration.Zoom, Styles[WEAPON_AIM_STYLE](vpw._InterpolateState.Aim)))
     end
 
     -- TODO: handle third person weapons
     for _, container in pairs(self.ActiveWeapons) do
-        if self.ViewportWeapon ~= container.Weapon then
+        if container.Owner ~= Players.LocalPlayer then
             -- ! dangerous - Character may not always be available and roblox is
             -- ! usually stupid for telling when it's ready, 
             -- ! so make a yet again wrapped instance maybe?

@@ -74,6 +74,10 @@ function Camera:updateView(dt)
     self.OnUpdated:emit(self.LastFrameDelta)
 end
 
+function Camera:setZoom(modifier)
+    self.Zoom = modifier 
+end
+
 ---a TODO method
 ---@param cf1 userdata
 ---@param cf2 userdata
