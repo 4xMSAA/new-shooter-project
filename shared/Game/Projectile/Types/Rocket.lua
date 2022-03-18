@@ -1,6 +1,7 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 local ROCKET_GRAVITY_MODIFIER = 1 -- rockets are unguided but... they are still propulsion
 local FX_HIT_LIFETIME = 5
+local DECAL_HIT_LIFETIME = 30
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Rocket.Normal,
 }
@@ -52,7 +53,7 @@ function Rocket:hitClient(rayResult)
 
     local p = ParticleManager:createDecal(materialEffect, {CFrame = cf}, {Color = rayResult.Instance.Color})
     p:emit()
-    ParticleManager:scheduleDestroy(p, FX_HIT_LIFETIME)
+    ParticleManager:scheduleDestroy(p, DECAL_HIT_LIFETIME)
 
     self:render() -- one final time to update position
 

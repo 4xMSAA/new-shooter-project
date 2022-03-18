@@ -1,5 +1,6 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
 local FX_HIT_LIFETIME = 5
+local DECAL_HIT_LIFETIME = 30
 local MATERIAL_TO_HIT_FX = {
     ["Default"] = shared.Assets.FX.Hit.Bullet.Normal,
     [Enum.Material.CorrodedMetal] = shared.Assets.FX.Hit.Bullet.Metal,
@@ -64,7 +65,7 @@ function Bullet:hitClient(rayResult)
 
     local p = ParticleManager:createDecal(materialEffect, {CFrame = cf}, {Color = rayResult.Instance.Color})
     p:emit()
-    ParticleManager:scheduleDestroy(p, FX_HIT_LIFETIME)
+    ParticleManager:scheduleDestroy(p, DECAL_HIT_LIFETIME)
 
     -- dereference renderObject (part which leaves trail) and destroy 
     -- it after a fixed time by ourselves (trail disappears with parent...)
