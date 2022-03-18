@@ -30,7 +30,7 @@ local CF000 = CFrame.new()
 -- make mount points so we can find things by string (separator is /)
 local mount = require(shared.Common.Mount)
 local PATH = {
-    PARTICLES = mount(shared.Assets.Particles),
+    PARTICLES = mount(shared.Assets.FX),
     WEAPON_MODELS = mount(shared.Assets.Weapons.Models),
     WEAPON_ANIMATIONS = mount(shared.Assets.Weapons.Animations),
     WEAPON_CONFIGURATIONS = mount(shared.Assets.Weapons.Configuration)
