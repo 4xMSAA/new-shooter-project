@@ -1,5 +1,4 @@
 local GRAVITY_MODIFIER = _G.PROJECTILE.GRAVITY_MODIFIER
-local ROCKET_GRAVITY_MODIFIER = 1 -- rockets are unguided but... they are still propulsion
 local FX_HIT_LIFETIME = 5
 local DECAL_HIT_LIFETIME = 30
 local MATERIAL_TO_HIT_FX = {
@@ -19,15 +18,15 @@ params.FilterDescendantsInstances = {
     workspace.CurrentCamera
 }
 
----@class Rocket
-local Rocket = {}
+---@class Grenade
+local Grenade = {}
 
-function Rocket:init()
-    self._renderObject = shared.Assets.FX.ProjectileTracer.Rocket:Clone()
+function Grenade:init()
+    self._renderObject = shared.Assets.FX.ProjectileTracer.Grenade:Clone()
 end
 
-function Rocket:simulate(dt)
-    self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity) * GRAVITY_MODIFIER * ROCKET_GRAVITY_MODIFIER) * dt, 0)
+function Grenade:simulate(dt)
+    self.Velocity = self.Velocity - Vector3.new(0, ((workspace.Gravity) * GRAVITY_MODIFIER) * dt, 0)
 
     local result = workspace:Raycast(self.Position, self.Velocity * dt, params)
 
@@ -36,11 +35,13 @@ function Rocket:simulate(dt)
         self.Position = self.Position + (self.Velocity * dt)
         return true
     end
+    
+    -- make it bounce!!!!
 
     return false, result
 end
 
-function Rocket:hitClient(rayResult)
+function Grenade:hitClient(rayResult)
     local materialEffect = MATERIAL_TO_HIT_FX[rayResult.Material] or MATERIAL_TO_HIT_FX["Default"]
     local cf =
         CFrame.lookAt(
@@ -74,7 +75,7 @@ function Rocket:hitClient(rayResult)
     Debris:AddItem(renderObject, FX_HIT_LIFETIME)
 end
 
-function Rocket:hit(rayResult)
+function Grenade:hit(rayResult)
     self.Position = rayResult.Position
 
     if _G.Client then
@@ -84,14 +85,14 @@ function Rocket:hit(rayResult)
     return false
 end
 
-function Rocket:render()
+function Grenade:render()
 
-    self._renderObject.CFrame = CFrame.lookAt(self.Position, self.Position + self.Velocity, Vector3.new(0, 1, 0)) * CFrame.Angles(0, 0, os.clock()*2)
+    self._renderObject.CFrame = CFrame.lookAt(self.Position, self.Position + self.Velocity, Vector3.new(0, 1, 0))
     self._renderObject.Parent = _G.Path.FX
 end
 
-function Rocket.staticStep(dt)
+function Grenade.staticStep(dt)
     ParticleManager:step(dt)
 end
 
-return Rocket
+return Grenade

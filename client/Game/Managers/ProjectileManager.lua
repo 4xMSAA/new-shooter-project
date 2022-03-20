@@ -69,7 +69,10 @@ function ProjectileManager:step(dt)
     
     for proj, _ in pairs(self.Projectiles) do
         local keepSimulating = proj:step(dt)
-        if not keepSimulating or proj.Lifetime > 10 then
+        if 
+            not keepSimulating 
+            or proj.Lifetime > proj.MaxLifetime 
+        then
             self:discard(proj)
         elseif keepSimulating then
             proj:render()

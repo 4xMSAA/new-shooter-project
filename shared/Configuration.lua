@@ -55,7 +55,9 @@ return {
         VELOCITY_MODIFIER = 35 / 9.81, -- for metric to studs, use (35 / 9.81)
 
         ITERATION_PRECISION = 1/20,
-        MAX_ITERATIONS_PER_FRAME = 5
+        MAX_ITERATIONS_PER_FRAME = 5,
+        
+        DEFAULT_MAX_LIFETIME = 10
     },
 
     MOVEMENT = {

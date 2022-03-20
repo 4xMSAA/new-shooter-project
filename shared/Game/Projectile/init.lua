@@ -2,6 +2,7 @@ local Maid = require(shared.Common.Maid)
 
 local ITERATION_PRECISION = _G.PROJECTILE.ITERATION_PRECISION
 local MAX_ITERATIONS_PER_FRAME = _G.PROJECTILE.MAX_ITERATIONS_PER_FRAME
+local DEFAULT_MAX_LIFETIME = _G.PROJECTILE.DEFAULT_MAX_LIFETIME
 
 
 ---A projectile with different properties
@@ -21,6 +22,7 @@ function Projectile.new(projectileType, props, start, direction)
 
     self.Type = Projectile.ProjectileTypes[projectileType]
     self.Lifetime = 0
+    self.MaxLifetime = self.MaxLifetime or DEFAULT_MAX_LIFETIME
 
     self.Origin = start
     self.Position = start
