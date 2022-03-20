@@ -17,7 +17,7 @@ return {
         ADS_SWAY_MODIFIER = 0.06,
 
         MOVEMENT_AMPLIFY = 0.05,
-        MOVEMENT_SPEED = 10,
+        MOVEMENT_SPEED = 8,
         MOVEMENT_RECOVERY_SPEED = 0.7,
 
         ADS_MOVEMENT_MODIFIER = 0.2,
