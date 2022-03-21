@@ -22,6 +22,7 @@ params.FilterDescendantsInstances = {
 local Grenade = {}
 
 function Grenade:init()
+    self.MaxLifetime = 5
     self._renderObject = shared.Assets.FX.ProjectileTracer.Grenade:Clone()
 end
 
