@@ -2,19 +2,6 @@
 
 Rewriting MMCZP to be better and less gay
 
-<<<<<<< HEAD
-## External Tools
-
-* Trello Todo - <https://trello.com/b/vLcRXfah/new-shooter-project-todo>
-
-## Code stylization
-
-Methods in classes are defined with a colon ``:`` and are camelCase
-
-```lua
-function Class:method()
-```
-=======
 ## Setting up gun rigs
 
 (make a plugin for this dumbass)
@@ -110,4 +97,3 @@ TODO
 * Trello Todo - <https://trello.com/b/vLcRXfah/new-shooter-project-todo>
 * Moon Animation Suite
 * Blender
->>>>>>> dev

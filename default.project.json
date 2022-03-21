@@ -2,18 +2,6 @@
   "name": "new-shooter-project",
   "tree": {
     "$className": "DataModel",
-<<<<<<< HEAD
-
-    "ReplicatedStorage": {
-      "Source": {
-        "$path": "shared"
-      }
-    },
-
-    "ServerScriptService": {
-      "Source": {
-        "$path": "server"
-=======
     "ReplicatedStorage": {
       "$ignoreUnknownInstances": true,
       "GameModes": {
@@ -55,7 +43,6 @@
       },
       "GameModes": {
         "$path": "gamemodes"
->>>>>>> dev
       }
     },
     "StarterPlayer": {
