@@ -2,6 +2,7 @@
   "name": "new-shooter-project",
   "tree": {
     "$className": "DataModel",
+<<<<<<< HEAD
 
     "ReplicatedStorage": {
       "Source": {
@@ -12,6 +13,49 @@
     "ServerScriptService": {
       "Source": {
         "$path": "server"
+=======
+    "ReplicatedStorage": {
+      "$ignoreUnknownInstances": true,
+      "GameModes": {
+        "$className": "Folder",
+        "Configuration": {
+          "$path": "gamemodes/Configuration"
+        }
+      },
+      "Scenes": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "Configuration": {
+          "$path": "scenes/Configuration"
+        }
+      },
+      "Source": {
+        "$path": "shared",
+        "Common": {
+          "$path": "common"
+        },
+        "GameEnum": {
+          "$path": "enums"
+        }
+      },
+      "Assets": {
+        "$className": "Folder",
+        "$ignoreUnknownInstances": true,
+        "Weapons": {
+          "$className": "Folder",
+          "Configuration": {
+            "$path": "assets/Weapons/Configuration"
+          }
+        }
+      }
+    },
+    "ServerScriptService": {
+      "Source": {
+        "$path": "server"
+      },
+      "GameModes": {
+        "$path": "gamemodes"
+>>>>>>> dev
       }
     },
     "StarterPlayer": {

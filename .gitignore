@@ -1,4 +1,10 @@
 *.rbxl
 *.rbxlx
 *.rbxmx
+<<<<<<< HEAD
 .vscode
+=======
+*.lock
+.vscode
+*.code-workspace
+>>>>>>> dev
