@@ -6,11 +6,11 @@ local Behaviours = require(script.Behaviours)
 local Particle = {}
 Particle.__index = Particle
 Particle._behaviours = Behaviours
-Particle._cachedLifetimes = {}
 
 ---@param effect userdata
 ---@param parent userdata Where to parent the Particle instances to
-function Particle.new(effect, parent, props, _noClone)
+function Particle.new(effect, parent, props, pooled)
+    -- TODO: pool them
     assert(effect, "effect cannot be nil (must be an Instance)")
 
     local clonedEffect = effect:Clone()
@@ -18,12 +18,12 @@ function Particle.new(effect, parent, props, _noClone)
         _HostObject = clonedEffect,
 
         Parent = parent,
-        Instances = clonedEffect:Clone():GetChildren(),
+        Instances = clonedEffect:GetChildren(),
         Name = effect:GetFullName(),
         Configuration = require(
             assert(effect:WaitForChild("Configuration"), "no configuration for particle " .. effect:GetFullName())
         ),
-        Properties = props
+        Properties = props or {}
     }
 
     setmetatable(self, Particle)
