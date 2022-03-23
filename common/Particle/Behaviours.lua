@@ -5,8 +5,7 @@ local function cfgRandom(range)
 end
 
 local function disable(obj, time)
-    wait(time)
-    obj.Enabled = false
+    Debris:AddItem(obj, time)
 end
 
 
@@ -18,12 +17,13 @@ return {
             config.Specification[inst.Name] and cfgRandom(config.Specification[inst.Name].Amount)
             or cfgRandom(config.Default[inst.ClassName].Amount)
         )
+        disable(inst, inst.Lifetime.Max)
     end,
 
     PointLight = function(inst, config)
         if config.Chance and config.Chance[inst.Name] and math.random() > config.Chance[inst.Name] then return end
 
         inst.Enabled = true
-        coroutine.wrap(disable)(inst, config.Specification[inst.Name].Lifetime)
+        disable(inst, config.Specification[inst.Name].Lifetime)
     end
 }

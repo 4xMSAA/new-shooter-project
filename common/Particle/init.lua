@@ -6,6 +6,7 @@ local Behaviours = require(script.Behaviours)
 local Particle = {}
 Particle.__index = Particle
 Particle._behaviours = Behaviours
+Particle._cachedLifetimes = {}
 
 ---@param effect userdata
 ---@param parent userdata Where to parent the Particle instances to
