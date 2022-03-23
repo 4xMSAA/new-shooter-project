@@ -1,2 +1,0 @@
--- return an AnimationTrack-like object
--- https://developer.roblox.com/en-us/api-reference/class/AnimationTrack
