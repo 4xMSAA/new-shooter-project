@@ -18,6 +18,10 @@ params.FilterDescendantsInstances = {
     workspace.CurrentCamera
 }
 
+local function reflect(v1, norm)
+    return v1 - 2 * (norm:Dot(v1)) * norm
+end
+
 ---@class Grenade
 local Grenade = {}
 
