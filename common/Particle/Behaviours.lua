@@ -9,11 +9,6 @@ local function disable(obj, time)
     obj.Enabled = false
 end
 
-local function destroy(obj, time)
-    wait(time)
-    obj:Destroy()
-end
-
 
 return {
     ParticleEmitter = function(inst, config, props)
@@ -23,8 +18,9 @@ return {
             config.Specification[inst.Name] and cfgRandom(config.Specification[inst.Name].Amount)
             or cfgRandom(config.Default[inst.ClassName].Amount)
         )
+
         if props.UseEffectPart then
-            coroutine.wrap(destroy)(inst, inst.Lifetime.Max)
+            Debris:AddItem(inst, inst.Lifetime.Max)
         end
     end,
 
