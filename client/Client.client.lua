@@ -117,7 +117,7 @@ RunService:BindToRenderStep(
 
         debug.profilebegin("game-weaponmanager")
         WeaponManager:step(dt, Camera, LocalCharacter.Controller)
-        debug.profilebegin("game-weaponmanager")
+        debug.profileend("game-weaponmanager")
     end
 )
 
