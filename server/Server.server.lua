@@ -11,8 +11,6 @@ local NetworkLib = require(shared.Common.NetworkLib)
 
 local ClientManager = require(_G.Server.Core.ClientManager)
 
-local GameModeLoader = require(_G.Server.Game.GameModeLoader)
-
 
 ---A class description
 ---@class Server
@@ -22,18 +20,24 @@ Server.__index = Server
 function Server.new()
     local self = {
         ClientManager = ClientManager.new(),
-        GameMode = "Zombies"
     }
-    self.ClientManager:init()
 
     setmetatable(self, Server)
     Maid.watch(self)
+
     return self
 end
 
-local server = Server.new()
+function Server:start(module, options)
+    self.ClientManager:init()
+    self._running = require(module)(server, options)
 
-local GameMode = GameModeLoader.loadFromServer(server)
+    return self
+end
+
+
+local server = Server.new()
+server:start(_G.Server.Game.GameModeLoader)
 
 -- TODO: objects have :serialize method
 -- TODO: scene loading (including terrain)

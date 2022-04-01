@@ -26,4 +26,7 @@ function GameModeLoader.loadFromServer(server)
 end
 
 GameModeLoader.initialize()
-return GameModeLoader
+
+return function(server)
+    return GameModeLoader.loadFromServer(server)
+end
