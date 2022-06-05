@@ -33,7 +33,7 @@ function GameMode.new(server)
         self.WeaponManager:route(packetType, self.ClientManager:getClientByPlayer(player), ...)
     end
 
-    self._WeaponManagerListener = NetworkLib:listen(route)
+    self._NetworkListener = NetworkLib:listen(route)
 
     setmetatable(self, GameMode)
     Maid.watch(self)
