@@ -37,7 +37,7 @@ end
 
 
 local server = Server.new()
-server:start(_G.Server.Game.GameModeLoader)
+server:start(_G.Server.Game.GameModeLoader, {GameMode = "Zombies"})
 
 -- TODO: objects have :serialize method
 -- TODO: scene loading (including terrain)

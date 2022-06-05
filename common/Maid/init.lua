@@ -10,6 +10,8 @@ local totalTracked = 0
 
 local Maid = {}
 Maid._tracked = {}
+--TODO: track on recursive deletion whether the object inside an object is being
+-- used in other scenarios. this does sound more like a design problem however
 
 local Object = require(script.Object)(Maid)
 
