@@ -17,6 +17,7 @@ local GameEnum = {
     {"WeaponFire", "Fire the weapon"},
     {"WeaponEquip", "Equip the weapon"},
     {"WeaponReload", "Reload a weapon"},
+    {"WeaponCancelReload", "Cancels the reload on a weapon"},
     {"WeaponHit", "Client informs the weapon has hit something"},
 
     {"Look", "Send pitch, yaw angles for player replication"},

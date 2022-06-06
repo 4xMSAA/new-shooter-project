@@ -46,6 +46,7 @@ function ServerWeaponManager.new(config)
         [GameEnum.PacketType.WeaponFire] = self.fire,
         [GameEnum.PacketType.WeaponHit] = self.hit,
         [GameEnum.PacketType.WeaponReload] = self.reload,
+        [GameEnum.PacketType.WeaponCancelReload] = self.cancelReload,
     }
     return self
 end
@@ -112,8 +113,16 @@ end
 function ServerWeaponManager:reload(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
-    
+
     NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponReload, uuid)
+end
+
+--! NETWORKED FUNCTION !
+function ServerWeaponManager:cancelReload(client, weaponOrUUID)
+    local uuid = resolveUUID(weaponOrUUID)
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponCancelReload, uuid)
 end
 
 ---! NETWORKED FUNCTION !

@@ -131,7 +131,7 @@ function Gun.new(weapon, gamemode, extraData)
         Aim = (self.Configuration.InterpolateSpeed.Aim or 1) * AIM_SPEED,
         Sprint = (self.Configuration.InterpolateSpeed.Sprint or 1) * SPRINT_SPEED
     }
-    
+
 
     -- default spring values: 5, 50, 4, 4
     -- mass, force, dampening, speed
@@ -196,9 +196,9 @@ function Gun:_init(gamemode, extraData)
     -- give sounds
     for name, data in pairs(self.Configuration.Sounds) do
         self._Sounds[name] = Sound.new(
-            data, 
+            data,
             {
-                IsGlobal = (not extraData.ThirdPersonGun), 
+                IsGlobal = (not extraData.ThirdPersonGun),
                 Parent = (extraData.ThirdPersonGun and self.Handle or nil)
             }
         )
@@ -212,18 +212,18 @@ function Gun:_init(gamemode, extraData)
     end
 
     local function connectAnimationEvents(name)
-        if not self.Animations[name] then 
-            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function connectAnimationEvents") 
-            return 
+        if not self.Animations[name] then
+            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function connectAnimationEvents")
+            return
         end
 
         self._Connections[name] = self.Animations[name].MarkerReached:connect(markerToSound)
     end
 
     local function reloadEvents(name)
-        if not self.Animations[name] then 
-            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function reloadEvents") 
-            return 
+        if not self.Animations[name] then
+            warn("Missing animation " .. name .. " from " .. self.Configuration.Name .. " for function reloadEvents")
+            return
         end
 
         self.Animations[name].MarkerReached:on("Reload", function()
@@ -237,7 +237,7 @@ function Gun:_init(gamemode, extraData)
         self.Animations[name].MarkerReached:on("Chamber", function()
             self:setState("Chambered", true)
         end)
-    
+
         self.Animations[name].Stopped:on(nil, function()
             self._Lock.Reload = false
         end)
@@ -329,19 +329,41 @@ function Gun:setState(property, value)
     return self
 end
 
-
 ---
 function Gun:reload()
     if self._Lock.Reload then return end
 
     self._Lock.Reload = true
-    
+
     local reloadType = self.Chambered and "Reload" or "DryReload"
     self.Animations[reloadType]:play()
 end
 
----Fires the gun and emits `FIRE` on success or `SAFETY`, `CYCLING`, 
----`EMPTY` or `RELOADING` on failure.  
+---
+function Gun:isReloading()
+    return self._Lock.Reload
+end
+
+---Stop all playing animations and start the Idle pose again
+function Gun:stopAllAnimations()
+    for _, animation in pairs(self.Animations) do
+        if animation.IsPlaying then
+            animation:stop()
+        end
+    end
+
+    self.Animations.Idle:play()
+end
+
+function Gun:cancelAction(action)
+    self:stopAllAnimations()
+    if action == "Reload" then
+        self._Lock.Reload = false
+    end
+end
+
+---Fires the gun and emits `FIRE` on success or `SAFETY`, `CYCLING`,
+---`EMPTY` or `RELOADING` on failure.
 ---@param networked boolean Was the gun fired over the network?
 ---@return boolean DidFire, string Reason Returns whether the gun fire or not.
 function Gun:fire(networked)

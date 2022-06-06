@@ -99,6 +99,7 @@ function WeaponManager.new(config)
         [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
         [GameEnum.PacketType.WeaponFire] = self.networkFire;
         [GameEnum.PacketType.WeaponReload] = self.networkReload;
+        [GameEnum.PacketType.WeaponCancelReload] = self.networkCancelReload;
         [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
         [GameEnum.PacketType.WeaponUnregister] = self.networkUnregister;
         [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
@@ -148,7 +149,7 @@ function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
     else
         logwarn(2, "server is overwriting UUID of", uuid)
     end
-    
+
     local extraData = {
         ThirdPersonGun = (player ~= Players.LocalPlayer or nil)
     }
@@ -272,8 +273,20 @@ function WeaponManager:networkReload(uuid)
     if not weapon then return end
 
     self.AutoFire[weapon] = nil
-        
+
     weapon:reload()
+end
+
+function WeaponManager:cancelReload(weapon)
+    weapon:cancelAction("Reload")
+    NetworkLib:send(GameEnum.PacketType.WeaponCancelReload, weapon.UUID)
+end
+
+function WeaponManager:networkCancelReload(uuid)
+    local weapon = self:getByUUID(uuid).Weapon
+    if not weapon then return end
+
+    weapon:cancelAction("Reload")
 end
 
 function WeaponManager:setState(weapon, stateName, stateValue)
@@ -284,6 +297,10 @@ function WeaponManager:step(dt, camera, movementController)
     -- handle viewport weapon
     local vpw = self.ViewportWeapon
     if vpw then
+        if movementController.IsSprinting and vpw:isReloading() then
+            self:cancelReload(vpw)
+        end
+
         vpw:setState("Sprint", movementController.IsSprinting)
 
         self.CameraRecoilSpring:update(math.min(1, dt))
@@ -302,7 +319,7 @@ function WeaponManager:step(dt, camera, movementController)
     for _, container in pairs(self.ActiveWeapons) do
         if container.Owner ~= Players.LocalPlayer then
             -- ! dangerous - Character may not always be available and roblox is
-            -- ! usually stupid for telling when it's ready, 
+            -- ! usually stupid for telling when it's ready,
             -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
             if container.Owner and container.Owner.Character then

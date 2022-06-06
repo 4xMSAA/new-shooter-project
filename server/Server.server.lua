@@ -1,13 +1,10 @@
 _G.Server = script.Parent
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
 
 local Maid = require(shared.Common.Maid)
-local NetworkLib = require(shared.Common.NetworkLib)
 
 local ClientManager = require(_G.Server.Core.ClientManager)
 
@@ -37,9 +34,8 @@ end
 
 
 local server = Server.new()
-server:start(_G.Server.Game.GameModeLoader, {GameMode = "Zombies"})
+server:start(_G.Server.Game.GameModeLoader, {GameMode = "Zombies", Scene = "TestScene"})
 
 -- TODO: objects have :serialize method
 -- TODO: scene loading (including terrain)
--- TODO: load game mode
 -- TODO: game loop
