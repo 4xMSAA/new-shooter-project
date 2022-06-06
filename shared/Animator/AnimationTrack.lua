@@ -97,4 +97,9 @@ function AnimationTrack:play()
     self._Host:addPlayingTrack(self)
 end
 
+function AnimationTrack:stop()
+    self.IsPlaying = false
+    self._Host:stopTrack(self)
+end
+
 return AnimationTrack

@@ -108,7 +108,7 @@ end
 ---
 ---@private
 function Animator:_step(dt)
-    for track, _ in pairs(self._playingTracks) do
+    for track, playing in pairs(self._playingTracks) do
         track.TimePosition = math.min(track.Length, track.TimePosition + dt)
 
         -- check for any markers to emit
@@ -202,6 +202,14 @@ function Animator:addPlayingTrack(track)
     for motor6d, pose in pairs(track.Keyframes[1].Poses) do
         motor6d.Transform = pose.CFrame
     end
+end
+
+function Animator:stopTrack(track)
+    if not self._hostedTracks[track] then
+        error("track " .. track.Name .. " is not hosted by this Animator (" .. self.Rig:GetFullName() .. ")")
+    end
+    self._playingTracks[track] = nil
+    track.TimePosition = 0
 end
 
 function Animator:_rebakeAll()
