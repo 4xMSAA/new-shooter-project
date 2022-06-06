@@ -1,13 +1,8 @@
 local Maid = require(shared.Common.Maid)
-local NetworkLib = require(shared.Common.NetworkLib)
-
-local ProjectileManager = require(_G.Server.Game.Managers.ServerProjectileManager)
-local ServerWeaponManager = require(_G.Server.Game.Managers.ServerWeaponManager)
 
 
-
---TODO doc: expand use cases  
----Initializes core features of the game (e.g. weapon manager, players)
+--TODO doc: expand use cases
+---Initializes core features of the game (players, for now)
 ---
 ---Gamemodes can be loaded as many times as possible. Their intention is to
 ---allow switching out from, for example: CTF to KotH, TDM to DM, even Zombies.
@@ -20,20 +15,11 @@ GameMode.__index = GameMode
 
 ---@param server table
 ---@return GameMode
-function GameMode.new(server)
+function GameMode.new(server, options)
     local self = {
         ClientManager = server.ClientManager,
-        WeaponManager = ServerWeaponManager.new({
-            GameMode = server.GameMode,
-            ProjectileManager = ProjectileManager
-        })
+        Options = options
     }
-
-    local function route(player, packetType, ...)
-        self.WeaponManager:route(packetType, self.ClientManager:getClientByPlayer(player), ...)
-    end
-
-    self._NetworkListener = NetworkLib:listen(route)
 
     setmetatable(self, GameMode)
     Maid.watch(self)

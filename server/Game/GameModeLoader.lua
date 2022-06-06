@@ -20,13 +20,13 @@ end
 function GameModeLoader.loadFromServer(server, options)
     local self = GameModeLoader
     local name = options.GameMode
-    local base = GameMode.new(server)
+    local base = GameMode.new(server, options)
 
     return self.GameModes[name].new(base)
 end
 
 GameModeLoader.initialize()
 
-return function(server)
+return function(server, options)
     return GameModeLoader.loadFromServer(server, options)
 end
