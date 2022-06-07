@@ -2,7 +2,7 @@ _G.Server = script.Parent
 
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
+require(ReplicatedStorage.Source:WaitForChild("Environment"))
 
 local Maid = require(shared.Common.Maid)
 

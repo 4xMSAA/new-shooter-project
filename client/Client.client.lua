@@ -5,7 +5,7 @@ local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local ContextActionService = game:GetService("ContextActionService")
-require(ReplicatedStorage.Source:WaitForChild("InitializeEnvironment"))
+require(ReplicatedStorage.Source:WaitForChild("Environment"))
 
 local NETWORK_CAMERA_UPDATE_INTERVAL = _G.INTERVALS.NETWORK.CAMERA_UPDATE
 
