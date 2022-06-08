@@ -1,5 +1,6 @@
 return {
-    LOG_LEVEL = 1,
+    LOG_LEVEL = 2,
+    DEBUG_LOG = game:GetService("RunService"):IsStudio() and 1 or 0,
 
     LOADING = {
         TIMEOUT = 30,
@@ -56,7 +57,7 @@ return {
 
         ITERATION_PRECISION = 1/20,
         MAX_ITERATIONS_PER_FRAME = 5,
-        
+
         DEFAULT_MAX_LIFETIME = 10
     },
 

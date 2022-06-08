@@ -2,6 +2,7 @@ local Maid = require(shared.Common.Maid)
 
 local NetworkLib = require(shared.Common.NetworkLib)
 
+local ServerScene = require(_G.Server.Game.ServerScene)
 local GameCharacter = require(_G.Server.Game.GameCharacter)
 local ProjectileManager = require(_G.Server.Game.Managers.ServerProjectileManager)
 local ServerWeaponManager = require(_G.Server.Game.Managers.ServerWeaponManager)
@@ -65,6 +66,9 @@ function ZombiesGamemode.new(super)
     end
 
     self._NetworkListener = NetworkLib:listen(route)
+
+    local scene = ServerScene.new("TestScene")
+    scene:load()
 
     setmetatable(self, ZombiesGamemode)
     Maid.watch(self)

@@ -48,6 +48,7 @@ _G.Path = {}
 -- both client and server
 _G.Path.Remotes = createSharedFolder("Remotes", shared.Storage)
 
+_G.Path.Scene = createSharedFolder("Scene", _G.Workspace)
 _G.Path.Entities = createSharedFolder("Entities", _G.Workspace)
 _G.Path.Players = createSharedFolder("Players", _G.Workspace)
 
