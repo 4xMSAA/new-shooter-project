@@ -4,26 +4,30 @@
     "$className": "DataModel",
     "ReplicatedStorage": {
       "$ignoreUnknownInstances": true,
+      "i18n": {
+          "$className": "Folder",
+          "$path": "i18n/"
+      },
       "GameModes": {
         "$className": "Folder",
         "Configuration": {
-          "$path": "gamemodes/Configuration"
+          "$path": "gamemodes/Configuration/"
         }
       },
       "Scenes": {
         "$className": "Folder",
         "$ignoreUnknownInstances": true,
         "Configuration": {
-          "$path": "scenes/Configuration"
+          "$path": "scenes/Configuration/"
         }
       },
       "Source": {
-        "$path": "shared",
+        "$path": "shared/",
         "Common": {
-          "$path": "common"
+          "$path": "common/"
         },
         "GameEnum": {
-          "$path": "enums"
+          "$path": "enums/"
         }
       },
       "Assets": {
@@ -32,23 +36,23 @@
         "Weapons": {
           "$className": "Folder",
           "Configuration": {
-            "$path": "assets/Weapons/Configuration"
+            "$path": "assets/Weapons/Configuration/"
           }
         }
       }
     },
     "ServerScriptService": {
       "Source": {
-        "$path": "server"
+        "$path": "server/"
       },
       "GameModes": {
-        "$path": "gamemodes"
+        "$path": "gamemodes/"
       }
     },
     "StarterPlayer": {
       "StarterPlayerScripts": {
         "Source": {
-          "$path": "client"
+          "$path": "client/"
         }
       }
     }

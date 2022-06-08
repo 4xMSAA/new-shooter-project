@@ -305,7 +305,7 @@ end
 
 ---Play a sound that was given from the Configuration module of the gun
 ---@param name string Name of the sound to be played
----@param range number How many instances of the same sound can play at the same time
+---@param range? number How many instances of the same sound can play at the same time
 function Gun:playSound(name, range)
     if not self._Sounds[name] then
         warn("no sound named " .. name .. " in " .. self.Configuration.Name)
