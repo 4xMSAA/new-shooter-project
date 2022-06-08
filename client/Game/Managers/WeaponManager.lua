@@ -335,7 +335,7 @@ function WeaponManager:step(dt, camera, movementController)
             local didFire, reason = weapon:fire()
             if didFire then
                 fireViewportWeapon(self, weapon)
-            elseif reason == "EMPTY" then
+            elseif reason == "EMPTY" and not weapon:isReloading() then
                 self:reload(weapon)
             end
         elseif weapon ~= self.ViewportWeapon and not weapon.State.Sprint then
