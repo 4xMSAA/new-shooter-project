@@ -25,46 +25,15 @@ function ServerScene.new(sceneName)
             Ignore = wfc(model, "Ignore"),
             Design = wfc(model, "Design")
         },
-
         _tracking = {}
     }
+
 
 
     setmetatable(self, ServerScene)
     Maid.watch(self)
 
     return self
-end
-
-function ServerScene:load()
-    self.Model.Parent = _G.Path.Scene
-    self:_loadEntities()
-    self:_loadLighting()
-end
-
-function ServerScene:_loadEntities()
-end
-
-function ServerScene:_loadLighting()
-    self._tracking.Lighting = {}
-
-    self._tracking.Lighting.BeforeProperties = {}
-    local settings = wfc(self.Setup.Lighting, "Settings")
-    if settings then
-        for property, value in pairs(require(settings)) do
-            self._tracking.Lighting.BeforeProperties[property] = Lighting[property]
-            Lighting[property] = value
-        end
-    end
-
-    self._tracking.Lighting.Instances = {}
-    for _, inst in pairs(self.Setup.Lighting:GetChildren()) do
-        if not inst:IsA("Script") and not inst:IsA("ModuleScript") then
-            local trackedInst = inst:Clone()
-            trackedInst.Parent = Lighting
-            self._tracking.Lighting.Instances = trackedInst
-        end
-    end
 end
 
 function ServerScene:destroy()

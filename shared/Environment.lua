@@ -27,6 +27,7 @@ shared.Source = shared.Storage:WaitForChild("Source")
 shared.Common = shared.Source:WaitForChild("Common")
 shared.Game = shared.Source:WaitForChild("Game")
 shared.Assets = shared.Storage:WaitForChild("Assets")
+shared.GameModeConfigs = shared.Storage:WaitForChild("GameModes"):WaitForChild("Configuration")
 
 -- load final configuration values to _G
 for key, data in pairs(require(shared.Source:WaitForChild("Configuration"))) do

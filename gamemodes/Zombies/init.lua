@@ -6,6 +6,10 @@ local ServerScene = require(_G.Server.Game.ServerScene)
 local GameCharacter = require(_G.Server.Game.GameCharacter)
 local ProjectileManager = require(_G.Server.Game.Managers.ServerProjectileManager)
 local ServerWeaponManager = require(_G.Server.Game.Managers.ServerWeaponManager)
+local SceneLoader = require(_G.Server.Game.SceneLoader)
+local EntityManager = require(shared.Game.EntityManager)
+
+local GameModeConfigs = shared.GameModeConfigs
 
 local gameStart = require(script.GameStart)
 local gameLoop = require(script.GameLoop)
@@ -22,6 +26,7 @@ ZombiesGamemode.__index = ZombiesGamemode
 function ZombiesGamemode.new(super)
     local self = {
         super = super,
+        Configuration = require(GameModeConfigs:WaitForChild("Zombies", 5)),
         ClientManager = super.ClientManager,
         WeaponManager = ServerWeaponManager.new({
             GameMode = "Zombies",
@@ -33,6 +38,9 @@ function ZombiesGamemode.new(super)
 
         Wave = 1
     }
+
+    local scene = SceneLoader.new(EntityManager.new())
+    scene:load("TestScene")
 
     ZombiesGamemode.gameStart = gameStart(self)
     ZombiesGamemode.gameLoop = gameLoop(self)
@@ -46,7 +54,7 @@ function ZombiesGamemode.new(super)
             --!
 
             client.GameCharacter = GameCharacter.new(client)
-            client.GameCharacter:spawn()
+            client.GameCharacter:spawn(scene:getRandomSpawner("Player"):run())
 
             self:sendExistingStateToAdhoc(client)
 
@@ -67,8 +75,6 @@ function ZombiesGamemode.new(super)
 
     self._NetworkListener = NetworkLib:listen(route)
 
-    local scene = ServerScene.new("TestScene")
-    scene:load()
 
     setmetatable(self, ZombiesGamemode)
     Maid.watch(self)
