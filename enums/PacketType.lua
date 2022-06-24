@@ -6,8 +6,8 @@ local GameEnum = {
     {"GameInfo", "Data about the game's settings"},
     {"AdhocClient", "Send an ad-hoc client information about the game state that it isn't aware of"},
 
-    {"PlayerSpawn", "Send player spawn information"}, -- TODO: merge with EntitySpawn?
-    {"EntitySpawn", "Send entity spawn information"},
+    {"PlayerSpawn", "Send player spawn information"}, -- TODO: merge with EntityMake?
+    {"EntityMake", "Send entity spawn information"},
     {"EntityUpdate", "Send entity update information"},
 
     {"WeaponAdhocRegister", "Send ad-hoc clients information regarding registered weapons"},

@@ -25,13 +25,14 @@ function Entity.new(id, entityType, props)
     setmetatable(self, Entity)
     Maid.watch(self)
 
+    self:_setupEvents()
+
     return self
 end
 
-function Entity:setupEvents()
+function Entity:_setupEvents()
 
 end
-
 
 function Entity:run()
     logwarn(1, ("entity %s of type %s has no run behaviour"):format(self.Name, self.Type))
