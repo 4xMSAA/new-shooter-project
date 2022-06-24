@@ -42,9 +42,9 @@ function ZombiesGamemode.new(super)
     local scene = SceneLoader.new(EntityManager.new())
     scene:load("TestScene")
 
-    ZombiesGamemode.gameStart = gameStart(self)
-    ZombiesGamemode.gameLoop = gameLoop(self)
-    ZombiesGamemode.gameEnd = gameEnd(self)
+    self.gameStart = gameStart(self)
+    self.gameLoop = gameLoop(self)
+    self.gameEnd = gameEnd(self)
 
     self.ClientManager.ClientAdded:listen(
         function(client)
@@ -59,10 +59,15 @@ function ZombiesGamemode.new(super)
             self:sendExistingStateToAdhoc(client)
 
             local gun = self.WeaponManager:create("M4A1")
+            local gun2 = self.WeaponManager:create("trollM4A1")
+
             self.WeaponManager:register(gun, client)
+            self.WeaponManager:register(gun2, client)
+
             self.WeaponManager:equip(client, gun)
         end
     )
+
     self.ClientManager.ClientRemoving:listen(
         function(client)
             self.WeaponManager:unregisterAllFrom(client)
@@ -72,6 +77,7 @@ function ZombiesGamemode.new(super)
     local function route(player, packetType, ...)
         self.WeaponManager:route(packetType, self.ClientManager:getClientByPlayer(player), ...)
     end
+
 
     self._NetworkListener = NetworkLib:listen(route)
 
