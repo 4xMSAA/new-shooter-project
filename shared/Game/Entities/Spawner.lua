@@ -1,22 +1,12 @@
-local SPAWN_GROUP_RUNNER = {
-    ["Zombie"] = function(self)
-
-    end,
-
-    ["Player"] = function(self)
-        local inst = self.Properties.Instance
-
-        return CFrame.new(inst.Position) * CFrame.lookAt(Vector3.new(), inst.CFrame.LookVector)
-    end
-}
-
-
 local Spawner = {
     Name = "Spawner",
 }
 
+
 function Spawner:run()
-    return SPAWN_GROUP_RUNNER[self:getSpawnerGroup()](self)
+    local inst = self.Properties.Instance
+
+    return CFrame.new(inst.Position) * CFrame.lookAt(Vector3.new(), inst.CFrame.LookVector)
 end
 
 function Spawner:getSpawnerGroup()

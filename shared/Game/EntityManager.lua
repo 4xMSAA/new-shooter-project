@@ -8,7 +8,8 @@ EntityManager.__index = EntityManager
 
 function EntityManager.new(args)
     local self = {
-        Entities = {}
+        Entities = {},
+        Systems = {}
     }
 
 
@@ -22,11 +23,12 @@ function EntityManager:add(entity)
     counter = counter + 1
     local newEntity = entity.new(counter)
     table.insert(self.Entities, newEntity)
+
 end
 
 function EntityManager:step(dt)
-    for _, entity in pairs(self.Entities) do
-        -- do something i guess
+    for _, system in pairs(self.Systems) do
+        system:step(self.Entities)
     end
 end
 
