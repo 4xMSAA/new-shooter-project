@@ -18,7 +18,9 @@ local GameEnum = {
     {"WeaponEquip", "Equip the weapon"},
     {"WeaponReload", "Reload a weapon"},
     {"WeaponCancelReload", "Cancels the reload on a weapon"},
-    {"WeaponHit", "Client informs the weapon has hit something"},
+
+    {"ProjectileMake", "Client casts a projectile in a direction"}, -- SANITIZE ON SERVER!
+    {"ProjectileHit", "Client informs the projectile has hit something"}, -- SANITIZE ON SERVER!
 
     {"Look", "Send pitch, yaw angles for player replication"},
     {"Run", "Send run state for player replication"},

@@ -1,6 +1,8 @@
 local VELOCITY_MODIFIER = _G.PROJECTILE.VELOCITY_MODIFIER
 
+local GameEnum = shared.GameEnum
 local Maid = require(shared.Common.Maid)
+local NetworkLib = require(shared.Common.NetworkLib)
 
 local Projectile = require(shared.Game.Projectile)
 
@@ -22,12 +24,29 @@ end
 ---
 ---@param config userdata
 ---@param direction userdata
-function ProjectileManager:makeProperties(config, direction)
+function ProjectileManager:_makeProperties(config, direction)
     return {
         -- velocity units are provided in metres per second
         Velocity = config.Velocity * VELOCITY_MODIFIER
     }
 end
+
+
+local _networkProjectileBatchQueue = {}
+local function addProjectileToNetworkBatch(n, projectile)
+    if n then return end
+
+    table.insert(_networkProjectileBatchQueue, projectile:serialize())
+end
+
+local function flushProjectileBatch(n, gun)
+    if n then return end
+
+    NetworkLib:send(GameEnum.PacketType.ProjectileMake, gun.UUID, _networkProjectileBatchQueue)
+    _networkProjectileBatchQueue = {}
+end
+
+
 
 ---
 ---@param gun Gun Configuration to read and use to create a projectile from
@@ -43,9 +62,13 @@ function ProjectileManager:create(gun, start, direction, networked)
 
     for index = 1, cfg.Projectile.Amount do
         local proj =
-            Projectile.new(cfg.Projectile.Type, self:makeProperties(cfg.Projectile, direction), start, direction)
+            Projectile.new(cfg.Projectile.Type, self:_makeProperties(cfg.Projectile, direction), start, direction)
         self.Projectiles[proj] = true
+        addProjectileToNetworkBatch(networked, proj)
     end
+
+    flushProjectileBatch(networked, gun)
+
 end
 
 function ProjectileManager:discard(projectile)
@@ -66,12 +89,12 @@ function ProjectileManager:step(dt)
     for _, projectileType in pairs(typesWithStep) do
         projectileType.staticStep(dt)
     end
-    
+
     for proj, _ in pairs(self.Projectiles) do
         local keepSimulating = proj:step(dt)
-        if 
-            not keepSimulating 
-            or proj.Lifetime > proj.MaxLifetime 
+        if
+            not keepSimulating
+            or proj.Lifetime > proj.MaxLifetime
         then
             self:discard(proj)
         elseif keepSimulating then

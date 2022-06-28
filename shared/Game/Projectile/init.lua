@@ -18,26 +18,30 @@ end
 
 function Projectile.new(projectileType, props, start, direction)
     assert(Projectile.ProjectileTypes[projectileType], "projectile type not found: got " .. tostring(projectileType))
+    assert(typeof(props) == "table", "argument #2 (properties) must be a table")
     local self = {}
 
     self.Type = Projectile.ProjectileTypes[projectileType]
+    self._TypeName = projectileType
     self.Lifetime = 0
-    self.MaxLifetime = self.MaxLifetime or DEFAULT_MAX_LIFETIME
+    self.MaxLifetime = props.MaxLifetime or DEFAULT_MAX_LIFETIME
 
     self.Origin = start
     self.Position = start
 
     self.Direction = direction
     self.Velocity = self.Direction * props.Velocity
-    self._props = props
+    self.Properties = props
 
     setmetatable(self, {
         __index = function(this, index)
             return rawget(self.Type, index) or rawget(Projectile, index)
         end
     })
+
     Maid.watch(self)
     self:init()
+
     return self
 end
 
@@ -76,5 +80,17 @@ function Projectile:step(frameDelta)
     end
     return true
 end
+
+---A super function to serialize the needed properties for networking
+---@return table serializedProjectile A table of properties to create a
+---                                   projectile on another machine
+function Projectile:serialize()
+    return {
+        Type = self._TypeName,
+        Direction = self.Direction,
+        Origin = self.Origin,
+    }
+end
+
 
 return Projectile
