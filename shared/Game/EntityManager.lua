@@ -1,9 +1,13 @@
+local SYSTEMS_DIR = shared.Common.
+
 local Maid = require(shared.Common.Maid)
 local counter = 0
 
 ---Manages active entities and networks them
 ---@class EntityManager
-local EntityManager = {}
+local EntityManager = {
+    __groupCache = {}
+}
 EntityManager.__index = EntityManager
 
 function EntityManager.new(args)
@@ -26,9 +30,18 @@ function EntityManager:add(entity)
 
 end
 
+function EntityManager:_cacheEntityGroupQuery(groups)
+
+end
+
+function EntityManager:getEntityGroups(groups)
+
+end
+
+
 function EntityManager:step(dt)
     for _, system in pairs(self.Systems) do
-        system:step(self.Entities)
+        system:run(dt, self:getEntityGroups(system.Groups))
     end
 end
 

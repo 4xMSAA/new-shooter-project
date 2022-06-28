@@ -54,7 +54,7 @@ function ZombiesGamemode.new(super)
             --!
 
             client.GameCharacter = GameCharacter.new(client)
-            client.GameCharacter:spawn(scene:getRandomSpawner("Player"):run())
+            client.GameCharacter:spawn(scene:getPlayerSpawn())
 
             self:sendExistingStateToAdhoc(client)
 
