@@ -36,6 +36,10 @@ function ServerScene.new(sceneName)
     return self
 end
 
+function ServerScene:getPlayerSpawn()
+
+end
+
 function ServerScene:destroy()
     -- clean up after ourselves
     for _, inst in pairs(self._tracking.Lighting.Instances) do

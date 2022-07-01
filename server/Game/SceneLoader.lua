@@ -43,7 +43,7 @@ function SceneLoader:unload()
 end
 
 function SceneLoader:_loadEntities(scene)
-
+    -- self.EntityManager
 end
 
 function SceneLoader:_loadLighting(scene)
@@ -68,8 +68,15 @@ function SceneLoader:_loadLighting(scene)
     end
 end
 
-function SceneLoader:getRandomSpawner(spawnGroup)
+function SceneLoader:getPlayerSpawn()
+    for _, entity in pairs(self.EntityManager:getEntityGroups({"Spawner"})) do
+        if entity:getSpawnerGroup() == "Player" then
+            return entity:run()
+        end
+    end
 
+    -- give up and spawn player at 0, 50, 0
+    return nil
 end
 
 

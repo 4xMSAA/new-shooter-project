@@ -21,6 +21,7 @@ function Projectile.new(projectileType, props, start, direction)
     assert(typeof(props) == "table", "argument #2 (properties) must be a table")
     local self = {}
 
+    self.UUID = props.UUID
     self.Type = Projectile.ProjectileTypes[projectileType]
     self._TypeName = projectileType
     self.Lifetime = 0
@@ -86,6 +87,7 @@ end
 ---                                   projectile on another machine
 function Projectile:serialize()
     return {
+        UUID = self.UUID,
         Type = self._TypeName,
         Direction = self.Direction,
         Origin = self.Origin,

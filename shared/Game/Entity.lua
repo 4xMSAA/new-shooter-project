@@ -22,6 +22,10 @@ function Entity.new(id, entityType, props)
         self[key] = value
     end
 
+    if typeof(self.init) == "function" then
+        self:init(props)
+    end
+
     setmetatable(self, Entity)
     Maid.watch(self)
 
@@ -37,3 +41,6 @@ end
 function Entity:run()
     logwarn(1, ("entity %s of type %s has no run behaviour"):format(self.Name, self.Type))
 end
+
+
+return Entity

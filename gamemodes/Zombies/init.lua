@@ -39,7 +39,8 @@ function ZombiesGamemode.new(super)
         Wave = 1
     }
 
-    local scene = SceneLoader.new(EntityManager.new())
+    local entityManager = EntityManager.new()
+    local scene = SceneLoader.new(entityManager)
     scene:load("TestScene")
 
     self.gameStart = gameStart(self)

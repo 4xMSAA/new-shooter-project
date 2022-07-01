@@ -44,7 +44,7 @@ function ServerWeaponManager.new(config)
     self._packetToFunction = {
         [GameEnum.PacketType.WeaponEquip] = self.equip,
         [GameEnum.PacketType.WeaponFire] = self.fire,
-        [GameEnum.PacketType.WeaponHit] = self.hit,
+        [GameEnum.PacketType.ProjectileHit] = self.hit,
         [GameEnum.PacketType.WeaponReload] = self.reload,
         [GameEnum.PacketType.WeaponCancelReload] = self.cancelReload,
     }

@@ -2,6 +2,9 @@ local Spawner = {
     Name = "Spawner",
 }
 
+function Spawner:init()
+    self.Properties.SpawnerGroup = self.Properties.Instance:GetAttribute("SpawnGroup")
+end
 
 function Spawner:run()
     local inst = self.Properties.Instance
