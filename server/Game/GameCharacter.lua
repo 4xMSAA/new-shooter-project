@@ -1,3 +1,9 @@
+-- TODO:
+--[[ major TODO
+     refactor this to be an entity rather than a separate part of the code
+     doing this will allow us to assign groups and replicate changes
+     with only an entity ID
+--]]
 local StarterPlayer = game:GetService("StarterPlayer")
 local Players = game:GetService("Players")
 
@@ -33,7 +39,7 @@ end
 
 function GameCharacter:spawn(cf)
     local char = self:loadCharacter(cf)
-    NetworkLib:send(GameEnum.PacketType.PlayerSpawn, self.Client.ID, char)
+    NetworkLib:send(GameEnum.PacketType.PlayerSpawn, self.Client.ID, char, cf.LookVector)
 end
 
 function GameCharacter:updateCharacterPosition()

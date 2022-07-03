@@ -75,7 +75,7 @@ function Camera:updateView(dt)
 end
 
 function Camera:setZoom(modifier)
-    self.Zoom = modifier 
+    self.Zoom = modifier
 end
 
 ---a TODO method
@@ -91,7 +91,7 @@ end
 ---@param cf userdata Set the camera CFrame
 function Camera:setCFrame(cf)
     self.CFrame = cf
-    self:setUserLook(cf.lookVector)
+    self:setUserLook(cf.LookVector)
 end
 
 ---Returns the base CFrame, unaffected by camera Offsets
@@ -133,7 +133,7 @@ end
 ---@param lookVector userdata Vector3 towards the direction for the User to look at
 function Camera:setUserLook(lookVector)
     local horizontalLook = lookVector * Vector3.new(1, 0, 1)
-    self.User.LookPitch = math.atan2(horizontalLook.x, horizontalLook.z)
+    self.User.LookPitch = -math.atan2(horizontalLook.x, horizontalLook.z)
     self.User.LookYaw = math.atan2(lookVector.y, horizontalLook.magnitude)
 end
 

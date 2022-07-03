@@ -40,8 +40,11 @@ UserInputService.MouseIconEnabled = false
 LocalCharacter.listenPlayer(Players.LocalPlayer)
 
 -- TODO: actual input binding
-local function spawn(character)
+local function spawn(character, lookAt)
     LocalCharacter.setTransparency(1)
+    if lookAt then
+        Camera:setUserLook(lookAt)
+    end
 
     LocalCharacter.Controller = Movement.new(character)
     local SprintModule = LocalCharacter.Controller:loadModule(Movement.Modules.Sprint)
@@ -72,6 +75,7 @@ local function spawn(character)
         end
     end
 
+
     ContextActionService:BindAction("Aim", inputHandler, true, Enum.UserInputType.MouseButton2)
     ContextActionService:BindAction("Fire", inputHandler, true, Enum.UserInputType.MouseButton1)
     ContextActionService:BindAction("Reload", inputHandler, true, Enum.KeyCode.R)
@@ -97,9 +101,9 @@ end
 
 NetworkLib:listenFor(
     GameEnum.PacketType.PlayerSpawn,
-    function(id, char)
+    function(id, char, lookAt)
         if id == Players.LocalPlayer.UserId then
-            spawn(char)
+            spawn(char, lookAt)
         end
     end
 )
