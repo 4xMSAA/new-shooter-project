@@ -8,7 +8,7 @@ local Maid = require(shared.Common.Maid)
 local SmallUtils = require(shared.Common.SmallUtils)
 local Mount = {}
 
-Mount.__call = function(self, path, sep)
+Mount.__call = function(self, path, sep, warnInstead)
     assert(path, "path argument (1) is nil")
     sep = sep or "/"
 
@@ -17,11 +17,16 @@ Mount.__call = function(self, path, sep)
     local head = self.Location
     for _, fileName in ipairs(splitPath) do
         if typeof(head) == "table" then
-            head = head[fileName] or error("path does not exist:" .. fileName .. "from" .. path, 2)
+            head = head[fileName]
+            or not warnInstead
+            and error("path does not exist:" .. fileName .. "from" .. path, 2)
+            or warn("path does not exist: " .. fileName .. " from " .. path)
         elseif typeof(head) == "Instance" then
             head =
-                head:FindFirstChild(fileName) or
-                error("path does not exist: " .. fileName .. " from " .. head:GetFullName())
+                head:FindFirstChild(fileName)
+                or not warnInstead
+                and error("path does not exist: " .. fileName .. " from " .. head:GetFullName())
+                or warn("path does not exist: " .. fileName .. " from " .. head:GetFullName())
         end
     end
 

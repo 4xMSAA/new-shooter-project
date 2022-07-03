@@ -1,9 +1,10 @@
 local Spawner = {
     Name = "Spawner",
+    Groups = {"Spawner"}
 }
 
 function Spawner:init()
-    self.Properties.SpawnerGroup = self.Properties.Instance:GetAttribute("SpawnGroup")
+    self.Properties.SpawnerGroup = self.Properties.SpawnGroup
 end
 
 function Spawner:run()

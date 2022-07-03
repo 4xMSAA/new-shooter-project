@@ -14,6 +14,7 @@ function Entity.new(id, entityType, props)
         Type = entityType,
         Properties = props,
         State = {},
+        Groups = {},
 
         Changed = Emitter.new()
     }

@@ -43,7 +43,22 @@ function SceneLoader:unload()
 end
 
 function SceneLoader:_loadEntities(scene)
-    -- self.EntityManager
+    local manager = self.EntityManager
+
+    -- TODO: support folders in folders in folders
+    for _, entity in pairs(scene.Model.Entities:GetChildren()) do
+        assert(entity:GetAttribute("Type") ~= nil, "entity " .. entity:GetFullName() .. " must have 'Type' attribute")
+        local entityType = manager:resolveType(entity:GetAttribute("Type"))
+        if not entityType then continue end
+
+        local propsTable = entity:GetAttributes()
+        propsTable.Instance = entity
+
+        manager:add(
+            entityType,
+            propsTable
+        )
+    end
 end
 
 function SceneLoader:_loadLighting(scene)

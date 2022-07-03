@@ -1,4 +1,5 @@
---[[ --TODO: has some really questionable design choices.
+--[[
+    --TODO: has some really questionable design choices.
         figure out alternatives
         worrying amount of complexity in terms of parent/child relationship
         between entity objects and systems that actuate the entity behaviour
@@ -11,6 +12,10 @@ local SERVER_SYSTEMS_DIR = _G.Server and _G.Server.Game.EntitySystems or nil
 
 
 local Maid = require(shared.Common.Maid)
+local mount = require(shared.Common.Mount)
+local PATH = {
+    ENTITIES = mount(shared.Game.Entities)
+}
 
 local Entity = require(shared.Game.Entity)
 
@@ -35,6 +40,12 @@ function EntityManager.new(args)
     Maid.watch(self)
 
     return self
+end
+
+function EntityManager:resolveType(typePath)
+    local path = PATH.ENTITIES(typePath, ".", 1)
+    print(path and path:GetFullName() or nil)
+    return path ~= nil and require(path) or nil
 end
 
 function EntityManager:add(entity, props)
@@ -66,13 +77,16 @@ function EntityManager:_cacheEntityGroupQuery(groups)
 
     for _, entity in pairs(self.Entities) do
         for _, group in pairs(entity.Groups) do
-            local index = #cache + 1
             local allow = dict[group]
-            cache[index] = allow and entity or nil
-            indexCache[entity] = allow and index or nil
 
-            -- it's in one of the targeted groups, don't make duplicates
-            break
+            if allow then
+                local index = #cache + 1
+
+                cache[index] = entity
+                indexCache[entity] = index
+
+                break  -- it's in one of the targeted groups, don't make duplicates
+            end
         end
     end
 
@@ -86,14 +100,18 @@ function EntityManager:_addEntityToCacheGroupQueries(entity)
     for _, group in pairs(entity.Groups) do
         for groups, contents in pairs(self._groupCache) do
             local indexCache = self._cacheIndexEntity[groups] or {}
+
             for includedGroup, _ in pairs(groups) do
-                local index = #contents + 1
-
                 local allow = group == includedGroup
-                contents[index] = allow and entity or nil
-                indexCache[entity] = allow and index or nil
 
-                break
+                if allow then
+                    local index = #contents + 1
+
+                    contents[index] = entity
+                    indexCache[entity] = index
+
+                    break
+                end
             end
             self._cacheIndexEntity[groups] = indexCache
         end
@@ -104,12 +122,11 @@ function EntityManager:_removeEntityFromCacheGroups(entity)
     for groups, contents in pairs(self._groupCache) do
         local indexCache = self._cacheIndexEntity[groups]
         local index = indexCache[entity]
+
         if index then
             contents[index] = nil
             indexCache[entity] = nil
         end
-
-        break
     end
 end
 
