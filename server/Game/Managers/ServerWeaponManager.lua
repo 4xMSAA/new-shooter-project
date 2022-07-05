@@ -89,7 +89,7 @@ end
 ---@param weaponOrUUID any
 function ServerWeaponManager:equip(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
-    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
 
     self._Equipped[client] = uuid
 
@@ -103,7 +103,7 @@ end
 function ServerWeaponManager:fire(client, weaponOrUUID, state)
     local uuid = resolveUUID(weaponOrUUID)
     assert(typeof(state) == "boolean", client.Name .. " - client is sending bad args for fire() (#3)")
-    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
 
     NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid, state)
     -- TODO: sanity check high RPM
