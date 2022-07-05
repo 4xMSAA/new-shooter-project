@@ -37,8 +37,10 @@ function NetworkLib:_autoSerialize(...)
 
         if typeof(value) == "table" and value["serialize"] then
             value = value:serialize()
-        elseif typeof(value) == "table" then
+        elseif typeof(value) == "table" and not value.__serialized then
             logwarn(1, "no serialize function on object: " .. tostring(value) .. "\n" .. debug.traceback())
+        elseif typeof(value) == "table" and value.__serialized then
+            value.__serialized = nil  -- do not network this
         end
 
         log(2, "SERIALIZE: ASSIGN", key, "=", value)

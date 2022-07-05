@@ -32,7 +32,7 @@ function ProjectileManager:_makeProperties(config, direction)
 end
 
 
-local _networkProjectileBatchQueue = {}
+local _networkProjectileBatchQueue = {__serialized = true}
 local function addProjectileToNetworkBatch(n, projectile)
     if n then return end
 
@@ -43,7 +43,7 @@ local function flushProjectileBatch(n, gun)
     if n then return end
 
     NetworkLib:send(GameEnum.PacketType.ProjectileMake, gun.UUID, _networkProjectileBatchQueue)
-    _networkProjectileBatchQueue = {}
+    _networkProjectileBatchQueue = {__serialized = true}
 end
 
 
