@@ -245,11 +245,15 @@ function Gun:_init(gamemode, extraData)
 
     connectAnimationEvents("Reload")
     connectAnimationEvents("DryReload")
+    connectAnimationEvents("Chamber")
+    connectAnimationEvents("InitialEquip")
     connectAnimationEvents("Equip")
     connectAnimationEvents("Unequip")
 
     reloadEvents("Reload")
+    reloadEvents("Chamber")
     reloadEvents("DryReload")
+    reloadEvents("InitialEquip")
 
 
     -- in case we forget to prepare the model in the editor,
@@ -335,7 +339,7 @@ function Gun:reload()
 
     self._Lock.Reload = true
 
-    local reloadType = self.Chambered and "Reload" or "DryReload"
+    local reloadType = self.State.Chambered and "Reload" or "DryReload"
     self.Animations[reloadType]:play()
 end
 
@@ -420,11 +424,14 @@ function Gun:fire(networked)
 
     self.Animations.Fire:play()
 
-    if self.State.Loaded == 0 then
+    if self.State.Loaded == 0 and self.Configuration.ActionType == GameEnum.GunActionType.ClosedBolt then
         self:setState("Chambered", false)
+        if self.Animations.DryIdle then
+            self.Animations.DryIdle:play()
+        end
     end
 
-    return true
+    return true, "OK"
 end
 
 ---Returns the Camera's expected CFrame from an animation
