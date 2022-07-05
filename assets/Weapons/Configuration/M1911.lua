@@ -10,7 +10,7 @@ local Configuration = {
     RPM = 700,
     FireMode = {GameEnum.FireMode.Single, GameEnum.FireMode.Safety},
     EquipTime = 0.56,
-    Zoom = 1.25,
+    Zoom = 1.1,
     Ammo = {
         Max = 30,
         Reserve = 180
@@ -20,10 +20,10 @@ local Configuration = {
         -- Eject = {Path = "Gun/Casing/.45ACP", Speed = 14}
     },
     Sounds = {
-        BoltForward = 5104015522,
-        MagIn = 5104152875,
-        MagOut = {SoundId = 268445237, Volume = 0.7},
-        Fire = {SoundId = 988203005, Volume = 0.4},
+        BoltForward = 330005730,
+        MagIn = 1181037138,
+        MagOut = {SoundId = 295387403, Volume = 0.5},
+        Fire = {SoundId = 744979172, Volume = 0.4},
         DistantFire = 4788389522
     },
     Projectile = {
@@ -33,7 +33,7 @@ local Configuration = {
         Amount = 1
     },
     Recoil = {
-        AimScale = 0.8,
+        AimScale = 0.9,
         Rotation = {
             V3 = Vector3.new(0.4, 0, 0),
             Range = Vector3.new(0.1, 0.3, 0),
@@ -47,13 +47,13 @@ local Configuration = {
     CameraRecoil = {
         V3 = Vector3.new(0.6, 0, 0),
         Range = Vector3.new(0.1, 0.3, 0),
-        ForceModifier = 1,
+        ForceModifier = 3,
         SpeedModifier = 1
     },
     Offset = {
-        Grip = CFrame.new(0.6, -0.9, -0.8),
-        Sprint = CFrame.Angles(0, 0.55, 0),
-        Aim = CFrame.new(0, -0.61, -0.4)
+        Grip = CFrame.new(0.25, -1, -1.5),
+        Sprint = CFrame.Angles(0.42, 0, 0),
+        Aim = CFrame.new(0, -0.49, -1.2)
     },
     InterpolateSpeed = {
         Aim = 1

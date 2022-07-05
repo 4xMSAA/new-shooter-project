@@ -60,12 +60,12 @@ function ZombiesGamemode.new(super)
             self:sendExistingStateToAdhoc(client)
 
             local gun = self.WeaponManager:create("M4A1")
-            local gun2 = self.WeaponManager:create("trollM4A1")
+            local gun2 = self.WeaponManager:create("M1911")
 
             self.WeaponManager:register(gun, client)
             self.WeaponManager:register(gun2, client)
 
-            self.WeaponManager:equip(client, gun)
+            self.WeaponManager:equip(client, gun2)
         end
     )
 
