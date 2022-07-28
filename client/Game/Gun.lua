@@ -285,6 +285,13 @@ end
 function Gun:equip()
     self:setState("Equipped", true)
     self.Animations.Idle:play()
+    if
+        self.Configuration.ActionType == GameEnum.GunActionType.ClosedBolt
+        and not self.State.Chambered
+        and self.Animations.DryIdle
+    then
+        self.Animations.DryIdle:play()
+    end
 end
 
 ---
@@ -422,13 +429,18 @@ function Gun:fire(networked)
 
     self:setState("Cycling", false)
 
-    self.Animations.Fire:play()
-
     if self.State.Loaded == 0 and self.Configuration.ActionType == GameEnum.GunActionType.ClosedBolt then
         self:setState("Chambered", false)
+
+        if self.Animations.DryFire then
+            self.Animations.DryFire:play()
+        end
+
         if self.Animations.DryIdle then
             self.Animations.DryIdle:play()
         end
+    else
+        self.Animations.Fire:play()
     end
 
     return true, "OK"
