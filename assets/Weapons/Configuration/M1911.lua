@@ -12,15 +12,15 @@ local Configuration = {
     EquipTime = 0.56,
     Zoom = 1.1,
     Ammo = {
-        Max = 30,
-        Reserve = 180
+        Max = 7,
+        Reserve = 56
     },
     Particles = {
         Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
         -- Eject = {Path = "Gun/Casing/.45ACP", Speed = 14}
     },
     Sounds = {
-        BoltForward = 330005730,
+        SlideForward = 330005730,
         MagIn = 1181037138,
         MagOut = {SoundId = 295387403, Volume = 0.5},
         Fire = {SoundId = 744979172, Volume = 0.4},
@@ -51,7 +51,7 @@ local Configuration = {
         SpeedModifier = 1
     },
     Offset = {
-        Grip = CFrame.new(0.25, -1, -1.5),
+        Grip = CFrame.new(0.25, -0.7, -1.5),
         Sprint = CFrame.Angles(0.42, 0, 0),
         Aim = CFrame.new(0, -0.49, -1.2)
     },
