@@ -322,7 +322,7 @@ function WeaponManager:step(dt, camera, movementController)
             -- ! usually stupid for telling when it's ready,
             -- ! so make a yet again wrapped instance maybe?
             -- TODO: wrapper to player for lookvectors
-            if container.Owner and container.Owner.Character then
+            if container.Owner and container.Owner.Character and container.Owner.Character:FindFirstChild("Head") then
                 container.Weapon.Animator:_step(dt)
                 container.Weapon:update(dt, container.Owner.Character.Head.CFrame)
             end
