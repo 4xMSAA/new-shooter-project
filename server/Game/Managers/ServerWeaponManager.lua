@@ -19,6 +19,17 @@ end
 local ServerWeaponManager = {}
 ServerWeaponManager.__index = ServerWeaponManager
 
+-- !IMPORTANT
+-- !Any function here will allow itself to have data sent to by clients.
+-- !Sanitize it.
+ServerWeaponManager._packetToFunction = {
+    [GameEnum.PacketType.WeaponEquip] = ServerWeaponManager.equip,
+    [GameEnum.PacketType.WeaponFire] = ServerWeaponManager.fire,
+    [GameEnum.PacketType.ProjectileHit] = ServerWeaponManager.hit,
+    [GameEnum.PacketType.WeaponReload] = ServerWeaponManager.reload,
+    [GameEnum.PacketType.WeaponCancelReload] = ServerWeaponManager.cancelReload,
+}
+
 ---Create a new container that manages weapon instances and their networking
 ---@param config table A configuration table for different behaviour
 ---@return ServerWeaponManager A new instance of this manager
@@ -38,16 +49,6 @@ function ServerWeaponManager.new(config)
     setmetatable(self, ServerWeaponManager)
     Maid.watch(self)
 
-    -- !IMPORTANT
-    -- !Any function here will allow itself to have data sent to by clients.
-    -- !Sanitize it.
-    self._packetToFunction = {
-        [GameEnum.PacketType.WeaponEquip] = self.equip,
-        [GameEnum.PacketType.WeaponFire] = self.fire,
-        [GameEnum.PacketType.ProjectileHit] = self.hit,
-        [GameEnum.PacketType.WeaponReload] = self.reload,
-        [GameEnum.PacketType.WeaponCancelReload] = self.cancelReload,
-    }
     return self
 end
 
