@@ -24,28 +24,32 @@ local ZombiesGamemode = {Name = "Zombies"}
 ZombiesGamemode.__index = ZombiesGamemode
 
 function ZombiesGamemode.new(super)
+    local projectileManager = ProjectileManager.new()
+    local entityManager = EntityManager.new()
+
     local self = {
         super = super,
         Configuration = require(GameModeConfigs:WaitForChild("Zombies", 5)),
         ClientManager = super.ClientManager,
         WeaponManager = ServerWeaponManager.new({
             GameMode = "Zombies",
-            ProjectileManager = ProjectileManager
+            ProjectileManager = projectileManager
         }),
+        ProjectileManager = projectileManager,
 
         Enemies = {},
         Interactables = {},
 
+
         Wave = 1
     }
-
-    local entityManager = EntityManager.new()
-    local scene = SceneLoader.new(entityManager)
-    scene:load("TestScene")
 
     self.gameStart = gameStart(self)
     self.gameLoop = gameLoop(self)
     self.gameEnd = gameEnd(self)
+
+    local scene = SceneLoader.new(entityManager)
+    scene:load("TestScene")
 
     self.ClientManager.ClientAdded:listen(
         function(client)
@@ -65,7 +69,7 @@ function ZombiesGamemode.new(super)
             self.WeaponManager:register(gun, client)
             self.WeaponManager:register(gun2, client)
 
-            self.WeaponManager:equip(client, gun2)
+            self.WeaponManager:clientEquip(client, gun2)
         end
     )
 

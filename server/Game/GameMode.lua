@@ -26,4 +26,8 @@ function GameMode.new(server, options)
     return self
 end
 
+function GameMode:step(dt)
+    self.gameLoop(dt)
+end
+
 return GameMode

@@ -88,7 +88,7 @@ function ClientManager:init()
         end
     )
 
-    -- studio hack (still have to do this in 2021 KEKW)
+    -- studio hack (still have to do this in 2021)
     for _, player in pairs(Players:GetPlayers()) do
         self:addClientByPlayer(player)
     end
@@ -111,7 +111,7 @@ function ClientManager:getClients(filter)
             if filter(index, client) then
                 table.insert(results, client)
             end
-        end    
+        end
         return results
     end
 

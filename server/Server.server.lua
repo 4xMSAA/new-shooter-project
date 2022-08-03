@@ -1,7 +1,8 @@
 _G.Server = script.Parent
 
-
+local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
 require(ReplicatedStorage.Source:WaitForChild("Environment"))
 
 local Maid = require(shared.Common.Maid)
@@ -35,6 +36,10 @@ end
 
 local server = Server.new()
 server:start(_G.Server.Game.GameModeLoader, {GameMode = "Zombies", Scene = "TestScene"})
+
+RunService.Heartbeat:connect(function(deltaTime)
+    server._running.gameLoop(deltaTime)
+end)
 
 -- TODO: objects have :serialize method
 -- TODO: scene loading (including terrain)

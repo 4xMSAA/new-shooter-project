@@ -7,6 +7,8 @@ GameModeLoader.__index = GameModeLoader
 
 function GameModeLoader.initialize()
     local self = GameModeLoader
+
+    -- get all available gamemodes and require them for use
     self.GameModes = {}
 
     for _, gamemodeInstance in pairs(_G.GameModes:GetChildren()) do
