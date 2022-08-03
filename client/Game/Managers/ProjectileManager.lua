@@ -23,11 +23,14 @@ end
 
 ---
 ---@param config userdata
----@param direction userdata
-function ProjectileManager:_makeProperties(config, direction)
+---@param model userdata
+function ProjectileManager:_makeProperties(config, model)
     return {
         -- velocity units are provided in metres per second
-        Velocity = config.Velocity * VELOCITY_MODIFIER
+        Velocity = config.Velocity * VELOCITY_MODIFIER,
+
+        -- start projectile trails from here
+        VisualOrigin = model.Rig.Muzzle.Position
     }
 end
 
@@ -50,10 +53,10 @@ end
 
 ---
 ---@param gun Gun Configuration to read and use to create a projectile from
----@param start userdata A vector of the start position
+---@param origin userdata A vector of the origin position
 ---@param direction userdata A vector of the direction
 ---@param networked boolean If the projectile is networked, do not do hitscan
-function ProjectileManager:create(gun, start, direction, networked)
+function ProjectileManager:create(gun, origin, direction, networked)
     assert(typeof(gun) == "table", "expected Gun object, got " .. typeof(gun) .. " (arg #1)")
     assert(gun.Configuration, "gun does not own a Configuration table, see: " .. tostring(gun))
 
@@ -62,7 +65,7 @@ function ProjectileManager:create(gun, start, direction, networked)
 
     for index = 1, cfg.Projectile.Amount do
         local proj =
-            Projectile.new(cfg.Projectile.Type, self:_makeProperties(cfg.Projectile, direction), start, direction)
+            Projectile.new(cfg.Projectile.Type, self:_makeProperties(cfg.Projectile, gun.ViewModel), origin, direction)
         self.Projectiles[proj] = true
         addProjectileToNetworkBatch(networked, proj)
     end

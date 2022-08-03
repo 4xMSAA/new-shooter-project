@@ -19,16 +19,6 @@ end
 local ServerWeaponManager = {}
 ServerWeaponManager.__index = ServerWeaponManager
 
--- !IMPORTANT
--- !Any function here will allow itself to have data sent to by clients.
--- !Sanitize it.
-ServerWeaponManager._packetToFunction = {
-    [GameEnum.PacketType.WeaponEquip] = ServerWeaponManager.equip,
-    [GameEnum.PacketType.WeaponFire] = ServerWeaponManager.fire,
-    [GameEnum.PacketType.ProjectileHit] = ServerWeaponManager.hit,
-    [GameEnum.PacketType.WeaponReload] = ServerWeaponManager.reload,
-    [GameEnum.PacketType.WeaponCancelReload] = ServerWeaponManager.cancelReload,
-}
 
 ---Create a new container that manages weapon instances and their networking
 ---@param config table A configuration table for different behaviour
@@ -84,13 +74,23 @@ function ServerWeaponManager:unregisterAllFrom(client)
     end
 end
 
+
+function ServerWeaponManager:isOwner(client, weaponOrUUID)
+    local uuid = resolveUUID(weaponOrUUID)
+    local container = self.ActiveWeapons[uuid]
+    assert(container, "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
+
+    return container.Owner == client
+end
+
 ---! NETWORKED FUNCTION !
 ---
 ---@param client Client
 ---@param weaponOrUUID any
-function ServerWeaponManager:equip(client, weaponOrUUID)
+function ServerWeaponManager:clientEquip(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
 
     self._Equipped[client] = uuid
 
@@ -101,27 +101,30 @@ end
 ---
 ---@param client Client
 ---@param weaponOrUUID any
-function ServerWeaponManager:fire(client, weaponOrUUID, state)
+function ServerWeaponManager:clientFire(client, weaponOrUUID, state)
     local uuid = resolveUUID(weaponOrUUID)
-    assert(typeof(state) == "boolean", client.Name .. " - client is sending bad args for fire() (#3)")
+    assert(typeof(state) == "boolean", client.Name .. " - client is sending bad args for clientFire() (#3)")
     assert(self.ActiveWeapons[uuid], "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
 
     NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponFire, uuid, state)
     -- TODO: sanity check high RPM
 end
 
 ---! NETWORKED FUNCTION !
-function ServerWeaponManager:reload(client, weaponOrUUID)
+function ServerWeaponManager:clientReload(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
 
     NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponReload, uuid)
 end
 
 --! NETWORKED FUNCTION !
-function ServerWeaponManager:cancelReload(client, weaponOrUUID)
+function ServerWeaponManager:clientCancelReload(client, weaponOrUUID)
     local uuid = resolveUUID(weaponOrUUID)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
 
     NetworkLib:sendToExcept(client, GameEnum.PacketType.WeaponCancelReload, uuid)
 end
@@ -133,8 +136,27 @@ end
 ---@param bulletUUID string
 ---@param targetPart userdata
 ---@param position userdata
-function ServerWeaponManager:hit(client, uuid, bulletUUID, targetPart, position)
+function ServerWeaponManager:clientProjectileHit(client, uuid, bulletUUID, targetPart, position)
     assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
+end
+
+---! NETWORKED FUNCTION !
+---
+---@param client Client
+---@param uuid string
+---@param projectileBatch any
+function ServerWeaponManager:clientProjectileMake(client, uuid, projectileBatch)
+    assert(self.ActiveWeapons[uuid], "gun UUID " .. uuid .. " is not managed by this ServerWeaponManager")
+    assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
+
+    local gun = self.ActiveWeapons[uuid].Weapon
+    for _, projectile in pairs(projectileBatch) do
+        self.ProjectileManager:create(gun, projectile.Origin, projectile.Direction)
+    end
+    -- TODO: sanity check high RPM
+
+    NetworkLib:sendToExcept(client, GameEnum.PacketType.ProjectileMake, uuid, projectileBatch)
 end
 
 ---Tell an ad-hoc client about the weapons that already exist before them
@@ -150,7 +172,7 @@ function ServerWeaponManager:adhocUpdate(client)
         NetworkLib:sendTo(client, GameEnum.PacketType.WeaponEquip, owner, uuid)
     end
 
-    log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", self._Equipped)
+   log(1, "Sending ad-hoc updates to", client.Name, "- weapons:", serializedAdhocWeapons, "- equipped:", self._Equipped)
 end
 
 function ServerWeaponManager:route(packetType, player, ...)
@@ -159,5 +181,18 @@ function ServerWeaponManager:route(packetType, player, ...)
         func(self, player, ...)
     end
 end
+
+
+-- !IMPORTANT
+-- !Any function here will allow itself to have data sent to by clients.
+-- !Sanitize it.
+ServerWeaponManager._packetToFunction = {
+    [GameEnum.PacketType.WeaponEquip] = ServerWeaponManager.clientEquip,
+    [GameEnum.PacketType.WeaponFire] = ServerWeaponManager.clientFire,
+    [GameEnum.PacketType.ProjectileHit] = ServerWeaponManager.clientProjectileHit,
+    [GameEnum.PacketType.WeaponReload] = ServerWeaponManager.clientReload,
+    [GameEnum.PacketType.WeaponCancelReload] = ServerWeaponManager.clientCancelReload,
+    [GameEnum.PacketType.ProjectileMake] = ServerWeaponManager.clientProjectileMake,
+}
 
 return ServerWeaponManager

@@ -16,7 +16,7 @@ for _, module in pairs(script.Types:GetChildren()) do
     Projectile.ProjectileTypes[module.Name] = projectileType
 end
 
-function Projectile.new(projectileType, props, start, direction)
+function Projectile.new(projectileType, props, origin, direction)
     assert(Projectile.ProjectileTypes[projectileType], "projectile type not found: got " .. tostring(projectileType))
     assert(typeof(props) == "table", "argument #2 (properties) must be a table")
     local self = {}
@@ -27,8 +27,8 @@ function Projectile.new(projectileType, props, start, direction)
     self.Lifetime = 0
     self.MaxLifetime = props.MaxLifetime or DEFAULT_MAX_LIFETIME
 
-    self.Origin = start
-    self.Position = start
+    self.Origin = origin
+    self.Position = origin
 
     self.Direction = direction
     self.Velocity = self.Direction * props.Velocity
@@ -88,7 +88,6 @@ end
 function Projectile:serialize()
     return {
         UUID = self.UUID,
-        Type = self._TypeName,
         Direction = self.Direction,
         Origin = self.Origin,
     }

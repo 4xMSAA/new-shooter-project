@@ -40,6 +40,8 @@ local Bullet = {}
 
 function Bullet:init()
     self._renderObject = shared.Assets.FX.ProjectileTracer.Bullet:Clone()
+    self._renderObject.CFrame = CFrame.new(self.Properties.VisualOrigin or self.Origin)
+    self._renderObject.Parent = _G.Path.FX
 end
 
 function Bullet:simulate(dt)
@@ -71,13 +73,15 @@ function Bullet:hitClient(rayResult)
     p:emit()
     ParticleManager:scheduleDestroy(p, DECAL_HIT_LIFETIME)
 
-    -- dereference renderObject (part which leaves trail) and destroy 
+    -- dereference renderObject (part which leaves trail) and destroy
     -- it after a fixed time by ourselves (trail disappears with parent...)
-    
-    self:render() -- one final time to update position
-
     local renderObject = self._renderObject
     self._renderObject = nil
+
+    -- ugly hack with task.delay to show trail (because roblox doesn't allow us to step it ourself)
+    task.delay(0, self.hitDeferredRender, self.Position, renderObject)
+
+    -- clean up :D
     Debris:AddItem(renderObject, FX_HIT_LIFETIME)
 end
 
@@ -94,6 +98,11 @@ end
 function Bullet:render()
     self._renderObject.CFrame = CFrame.new(self.Position)
     self._renderObject.Parent = _G.Path.FX
+end
+
+function Bullet.hitDeferredRender(pos, renderObject)
+    renderObject.CFrame = CFrame.new(pos)
+    renderObject.Parent = _G.Path.FX
 end
 
 function Bullet.staticStep(dt)

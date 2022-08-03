@@ -24,7 +24,7 @@ function ServerGun.new(weapon, gamemode)
         weapon = assert(PATH.WEAPON_CONFIGURATIONS(weapon), "did not find weapon " .. weapon)
     end
 
-    local config = require(weapon:Clone())
+    local config = require(weapon)
 
     local self = {}
 

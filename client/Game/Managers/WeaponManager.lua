@@ -95,15 +95,6 @@ function WeaponManager.new(config)
     setmetatable(self, WeaponManager)
     Maid.watch(self)
 
-    self._packetToFunction = {
-        [GameEnum.PacketType.WeaponEquip] = self.networkEquip;
-        [GameEnum.PacketType.WeaponFire] = self.networkFire;
-        [GameEnum.PacketType.WeaponReload] = self.networkReload;
-        [GameEnum.PacketType.WeaponCancelReload] = self.networkCancelReload;
-        [GameEnum.PacketType.WeaponRegister] = self.networkRegister;
-        [GameEnum.PacketType.WeaponUnregister] = self.networkUnregister;
-        [GameEnum.PacketType.WeaponAdhocRegister] = self.networkAdhocRegister;
-    }
 
     return self
 end
@@ -262,6 +253,16 @@ function WeaponManager:networkFire(uuid, state)
 
 end
 
+function WeaponManager:networkProjectileMake(uuid, projectileBatch)
+    local weapon = self:getByUUID(uuid).Weapon
+    if not weapon then return end
+    if weapon == self.ViewportWeapon then return end
+
+    for _, projectile in pairs(projectileBatch) do
+        self.ProjectileManager:create(weapon, projectile.Origin, projectile.Direction, true)
+    end
+end
+
 function WeaponManager:reload(weapon)
     if weapon.State.Sprint then return end
     weapon:reload()
@@ -356,5 +357,16 @@ function WeaponManager:route(packetType, ...)
         func(self, ...)
     end
 end
+
+WeaponManager._packetToFunction = {
+    [GameEnum.PacketType.WeaponEquip] = WeaponManager.networkEquip;
+    [GameEnum.PacketType.WeaponFire] = WeaponManager.networkFire;
+    [GameEnum.PacketType.ProjectileMake] = WeaponManager.networkProjectileMake;
+    [GameEnum.PacketType.WeaponReload] = WeaponManager.networkReload;
+    [GameEnum.PacketType.WeaponCancelReload] = WeaponManager.networkCancelReload;
+    [GameEnum.PacketType.WeaponRegister] = WeaponManager.networkRegister;
+    [GameEnum.PacketType.WeaponUnregister] = WeaponManager.networkUnregister;
+    [GameEnum.PacketType.WeaponAdhocRegister] = WeaponManager.networkAdhocRegister;
+}
 
 return WeaponManager
