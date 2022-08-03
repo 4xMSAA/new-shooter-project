@@ -4,6 +4,12 @@ local Timer = require(shared.Common.Timer)
 return function (Zombies)
     print(#Zombies.ClientManager:getClients())
 
-    return function()
+    local projectileManagerTimer = Timer.new(_G.PROJECTILE.ITERATION_PRECISION)
+
+    return function(dt)
+        local projectileTick = projectileManagerTimer:tick(dt)
+        if projectileTick then
+            Zombies.ProjectileManager:step(projectileTick)
+        end
     end
 end
