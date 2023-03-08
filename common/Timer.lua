@@ -1,6 +1,6 @@
 local Maid = require(shared.Common.Maid)
 
----A manually ticked timer where the tick method returns 
+---A manually ticked timer where the tick method returns
 ---false or the number of times it has ticked past it's cycle
 ---@class Timer
 local Timer = {}
@@ -11,7 +11,7 @@ function Timer.new(interval)
         Interval = interval,
         _currentTimePassed = 0
     }
-    
+
     setmetatable(self, Timer)
     Maid.watch(self)
     return self
@@ -24,7 +24,9 @@ end
 function Timer:tick(dt)
     self._currentTimePassed = self._currentTimePassed + dt
     if self._currentTimePassed >= self.Interval then
-        return math.floor(self._currentTimePassed/self.Interval)
+        local calc = math.floor(self._currentTimePassed/self.Interval)
+        self._currentTimePassed = 0
+        return calc
     end
     return false
 end
