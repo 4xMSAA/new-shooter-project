@@ -17,7 +17,7 @@ local Configuration = {
     },
     Particles = {
         Fire = {Path = "Gun/Muzzle", Parent = "Rig/Muzzle"},
-        -- Eject = {Path = "Gun/Casing/.45ACP", Speed = 14}
+        Eject = {Path = "Gun/Casing/.45ACP", Parent = "Rig/Ejector", Speed = 14}
     },
     Sounds = {
         SlideForward = 330005730,

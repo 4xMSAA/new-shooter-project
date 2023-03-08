@@ -190,6 +190,7 @@ function Gun:_init(gamemode, extraData)
     self._ModelMount = mount(self.ViewModel)
     for name, data in pairs(self.Configuration.Particles) do
         assert(data.Path, "path to particle does not exist for " .. tostring(name) .. " in " .. tostring(self._assetName))
+        assert(data.Parent, "no parent for particle " .. tostring(name) .. " in " .. (tostring(self._assetName)))
         self._Particles[name] = Particle.new(PATH.PARTICLES(data.Path), self._ModelMount(data.Parent))
     end
 
@@ -284,6 +285,7 @@ end
 ---
 function Gun:equip()
     self:setState("Equipped", true)
+    self.Events.Equip:emit("BEGIN")
     self.Animations.Idle:play()
     if
         self.Configuration.ActionType == GameEnum.GunActionType.ClosedBolt
@@ -292,12 +294,14 @@ function Gun:equip()
     then
         self.Animations.DryIdle:play()
     end
+    self.Events.Equip:emit("DONE")
 end
 
 ---
 ---@return Emitter UnequipEmitter An emitter to listen to for "done" event
 function Gun:unequip()
     self:setState("Equipped", false)
+    self.Events.Unequip:emit("BEGIN")
     coroutine.wrap(unequipGun)(self, self.Events.Unequip)
     return self.Events.Unequip
 end
@@ -310,7 +314,7 @@ function Gun:emitParticle(name)
         return
     end
 
-    self._Particles[name]:emit()
+    self._Particles[name]:emit(self.Configuration.Particles[name])
     return self
 end
 
@@ -403,6 +407,8 @@ function Gun:fire(networked)
 
     self:setState("Cycling", true):emitParticle("Fire"):playSound("Fire", 7)
     self.Events.Fired:emit("FIRE")
+
+    self:emitParticle("Eject")
 
     -- viewmodel recoil
     local recoil = self.Configuration.Recoil
