@@ -26,7 +26,7 @@ return {
         AIM_SPEED = 4,
         AIM_STYLE = "sine",
 
-        SPRINT_SPEED = 4,
+        SPRINT_SPEED = 7,
         SPRINT_STYLE = "quad",
 
         INERTIA_MODIFIER = 0.6,
@@ -62,7 +62,7 @@ return {
     },
 
     MOVEMENT = {
-        FRICTION = 0.15,
-        ACCELERATION_SPEED = 1/0.4
+        FRICTION_MODIFIER = 1,
+        ACCELERATION_MODIFIER = 1
     }
 }

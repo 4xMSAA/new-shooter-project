@@ -12,7 +12,7 @@ function SprintModule.new(controller)
        Controller = controller,
 
        Sprint = false,
-       SprintSpeedModifier = 6
+       SprintSpeedModifier = 10
    }
 
    setmetatable(self, SprintModule)

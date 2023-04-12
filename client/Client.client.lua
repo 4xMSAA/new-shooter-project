@@ -86,7 +86,7 @@ local function spawn(character, lookAt)
     UserInputService.InputChanged:connect(inputChangedHandler)
 
     RunService.Stepped:connect(
-        function(dt)
+        function(_, dt)
             LocalCharacter.Controller:update(dt, Camera.CFrame.LookVector)
         end
     )

@@ -1,8 +1,8 @@
 local Emitter = require(shared.Common.Emitter)
 
 local HALF_PI = math.pi/2
-local MOVEMENT_FRICTION = _G.MOVEMENT.FRICTION
-local MOVEMENT_ACCELERATION_SPEED = _G.MOVEMENT.ACCELERATION_SPEED
+local MOVEMENT_FRICTION_MODIFIER = _G.MOVEMENT.FRICTION_MODIFIER
+local MOVEMENT_ACCELERATION_MODIFIER = _G.MOVEMENT.ACCELERATION_MODIFIER
 
 local COLLISION_CAPSULE = shared.Assets.Collision.Capsule
 
@@ -57,7 +57,8 @@ function Movement.new(character)
         PhysicsVelocity = Vector3.new(),
         Location = CFrame.new(),
         Acceleration = Vector3.new(),
-        MoveAcceleration = Vector3.new(),
+        MoveForce = Vector3.new(),
+        MoveForceModifier = 0,
         CollisionCapsule = COLLISION_CAPSULE:Clone(),
 
         Changed = Emitter.new(),
@@ -67,7 +68,7 @@ function Movement.new(character)
     }
 
     local weldConstraint = Instance.new("WeldConstraint")
-    self.CollisionCapsule.CFrame = self.RootPart.CFrame
+    self.CollisionCapsule.CFrame = self.RootPart.CFrame * CFrame.new(0, 1, 0)
     weldConstraint.Part0 = self.RootPart
     weldConstraint.Part1 = self.CollisionCapsule
     weldConstraint.Parent = self.CollisionCapsule
@@ -105,6 +106,7 @@ end
 
 function Movement:update(dt, lookV)
     local moveDir = self.Humanoid.MoveDirection
+    local onFloor = self.Humanoid.FloorMaterial ~= Enum.Material.Air
     for _, module in pairs(self._movementModules) do
         module:update(dt, lookV, moveDir)
     end
@@ -116,34 +118,31 @@ function Movement:update(dt, lookV)
 
     dt = math.min(dt, 1)
 
+    self.Humanoid.WalkSpeed = 0
+    self.Humanoid.JumpPower = self.JumpPower
     self.RootPart.CFrame =
         CFrame.new(self.RootPart.Position, self.RootPart.Position + lookV - Vector3.new(0, lookV.Y, 0))
 
     -- we can still extract MoveDirection even if WalkSpeed is 0
-    self.Humanoid.WalkSpeed = 0
-    self.Humanoid.JumpPower = self.JumpPower
 
     self.Location = self.RootPart.CFrame
 
-    -- TODO: make into object space acceleration rather than world space
-    -- character is standing on ground according to roblox
-    if self.Humanoid.FloorMaterial ~= Enum.Material.Air then
-        self.MoveAcceleration =
-            Vector3.new(
-            reachTargetValue(self.MoveAcceleration.X, self.Speed * moveDir.X, dt*MOVEMENT_ACCELERATION_SPEED),
-            0,
-            reachTargetValue(self.MoveAcceleration.Z, self.Speed * moveDir.Z, dt*MOVEMENT_ACCELERATION_SPEED)
-        )
+    self.Acceleration = Vector3.new()
+
+    if onFloor then
+        local moveDirDot = moveDir.unit:Dot(self.Velocity)
+        local inertia = math.max(-1, math.min(1, moveDirDot == moveDirDot and moveDirDot or 1))
+        print(moveDirDot, inertia, dt)
+        local increment = -dt + (dt * 2) * inertia * MOVEMENT_ACCELERATION_MODIFIER
+        self.MoveForceModifier = math.max(0, math.min(1, self.MoveForceModifier + increment))
+        self.MoveForce = moveDir * math.max(0, self.Speed * self.MoveForceModifier - self.Velocity.magnitude)
+        self.Acceleration = self.MoveForce
     end
 
-    local updateVelocity = (self.Velocity + self.Acceleration) * (1 - MOVEMENT_FRICTION)
-    self.Velocity =
-        updateVelocity +
-        (self.MoveAcceleration * -math.min(0, updateVelocity.magnitude - self.MoveAcceleration.magnitude) / self.Speed)
-
-    if self.Velocity:FuzzyEq(Vector3.new(), 0.05) then
-        self.Velocity = Vector3.new()
-    end
+    local friction = (1 - 0.1) * (1 - dt) * (1 / MOVEMENT_FRICTION_MODIFIER)
+    friction = onFloor and friction or 1
+    self.Velocity = (self.Velocity * friction) + self.Acceleration
+    self.Velocity = self.Velocity:FuzzyEq(Vector3.new(), 0.01) and Vector3.new() or self.Velocity
 
     -- if self.Humanoid.FloorMaterial == Enum.Material.Air then
     --     -- roblox kinda handles the fall part,
