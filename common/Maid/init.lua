@@ -22,7 +22,7 @@ function Maid.watch(...)
         elseif LOG_LEVEL >= 2 then
             print("MAID STUDIO DEBUG:", object)
             warn(
-                "already watching address " .. tostring(Maid._tracked[object]) .. " from: \n" ..
+                "already watching address " .. tostring(object) .. " from: \n" ..
                 debug.traceback()
             )
         end
@@ -35,10 +35,10 @@ function Maid.attachMetadata(object)
 
     --  attach top-level Object properties that apply to self
     for property, value in pairs(Object) do
-        if object[property] and object[property] ~= value then
+        if rawget(object, property) and rawget(object, property) ~= value then
             object._maidMetadata[property] = object[property]
         end
-        if typeof(value) == "function" and object[property] ~= value then
+        if typeof(value) == "function" and rawget(object, property) ~= value then
             rawset(object, property, value)
         end
     end
