@@ -61,7 +61,7 @@ function Movement.new(character)
         CollisionCapsule = COLLISION_CAPSULE:Clone(),
 
         Changed = Emitter.new(),
-        
+
         _speedModifiers = {},
         _movementModules = {}
     }
@@ -73,14 +73,14 @@ function Movement.new(character)
     weldConstraint.Parent = self.CollisionCapsule
     self.CollisionCapsule.Parent = _G.Path.Collisions
 
-    
+
     self._originalSpeed = self.Humanoid.WalkSpeed
     self.Speed = self._originalSpeed
     self.JumpPower = self.Humanoid.JumpPower
-    
+
     self.Humanoid:SetStateEnabled(Enum.HumanoidStateType.RunningNoPhysics, false)
     self.Humanoid:ChangeState(Enum.HumanoidStateType.Running)
-    
+
     setmetatable(self, Movement)
     return self
 end
