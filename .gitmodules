@@ -1,0 +1,3 @@
+[submodule "rbx-common"]
+	path = common
+	url = git@github.com:4xMSAA/rbx-common.git

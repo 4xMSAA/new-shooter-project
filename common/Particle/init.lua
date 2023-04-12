@@ -1,5 +1,3 @@
-local Debris = game:GetService("Debris")
-
 local Maid = require(shared.Common.Maid)
 local Behaviours = require(script.Behaviours)
 
@@ -27,13 +25,6 @@ function Particle.new(effect, parent, props, pooled)
         ),
         Properties = props or {}
     }
-
-    -- remove config module from Instances
-    for index, inst in pairs(self.Instances) do
-        if inst:IsA("ModuleScript") then
-            table.remove(self.Instances, index)
-        end
-    end
 
     setmetatable(self, Particle)
     self:_init()
@@ -65,32 +56,15 @@ function Particle:_init()
             instance.Enabled = false
         end
 
-        if self.Configuration.CloneOnEmit then
-        else
-            instance.Parent = self._attachment
-        end
+        instance.Parent = self._attachment
     end
 end
 
-function Particle:emit(...)
-    local children = {}
+function Particle:emit()
     for _, child in pairs(self.Instances) do
-        if self.Configuration.CloneOnEmit then
-            child = child:Clone()
-            child.Parent = self.Parent
-            child:PivotTo(self.Parent.CFrame)
-            if self.Configuration.Lifetime then
-                Debris:AddItem(child, self.Configuration.Lifetime)
-            end
-        end
         if Particle._behaviours[child.ClassName] then
             Particle._behaviours[child.ClassName](child, self.Configuration, self.Properties)
         end
-        table.insert(children, child)
-    end
-
-    if self.Configuration.DoAction then
-        self.Configuration.DoAction(self.Parent, children, ...)
     end
 
     if self.Configuration.RandomSingleSound then

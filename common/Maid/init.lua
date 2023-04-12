@@ -10,8 +10,6 @@ local totalTracked = 0
 
 local Maid = {}
 Maid._tracked = {}
---TODO: track on recursive deletion whether the object inside an object is being
--- used in other scenarios. this does sound more like a design problem however
 
 local Object = require(script.Object)(Maid)
 
@@ -37,10 +35,10 @@ function Maid.attachMetadata(object)
 
     --  attach top-level Object properties that apply to self
     for property, value in pairs(Object) do
-        if rawget(object, property) then
-            object._maidMetadata[property] = value
+        if object[property] and object[property] ~= value then
+            object._maidMetadata[property] = object[property]
         end
-        if typeof(value) == "function" then
+        if typeof(value) == "function" and object[property] ~= value then
             rawset(object, property, value)
         end
     end

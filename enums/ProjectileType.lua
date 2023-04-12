@@ -4,6 +4,7 @@ local TableUtils = require(shared.Common.TableUtils)
 local GameEnum = {
     {"Bullet", ""},
     {"Launcher", ""},
+    {"Flamethrower", ""}
 }
 
 return TableUtils.toEnumList(script.Parent.Name, GameEnum)
