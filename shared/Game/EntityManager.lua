@@ -10,6 +10,7 @@
 local SHARED_SYSTEMS_DIR = shared.Game.EntitySystems
 local SERVER_SYSTEMS_DIR = _G.Server and _G.Server.Game.EntitySystems or nil
 
+local log, logwarn = require(shared.Common.Log)(script:GetFullName())
 
 local Maid = require(shared.Common.Maid)
 local mount = require(shared.Common.Mount)
@@ -43,8 +44,7 @@ function EntityManager.new(args)
 end
 
 function EntityManager:resolveType(typePath)
-    local path = PATH.ENTITIES(typePath, ".", 1)
-    print(path and path:GetFullName() or nil)
+    local path = PATH.ENTITIES(typePath, ".", 1) or logwarn(1, typePath, "is not resolvable")
     return path ~= nil and require(path) or nil
 end
 
