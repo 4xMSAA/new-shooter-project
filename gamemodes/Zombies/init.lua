@@ -1,3 +1,5 @@
+local NAME = script.Name
+
 local Maid = require(shared.Common.Maid)
 
 local NetworkLib = require(shared.Common.NetworkLib)
@@ -20,7 +22,7 @@ local gameEnd = require(script.GameEnd)
 ---Players can purchase weapons, roll a random weapon by a mystery box and
 ---progress to new areas by removing debris with acquired points.
 ---@class ZombiesGamemode
-local ZombiesGamemode = {Name = "Zombies"}
+local ZombiesGamemode = {Name = NAME}
 ZombiesGamemode.__index = ZombiesGamemode
 
 function ZombiesGamemode.new(super)
@@ -29,10 +31,10 @@ function ZombiesGamemode.new(super)
 
     local self = {
         super = super,
-        Configuration = require(GameModeConfigs:WaitForChild("Zombies", 5)),
+        Configuration = require(GameModeConfigs:WaitForChild(NAME, 5)),
         ClientManager = super.ClientManager,
         WeaponManager = ServerWeaponManager.new({
-            GameMode = "Zombies",
+            GameMode = NAME,
             ProjectileManager = projectileManager
         }),
         ProjectileManager = projectileManager,
@@ -43,6 +45,8 @@ function ZombiesGamemode.new(super)
 
         Wave = 1
     }
+
+    setmetatable(self, ZombiesGamemode)
 
     self.gameStart = gameStart(self)
     self.gameLoop = gameLoop(self)
@@ -69,7 +73,7 @@ function ZombiesGamemode.new(super)
             self.WeaponManager:register(gun, client)
             self.WeaponManager:register(gun2, client)
 
-            self.WeaponManager:clientEquip(client, gun2)
+            self.WeaponManager:clientEquip(client, gun)
         end
     )
 
@@ -87,7 +91,6 @@ function ZombiesGamemode.new(super)
     self._NetworkListener = NetworkLib:listen(route)
 
 
-    setmetatable(self, ZombiesGamemode)
     Maid.watch(self)
     return self
 end
@@ -100,3 +103,4 @@ function ZombiesGamemode:sendExistingStateToAdhoc(client)
 end
 
 return ZombiesGamemode
+
