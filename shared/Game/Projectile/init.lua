@@ -58,9 +58,10 @@ function Projectile:step(frameDelta)
     self.Lifetime = self.Lifetime + frameDelta
 
     -- a for loop still runs even if the target is equal to the starting number
+    local last_frame
     for iteration = 0, iterations do
-        if iteration > MAX_ITERATIONS_PER_FRAME then
-            break
+        if iteration >= MAX_ITERATIONS_PER_FRAME then
+            last_frame = true
         end
 
         local iterationDelta = iteration == iterations and dt or ITERATION_PRECISION
@@ -77,6 +78,9 @@ function Projectile:step(frameDelta)
         end
         if not keepSimulating then
             return false, rayResult
+        end
+        if lastFrame then
+            return keepSimulating, rayResult
         end
     end
     return true
