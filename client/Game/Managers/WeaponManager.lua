@@ -78,6 +78,8 @@ function WeaponManager.new(config)
     end
 
     local self = {}
+    self._selfEquipHistoryID = 0
+    self._selfEquipHistory = {}
     self.Camera = camera
     self.ProjectileManager = config.ProjectileManager
     self.GameMode = config.GameMode
@@ -99,6 +101,11 @@ function WeaponManager.new(config)
     return self
 end
 
+function WeaponManager:_useSelfEquipID()
+    self._selfEquipHistoryID = (self._selfEquipHistoryID + 1) % 10
+    return self._selfEquipHistoryID
+end
+
 ---Creates an unregistered Gun instance by an asset name
 ---@param assetName string Weapon assetName to create
 function WeaponManager:create(assetName, extraData)
@@ -117,9 +124,9 @@ function WeaponManager:register(weapon, uuid, player)
     log(1, "registered", weapon.Configuration.Name, "with UUID of", uuid, "owned by", player)
 end
 
----Unregister a weapon UUID for garbage cleaning
+---Deregister a weapon UUID for garbage cleaning
 ---@param weaponOrUUID table
-function WeaponManager:unregister(weaponOrUUID)
+function WeaponManager:deregister(weaponOrUUID)
     local uuid = weaponOrUUID
     if typeof(weaponOrUUID) ~= "string" then
         uuid = weaponOrUUID.UUID
@@ -148,8 +155,8 @@ function WeaponManager:networkRegister(player, assetName, uuid, overwrite)
     self:register(weapon, uuid, player)
 end
 
-function WeaponManager:networkUnregister(uuid)
-    self:unregister(uuid)
+function WeaponManager:networkDeregister(uuid)
+    self:deregister(uuid)
 end
 
 ---
@@ -158,6 +165,21 @@ end
 function WeaponManager:getByUUID(uuid)
     assert(self.ActiveWeapons[uuid], "UUID " .. uuid .. " is not registered in this WeaponManager, unable to get Weapon instance")
     return self.ActiveWeapons[uuid]
+end
+
+---
+---@param owner any
+---@return table
+function WeaponManager:getByOwner(owner)
+    local results = {}
+
+    for uuid, container in pairs(self.ActiveWeapons) do
+        if container.Owner == owner then
+            results[uuid] = container.Weapon
+        end
+    end
+
+    return results
 end
 
 ---
@@ -174,6 +196,9 @@ end
 
 function WeaponManager:equip(player, weapon)
     log(1, player, "is equipping", weapon.Configuration.Name)
+    local equipped = self:getOwnerEquipped(player)
+    -- TODO: make unequipping logic
+    equipped.ViewModel.Parent = nil
     weapon.ViewModel.Parent = _G.Path.RayIgnore
 end
 
@@ -183,6 +208,7 @@ end
 ---@param networked boolean Whether this call was networked or not (to prevent loopback)
 function WeaponManager:equipViewport(weapon, networked)
     assert(self.ActiveWeapons[weapon.UUID], "weapon " .. weapon.Configuration.Name .. " is not registered in this WeaponManager")
+    if self.ViewportWeapon == weapon then return end -- don't re-equip
     log(1, "equip viewport weapon", weapon.Configuration.Name)
 
     local object = self.ActiveWeapons[weapon.UUID]
@@ -202,9 +228,11 @@ function WeaponManager:equipViewport(weapon, networked)
         equipViewport(self, weapon)
     end
 
+    local id = self:_useSelfEquipID(weapon)
+
     -- prevent loopback
     if not networked then
-        NetworkLib:send(GameEnum.PacketType.WeaponEquip, weapon.UUID)
+        NetworkLib:send(GameEnum.PacketType.WeaponEquip, weapon.UUID, id)
     end
 end
 
@@ -358,6 +386,17 @@ function WeaponManager:route(packetType, ...)
     end
 end
 
+function WeaponManager:makeEquipable(weapon)
+    local equipable = {Item = weapon}
+    local this = self
+
+    function equipable:equip()
+        this:equipViewport(weapon)
+    end
+
+    return equipable
+end
+
 WeaponManager._packetToFunction = {
     [GameEnum.PacketType.WeaponEquip] = WeaponManager.networkEquip;
     [GameEnum.PacketType.WeaponFire] = WeaponManager.networkFire;
@@ -365,7 +404,7 @@ WeaponManager._packetToFunction = {
     [GameEnum.PacketType.WeaponReload] = WeaponManager.networkReload;
     [GameEnum.PacketType.WeaponCancelReload] = WeaponManager.networkCancelReload;
     [GameEnum.PacketType.WeaponRegister] = WeaponManager.networkRegister;
-    [GameEnum.PacketType.WeaponUnregister] = WeaponManager.networkUnregister;
+    [GameEnum.PacketType.WeaponDeregister] = WeaponManager.networkDeregister;
     [GameEnum.PacketType.WeaponAdhocRegister] = WeaponManager.networkAdhocRegister;
 }
 

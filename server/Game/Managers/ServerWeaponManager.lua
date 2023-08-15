@@ -63,13 +63,13 @@ function ServerWeaponManager:register(weapon, client)
 end
 
 
-function ServerWeaponManager:unregisterAllFrom(client)
+function ServerWeaponManager:deregisterAllFrom(client)
     for uuid, container in pairs(self.ActiveWeapons) do
         if container.Owner == client then
             container.Weapon:Destroy()
             self.ActiveWeapons[uuid] = nil
             self._Equipped[client] = nil
-            NetworkLib:send(GameEnum.PacketType.WeaponUnregister, uuid)
+            NetworkLib:send(GameEnum.PacketType.WeaponDeregister, uuid)
         end
     end
 end
@@ -87,14 +87,16 @@ end
 ---
 ---@param client Client
 ---@param weaponOrUUID any
-function ServerWeaponManager:clientEquip(client, weaponOrUUID)
+---@param id number Not relevant to server, but helps with reconciliation for clients
+function ServerWeaponManager:clientEquip(client, weaponOrUUID, id)
     local uuid = resolveUUID(weaponOrUUID)
+    assert(typeof(id) == "number", "ID sent should be numeric")
     assert(self.ActiveWeapons[uuid], "gun UUID " .. tostring(uuid) .. " is not managed by this ServerWeaponManager")
     assert(self:isOwner(client, uuid), " client sent UUID for weapon not owned by them")
 
     self._Equipped[client] = uuid
 
-    NetworkLib:send(GameEnum.PacketType.WeaponEquip, client, uuid)
+    NetworkLib:send(GameEnum.PacketType.WeaponEquip, client, uuid, id)
 end
 
 ---! NETWORKED FUNCTION !

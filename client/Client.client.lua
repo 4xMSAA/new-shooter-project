@@ -15,6 +15,9 @@ local NetworkLib = require(shared.Common.NetworkLib)
 local Maid = require(shared.Common.Maid)
 local Timer = require(shared.Common.Timer)
 
+local DefaultSettings = shared.DefaultSettings
+
+local Input = require(_G.Client.Core.Input)
 local LocalCharacter = require(_G.Client.Core.LocalCharacter)
 local Movement = require(_G.Client.Game.Movement)
 
@@ -28,6 +31,7 @@ local WeaponManager =
         GameMode = "Zombies"
     }
 )
+local EquipManager = require(_G.Client.Game.Managers.EquipManager).new()
 
 local debugPause = false
 local spawned = false
@@ -50,40 +54,59 @@ local function spawn(character, lookAt)
     local SprintModule = LocalCharacter.Controller:loadModule(Movement.Modules.Sprint)
     local AimModule = LocalCharacter.Controller:loadModule(Movement.Modules.ADS)
 
-    -- temporary input binding
-    local function inputHandler(name, state, object)
-        local boolState = state == Enum.UserInputState.Begin and true or false
-        if name == "Aim" then
-            WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", boolState)
-            AimModule.Aim = boolState
-        elseif name == "Fire" then
-            WeaponManager:fire(WeaponManager.ViewportWeapon, boolState)
-        elseif name == "Reload" and boolState then
-            WeaponManager:reload(WeaponManager.ViewportWeapon)
-        elseif name == "Sprint" then
-            SprintModule.Sprint = boolState
-        elseif name == "debugPause" and boolState then
-            debugPause = not debugPause
-        elseif name == "debugLog" and boolState then
-            Maid.info()
-        end
+
+
+    local function mouseMove(_, _, delta)
+        Camera:moveLook(delta.x, delta.y)
+    end
+    local function aim(_, state, _, object)
+        WeaponManager:setState(WeaponManager.ViewportWeapon, "Aim", state)
+    end
+    local function fire(_, state)
+        WeaponManager:fire(WeaponManager.ViewportWeapon, state)
+    end
+    local function reload(_, state)
+        if not state then return end
+        WeaponManager:reload(WeaponManager.ViewportWeapon)
+    end
+    local function sprint(_, state)
+        SprintModule.Sprint = state
+    end
+    local function debugPauseKey(_, state)
+        if not state then return end
+        debugPause = not debugPause
+    end
+    local function debugLog(_, state)
+        if not state then return end
+        Maid.info()
     end
 
-    local function inputChangedHandler(input)
-        if input.UserInputType == Enum.UserInputType.MouseMovement then
-            Camera:moveLook(input.Delta.x, input.Delta.y)
-        end
+    local Settings = DefaultSettings
+    Input.bind("camera.move", Enum.UserInputType.MouseMovement).listenFor("camera.move", mouseMove)
+    Input.bind("movement.sprint", Settings.Controls.Movement.Sprint).listenFor("movement.sprint", sprint)
+    
+    Input.bind("combat.aim", Settings.Controls.Combat.Aim).listenFor("combat.aim", aim)
+    Input.bind("combat.reload", Settings.Controls.Combat.Reload).listenFor("combat.reload", reload)
+    Input.bind("combat.fire", Settings.Controls.Combat.Fire).listenFor("combat.fire", fire)
+    Input.bind("debug.pause", Settings.Controls.Debug.Pause).listenFor("debug.pause", debugPauseKey)
+
+    for slot, inputs in pairs(Settings.Controls.Action) do
+        Input.bind("action." .. tostring(slot):lower(), inputs)
     end
+    
+    -- probably tell the client which binds they have or something? idk...
+    local weaponOrder = {
+        GameEnum.BindingSlot.Primary, GameEnum.BindingSlot.Secondary
+    }
 
-
-    ContextActionService:BindAction("Aim", inputHandler, true, Enum.UserInputType.MouseButton2)
-    ContextActionService:BindAction("Fire", inputHandler, true, Enum.UserInputType.MouseButton1)
-    ContextActionService:BindAction("Reload", inputHandler, true, Enum.KeyCode.R)
-    ContextActionService:BindAction("Sprint", inputHandler, true, Enum.KeyCode.LeftShift)
-    ContextActionService:BindAction("debugPause", inputHandler, true, Enum.KeyCode.P)
-    ContextActionService:BindAction("debugLog", inputHandler, true, Enum.KeyCode.O)
-
-    UserInputService.InputChanged:connect(inputChangedHandler)
+    local weapons = WeaponManager:getByOwner(Players.LocalPlayer)
+    local i = 0
+    for uuid, weapon in pairs(weapons) do
+        i = i + 1
+        EquipManager:bind(WeaponManager:makeEquipable(weapon), weaponOrder[i])
+    end
+    
+    EquipManager:listen()
 
     RunService.Stepped:connect(
         function(_, dt)
