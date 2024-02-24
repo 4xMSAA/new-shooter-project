@@ -110,5 +110,5 @@ TODO
 
 ## External Tools
 
-* Moon Animation Suite (optional, used initially but the animation code can)
+* Moon Animation Suite (optional, used initially so the animation code supports Moon animation saves. Superseded by Blender)
 * Blender + Den_S's blender import plugin, KeyframeSequences copied from the instance during publish
