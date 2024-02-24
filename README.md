@@ -1,10 +1,28 @@
 # About
 
-Rewriting MMCZP to be better and less gay
+~~Rewriting MMC Zombies Project to be better and less dumb~~
+
+An abandoned project because the Roblox platform is not particularly great for stable projects that don't use the avatar features provided by the platform.
+There's really, a bunch of reasons why, but they're also quite opinionated...
+
+Maybe you can salvage parts of this codebase for your own needs? Such as:
+* Playing Roblox hierarchy compatible animations (see `shared/Animator`)
+* Almost pure-Lua events (or signals) that don't struggle with key/value + array tables and have `:on(signal)`, :once(signal) functionality (see `common/Emitter`)
+* Related with the above, `common/NetworkLib` may actually be of interest as well.
+* A somewhat of a framework (as much as I hate that word, it kind of forces you to design games in a certain way...) to prototype games. <https://www.roblox.com/games/9249236711/la-bomba-sweeper> was actually made with this.
+
+You might be wondering: "why is everything _wrapped_ around the Roblox instance equivalents???" - because I wish I could augment them. 
+I wanted it so should changes to an instance happen, I wouldn't have to replace code in various places, but replace code at a single point where I _wrapped_ around an instance.
+I'm not sure if wrapped is the word to use here, but hopefully gets the meaning across.
+
+
+## Placefile
+Grab a copy here and mess around:
+<https://www.roblox.com/games/5014349871/gun-sandbox>
 
 ## Setting up gun rigs
 
-(make a plugin for this dumbass)
+WIP: make a plugin for this
 
 Models are located in `assets/Weapons/Models` (not mounted)  
 Animations are located in `assets/Weapons/Animations` (not mounted)  
@@ -35,8 +53,6 @@ A gun rig is set up with the following tree structure:
   | |-+ RightHand          Motor6D Part0 being Handle, Part1 leading to RightHand in RightArm
   
 ```
-
-See <https://trello.com/c/hT4utJbj/2-development-kits> for an image.
 
 ## Design patterns
 
@@ -94,6 +110,5 @@ TODO
 
 ## External Tools
 
-* Trello Todo - <https://trello.com/b/vLcRXfah/new-shooter-project-todo>
-* Moon Animation Suite
-* Blender
+* Moon Animation Suite (optional, used initially but the animation code can)
+* Blender + Den_S's blender import plugin, KeyframeSequences copied from the instance during publish
