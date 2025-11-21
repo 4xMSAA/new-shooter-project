@@ -43,17 +43,14 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
 
     -- find all joints
     local joints = {}
-    for i, joint in pairs(model:GetDescendants()) do
-        if joint:IsA("Motor6D") then
-            table.insert(joints, joint)
-        end
+    for i, joint in pairs(model:QueryDescendants("Motor6D")) do
+        table.insert(joints, joint)
     end
 
     -- map pose to joint
-    local poses = keyframe:GetDescendants()
+    local poses = keyframe:QueryDescendants("Pose")
     for _, pose in pairs(poses) do
-        if pose:IsA("Pose") then
-            local customProps = {}
+        local customProps = {}
             for _, object in pairs(pose:GetChildren()) do
                 if AnimationParser.CustomPoseProperties[object.Name] then
                     local prop, value = AnimationParser.CustomPoseProperties[object.Name](object)
@@ -84,7 +81,6 @@ function AnimationParser.keyframeToJoints(keyframe, model, map)
                     }
                 end
             end
-        end
     end
 
     return result
